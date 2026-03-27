@@ -1,26 +1,67 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f3efe4;
+  --background-strong: #e5dcc6;
+  --panel: rgba(255, 252, 245, 0.84);
+  --panel-strong: rgba(255, 252, 245, 0.94);
+  --foreground: #1a2d21;
+  --muted: #5f695e;
+  --accent: #d56c32;
+  --accent-strong: #9e4323;
+  --line: rgba(26, 45, 33, 0.12);
+  --shadow: 0 24px 80px rgba(77, 56, 30, 0.16);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-display);
+  --font-mono: var(--font-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background:
+    radial-gradient(circle at top left, rgba(213, 108, 50, 0.18), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(58, 115, 90, 0.14), transparent 35%),
+    linear-gradient(180deg, #f5f0e5 0%, #ebe3d1 100%);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-display), sans-serif;
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  background: rgba(213, 108, 50, 0.24);
+}
+
+.terrain-grid {
+  background-image:
+    linear-gradient(rgba(26, 45, 33, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26, 45, 33, 0.05) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.glass-panel {
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(16px);
+}
+
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  border-radius: 28px;
+}
+
+.leaflet-control-attribution {
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
 }

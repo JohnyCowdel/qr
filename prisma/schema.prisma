@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Team {
+  id             Int        @id @default(autoincrement())
+  slug           String     @unique
+  name           String
+  colorHex       String
+  createdAt      DateTime   @default(now())
+  users          User[]
+  claims         Claim[]
+  ownedLocations Location[] @relation("OwnedLocations")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  handle    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  teamId    Int
+  team      Team     @relation(fields: [teamId], references: [id])
+  claims    Claim[]
+}
+
+model Location {
+  id               Int       @id @default(autoincrement())
+  slug             String    @unique
+  qrCode           String    @unique
+  name             String
+  summary          String
+  content          String
+  latitude         Float
+  longitude        Float
+  claimRadiusM     Int       @default(50)
+  neighbors        String?
+  territoryGeoJson String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  ownerTeamId      Int?
+  lastClaimedAt    DateTime?
+  ownerTeam        Team?     @relation("OwnedLocations", fields: [ownerTeamId], references: [id])
+  claims           Claim[]
+}
+
+model Claim {
+  id          Int      @id @default(autoincrement())
+  message     String?
+  latitude    Float
+  longitude   Float
+  accuracyM   Float?
+  distanceM   Float
+  createdAt   DateTime @default(now())
+  locationId  Int
+  teamId      Int
+  userId      Int
+  location    Location @relation(fields: [locationId], references: [id])
+  team        Team     @relation(fields: [teamId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@index([locationId, createdAt])
+  @@index([teamId, createdAt])
+  @@index([userId, createdAt])
+}
