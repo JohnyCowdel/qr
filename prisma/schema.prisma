@@ -38,6 +38,9 @@ model Location {
   slug             String    @unique
   qrCode           String    @unique
   name             String
+  type             String    @default("camp")
+  area             Int       @default(1000)
+  image            String    @default("⛺")
   summary          String
   content          String
   latitude         Float
@@ -71,4 +74,9 @@ model Claim {
   @@index([locationId, createdAt])
   @@index([teamId, createdAt])
   @@index([userId, createdAt])
+}
+
+model AdminSettings {
+  id           Int    @id @default(1)
+  passwordHash String
 }

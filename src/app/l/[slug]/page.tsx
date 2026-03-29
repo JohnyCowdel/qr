@@ -58,6 +58,25 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                 </div>
                 <div className="rounded-[22px] border border-[var(--line)] bg-white/70 p-4">
                   <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
+                    Location type
+                  </div>
+                  <div className="mt-2 text-base font-medium">
+                    {location.image} {location.type}
+                  </div>
+                </div>
+                <div className="rounded-[22px] border border-[var(--line)] bg-white/70 p-4">
+                  <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
+                    Area
+                  </div>
+                  <div className="mt-2 text-base font-medium">
+                    {formatMeters(location.area)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-[22px] border border-[var(--line)] bg-white/70 p-4">
+                  <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
                     Last capture
                   </div>
                   <div className="mt-2 text-base font-medium">
@@ -106,6 +125,9 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                       id: location.id,
                       slug: location.slug,
                       name: location.name,
+                      type: location.type,
+                      area: location.area,
+                      image: location.image,
                       summary: location.summary,
                       latitude: location.latitude,
                       longitude: location.longitude,

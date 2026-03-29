@@ -12,6 +12,9 @@ export type MapLocation = {
   id: number;
   slug: string;
   name: string;
+  type?: string;
+  area?: number;
+  image?: string;
   summary: string;
   latitude: number;
   longitude: number;

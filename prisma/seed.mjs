@@ -1,4 +1,11 @@
+import { randomBytes, scryptSync } from "crypto";
 import { PrismaClient } from "@prisma/client";
+
+function hashPassword(password) {
+  const salt = randomBytes(16).toString("hex");
+  const hash = scryptSync(password, salt, 64).toString("hex");
+  return `${salt}:${hash}`;
+}
 
 const prisma = new PrismaClient();
 
@@ -13,6 +20,9 @@ const locations = [
     slug: "horka-na-sazavou",
     qrCode: "QR-HORKA",
     name: "Horka na Sazavou",
+    type: "fortress",
+    area: 3400,
+    image: "🏰",
     summary: "Hilltop lookout with a clean GPS lock and wide map visibility.",
     content:
       "A ridge position above the river. This point controls a visible approach line, so it is a natural rally target for nearby teams.",
@@ -25,6 +35,9 @@ const locations = [
     slug: "borovsky-bend",
     qrCode: "QR-BOROVSKY",
     name: "Borovsky Bend",
+    type: "mine",
+    area: 2200,
+    image: "⛏️",
     summary: "River bend checkpoint with dense cover and quick reclaim paths.",
     content:
       "A lower terrain point near the river edge. Great for ambush routes and quick turnover if teams keep moving.",
@@ -37,6 +50,9 @@ const locations = [
     slug: "zamek-gate",
     qrCode: "QR-ZAMEK",
     name: "Zamek Gate",
+    type: "town",
+    area: 2800,
+    image: "🏘️",
     summary: "Historic gate zone that links two flanks of the play area.",
     content:
       "A gateway control point with enough open space for GPS to behave reliably. Useful as a central handoff point for team movement.",
@@ -113,6 +129,13 @@ async function main() {
       distanceM: 5.1,
       createdAt: new Date("2026-04-02T18:12:00.000Z"),
     },
+  });
+
+  // Initialise default admin credentials (preserves existing password if already set)
+  await prisma.adminSettings.upsert({
+    where: { id: 1 },
+    create: { id: 1, passwordHash: hashPassword("admin") },
+    update: {},
   });
 }
 
