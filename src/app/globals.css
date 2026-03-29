@@ -58,7 +58,23 @@ a {
 .leaflet-container {
   height: 100%;
   width: 100%;
+  min-height: 240px;
   border-radius: 28px;
+}
+
+/* Tailwind's global img rules can break Leaflet tile/marker rendering. */
+.leaflet-container img,
+.leaflet-container .leaflet-tile,
+.leaflet-container .leaflet-marker-icon,
+.leaflet-container .leaflet-marker-shadow {
+  max-width: none !important;
+  max-height: none !important;
+}
+
+.leaflet-container .leaflet-pane,
+.leaflet-container .leaflet-tile-pane,
+.leaflet-container .leaflet-overlay-pane {
+  z-index: 400;
 }
 
 .leaflet-control-attribution {

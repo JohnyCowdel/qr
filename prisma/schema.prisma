@@ -39,6 +39,7 @@ model Location {
   qrCode           String    @unique
   name             String
   type             String    @default("camp")
+  power            Int       @default(8)
   area             Int       @default(1000)
   image            String    @default("⛺")
   summary          String

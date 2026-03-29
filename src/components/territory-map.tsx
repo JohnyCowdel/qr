@@ -13,6 +13,7 @@ export type MapLocation = {
   slug: string;
   name: string;
   type?: string;
+  power?: number;
   area?: number;
   image?: string;
   summary: string;
@@ -22,12 +23,23 @@ export type MapLocation = {
   ownerTeam: TeamRef;
 };
 
+type TerritoryMapProps = {
+  locations: MapLocation[];
+  center?: [number, number];
+  initialZoom?: number;
+  autoFitBounds?: boolean;
+};
+
 const LeafletMap = dynamic(() => import("./territory-map-inner"), {
   ssr: false,
 });
 
-export function TerritoryMap({ locations }: { locations: MapLocation[] }) {
-  const center = useMemo(() => {
+export function TerritoryMap({ locations, center, initialZoom, autoFitBounds = true }: TerritoryMapProps) {
+  const derivedCenter = useMemo(() => {
+    if (center) {
+      return center;
+    }
+
     if (!locations.length) {
       return [49.7332, 15.768] as [number, number];
     }
@@ -40,7 +52,7 @@ export function TerritoryMap({ locations }: { locations: MapLocation[] }) {
       locations.length;
 
     return [latitude, longitude] as [number, number];
-  }, [locations]);
+  }, [center, locations]);
 
-  return <LeafletMap locations={locations} center={center} />;
+  return <LeafletMap locations={locations} center={derivedCenter} initialZoom={initialZoom} autoFitBounds={autoFitBounds} />;
 }

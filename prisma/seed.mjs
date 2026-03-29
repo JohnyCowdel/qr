@@ -10,9 +10,9 @@ function hashPassword(password) {
 const prisma = new PrismaClient();
 
 const teams = [
-  { slug: "crimson-foxes", name: "Crimson Foxes", colorHex: "#c84c3c" },
-  { slug: "pine-riders", name: "Pine Riders", colorHex: "#2f7d5d" },
-  { slug: "golden-rooks", name: "Golden Rooks", colorHex: "#c18b2f" },
+  { slug: "crimson-foxes", name: "🦊 Rudé lišky", colorHex: "#c84c3c" },
+  { slug: "pine-riders", name: "🐺 Modří vlci", colorHex: "#2f7d5d" },
+  { slug: "golden-rooks", name: "🦅 Zlatí jestřábi", colorHex: "#c18b2f" },
 ];
 
 const locations = [
@@ -21,6 +21,7 @@ const locations = [
     qrCode: "QR-HORKA",
     name: "Horka na Sazavou",
     type: "fortress",
+    power: 25,
     area: 3400,
     image: "🏰",
     summary: "Hilltop lookout with a clean GPS lock and wide map visibility.",
@@ -36,6 +37,7 @@ const locations = [
     qrCode: "QR-BOROVSKY",
     name: "Borovsky Bend",
     type: "mine",
+    power: 8,
     area: 2200,
     image: "⛏️",
     summary: "River bend checkpoint with dense cover and quick reclaim paths.",
@@ -51,6 +53,7 @@ const locations = [
     qrCode: "QR-ZAMEK",
     name: "Zamek Gate",
     type: "town",
+    power: 10,
     area: 2800,
     image: "🏘️",
     summary: "Historic gate zone that links two flanks of the play area.",

@@ -1,11 +1,12 @@
 import { z } from "zod";
 
 import { db } from "@/lib/db";
-import { defaultImageForType, LOCATION_TYPES } from "@/lib/location-types";
+import { basePowerForType, defaultImageForType, LOCATION_TYPES } from "@/lib/location-types";
 
 const createSchema = z.object({
   name: z.string().trim().min(1),
   type: z.enum(LOCATION_TYPES).default("camp"),
+  ownerTeamId: z.coerce.number().int().positive().nullable().optional(),
   area: z.coerce.number().int().positive().default(1000),
   image: z.string().trim().min(1).max(32).optional(),
   summary: z.string().trim().min(1),
@@ -63,7 +64,9 @@ export async function POST(request: Request) {
   const location = await db.location.create({
     data: {
       ...parsed.data,
+      power: basePowerForType(parsed.data.type),
       image: parsed.data.image?.trim() || defaultImageForType(parsed.data.type),
+      ownerTeamId: parsed.data.ownerTeamId ?? null,
       ...identifiers,
     },
   });

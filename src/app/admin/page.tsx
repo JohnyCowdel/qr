@@ -3,10 +3,21 @@ import { AdminLocationsManager } from "@/components/admin-locations-manager";
 import { db } from "@/lib/db";
 
 export default async function AdminPage() {
-  const locations = await db.location.findMany({
-    include: { ownerTeam: true },
-    orderBy: { name: "asc" },
-  });
+  const [locations, teams] = await Promise.all([
+    db.location.findMany({
+      include: { ownerTeam: true },
+      orderBy: { name: "asc" },
+    }),
+    db.team.findMany({
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        colorHex: true,
+      },
+      orderBy: { name: "asc" },
+    }),
+  ]);
 
   return (
     <main className="terrain-grid min-h-screen px-4 py-10">
@@ -21,7 +32,7 @@ export default async function AdminPage() {
           </div>
         </div>
 
-        <AdminLocationsManager initialLocations={locations} />
+        <AdminLocationsManager initialLocations={locations} initialTeams={teams} />
 
         <p className="mt-6 text-xs text-[var(--muted)] text-center">
           Protected admin area. Keep your admin password and session secret private.

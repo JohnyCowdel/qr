@@ -4,26 +4,43 @@ import Link from "next/link";
 import { useCallback, useMemo, useState, useTransition } from "react";
 
 import {
+  basePowerForType,
   defaultImageForType,
   LOCATION_TYPES,
   normalizeLocationType,
   type LocationType,
 } from "@/lib/location-types";
+import {
+  calculateLocationAreasSquareMeters,
+  createRealmBorder,
+  createRealmLocationPolygons,
+  createRealmTileAssignments,
+  smoothRealmLocationPolygons,
+} from "@/lib/realm";
 
 import { AdminLocationsMap } from "./admin-locations-map";
 import { DeleteLocationButton } from "./delete-location-button";
 import { GenerateQRPdfButton } from "./generate-qr-pdf-button";
 
 type TeamRef = {
+  id: number;
   name: string;
   colorHex: string;
 } | null;
+
+type TeamOption = {
+  id: number;
+  slug: string;
+  name: string;
+  colorHex: string;
+};
 
 export type AdminLocationDraft = {
   id: string;
   slug: string | null;
   name: string;
   type: LocationType;
+  power: number;
   area: number;
   image: string;
   summary: string;
@@ -43,6 +60,7 @@ type AdminLocationRecord = Omit<AdminLocationDraft, "id" | "isNew" | "type" | "i
 
 type Props = {
   initialLocations: AdminLocationRecord[];
+  initialTeams: TeamOption[];
 };
 
 function normalizeSortKey(value: string) {
@@ -56,11 +74,12 @@ function safeNumber(value: unknown, fallback: number) {
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
-function buildLocationPayload(draft: AdminLocationDraft) {
+function buildLocationPayload(draft: AdminLocationDraft, computedArea: number) {
   return {
     name: draft.name.trim() || "<new location>",
     type: draft.type,
-    area: Math.max(1, safeNumber(draft.area, 1000)),
+    ownerTeamId: draft.ownerTeam?.id ?? null,
+    area: Math.max(1, Math.round(safeNumber(computedArea, draft.area))),
     image: draft.image.trim() || defaultImageForType(draft.type),
     summary: draft.summary.trim() || "<summary>",
     content: draft.content.trim() || "<content>",
@@ -70,11 +89,18 @@ function buildLocationPayload(draft: AdminLocationDraft) {
   };
 }
 
-export function AdminLocationsManager({ initialLocations }: Props) {
+export function AdminLocationsManager({ initialLocations, initialTeams }: Props) {
   const hydratedLocations = useMemo<AdminLocationDraft[]>(
     () =>
       initialLocations.map((location) => ({
         ...location,
+        ownerTeam: location.ownerTeam
+          ? {
+              id: location.ownerTeam.id,
+              name: location.ownerTeam.name,
+              colorHex: location.ownerTeam.colorHex,
+            }
+          : null,
         name: location.name || "<unnamed>",
         summary: location.summary || "",
         content: location.content || "",
@@ -83,6 +109,7 @@ export function AdminLocationsManager({ initialLocations }: Props) {
         claimRadiusM: Math.max(1, safeNumber(location.claimRadiusM, 50)),
         area: Math.max(1, safeNumber(location.area, 1000)),
         type: normalizeLocationType(location.type),
+        power: Math.max(1, safeNumber(location.power, basePowerForType(normalizeLocationType(location.type)))),
         image: location.image?.trim() || defaultImageForType(normalizeLocationType(location.type)),
         id: location.slug,
         isNew: false,
@@ -100,6 +127,36 @@ export function AdminLocationsManager({ initialLocations }: Props) {
       hydratedLocations.map((location) => [location.id, location]),
     ),
   );
+
+  const effectiveLocations = useMemo(
+    () => locations.map((location) => drafts[location.id] ?? location),
+    [locations, drafts],
+  );
+
+  const computedAreaByLocationId = useMemo(() => {
+    const realmBorder = createRealmBorder(
+      effectiveLocations.map((location) => ({
+        latitude: location.latitude,
+        longitude: location.longitude,
+      })),
+      1.1,
+    );
+
+    const tileAssignments = createRealmTileAssignments(
+      effectiveLocations.map((location) => ({
+        id: location.id,
+        latitude: location.latitude,
+        longitude: location.longitude,
+      })),
+      realmBorder,
+      100,
+    );
+
+    const rawPolygons = createRealmLocationPolygons(tileAssignments, realmBorder);
+    const smoothedPolygons = smoothRealmLocationPolygons(rawPolygons, 2, 0.42);
+
+    return calculateLocationAreasSquareMeters(smoothedPolygons);
+  }, [effectiveLocations]);
 
   const orderedLocations = useMemo(
     () =>
@@ -139,6 +196,7 @@ export function AdminLocationsManager({ initialLocations }: Props) {
       slug: null,
       name: "<new location>",
       type: "camp",
+      power: basePowerForType("camp"),
       area: 1000,
       image: "⛺",
       summary: "<summary>",
@@ -193,7 +251,7 @@ export function AdminLocationsManager({ initialLocations }: Props) {
     setError(null);
 
     startTransition(async () => {
-      const payload = buildLocationPayload(draft);
+      const payload = buildLocationPayload(draft, computedAreaByLocationId[draft.id] ?? draft.area);
       const response = await fetch(draft.isNew ? "/api/admin/locations" : `/api/admin/locations/${draft.slug}`, {
         method: draft.isNew ? "POST" : "PUT",
         headers: { "Content-Type": "application/json" },
@@ -214,6 +272,7 @@ export function AdminLocationsManager({ initialLocations }: Props) {
         slug: string;
         name: string;
         type: LocationType;
+        power: number;
         area: number;
         image: string;
         summary: string;
@@ -228,6 +287,7 @@ export function AdminLocationsManager({ initialLocations }: Props) {
         slug: savedLocation.slug,
         name: savedLocation.name,
         type: savedLocation.type,
+        power: savedLocation.power,
         area: savedLocation.area,
         image: savedLocation.image,
         summary: savedLocation.summary,
@@ -275,7 +335,15 @@ export function AdminLocationsManager({ initialLocations }: Props) {
         </div>
         <div className="h-[24rem] overflow-hidden rounded-xl border border-[var(--line)]">
           <AdminLocationsMap
-            locations={orderedLocations.map((location) => drafts[location.id] ?? location)}
+            locations={orderedLocations.map((location) => {
+              const draft = drafts[location.id] ?? location;
+              const computedArea = computedAreaByLocationId[draft.id];
+
+              return {
+                ...draft,
+                area: Math.max(1, Math.round(safeNumber(computedArea, draft.area))),
+              };
+            })}
             selectedId={selectedId}
             onSelectLocation={handleSelectLocation}
             onMoveSelected={handleMoveSelected}
@@ -315,6 +383,7 @@ export function AdminLocationsManager({ initialLocations }: Props) {
         )}
         {orderedLocations.map((location) => {
           const draft = drafts[location.id] ?? location;
+          const computedArea = Math.max(1, Math.round(safeNumber(computedAreaByLocationId[draft.id], draft.area)));
           const isOpen = selectedId === location.id;
 
           return (
@@ -333,7 +402,7 @@ export function AdminLocationsManager({ initialLocations }: Props) {
                     <p className="truncate font-semibold">{draft.name}</p>
                     <p className="truncate text-xs font-mono text-[var(--muted)]">
                       {draft.slug ?? "<unsaved>"} · {draft.latitude.toFixed(4)}, {draft.longitude.toFixed(4)} · r=
-                      {draft.claimRadiusM}m · area={draft.area} · {draft.type} {draft.image} · {location.ownerTeam ? location.ownerTeam.name : draft.isNew ? "new draft" : "unclaimed"}
+                      {draft.claimRadiusM}m · area={computedArea}m² · power={draft.power} · {draft.type} {draft.image} · {location.ownerTeam ? location.ownerTeam.name : draft.isNew ? "new draft" : "unclaimed"}
                     </p>
                   </div>
                 </button>
@@ -382,6 +451,7 @@ export function AdminLocationsManager({ initialLocations }: Props) {
                           const shouldSwapImage = draft.image === currentDefault;
                           updateDraft(location.id, {
                             type: nextType,
+                            power: basePowerForType(nextType),
                             image: shouldSwapImage ? defaultImageForType(nextType) : draft.image,
                           });
                         }}
@@ -390,6 +460,40 @@ export function AdminLocationsManager({ initialLocations }: Props) {
                         {LOCATION_TYPES.map((typeOption) => (
                           <option key={typeOption} value={typeOption}>
                             {typeOption}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="block">
+                      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                        Owner
+                      </span>
+                      <select
+                        value={draft.ownerTeam?.id ?? ""}
+                        onChange={(event) => {
+                          const selectedValue = event.target.value;
+                          if (!selectedValue) {
+                            updateDraft(location.id, { ownerTeam: null });
+                            return;
+                          }
+
+                          const selectedTeam = initialTeams.find((team) => String(team.id) === selectedValue);
+                          updateDraft(location.id, {
+                            ownerTeam: selectedTeam
+                              ? {
+                                  id: selectedTeam.id,
+                                  name: selectedTeam.name,
+                                  colorHex: selectedTeam.colorHex,
+                                }
+                              : null,
+                          });
+                        }}
+                        className="w-full rounded-lg border border-[var(--line)] bg-white/70 px-3 py-2 text-sm font-mono focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
+                      >
+                        <option value="">Neutral</option>
+                        {initialTeams.map((team) => (
+                          <option key={team.id} value={team.id}>
+                            {team.name}
                           </option>
                         ))}
                       </select>
@@ -436,14 +540,16 @@ export function AdminLocationsManager({ initialLocations }: Props) {
                       value={String(draft.claimRadiusM)}
                       onChange={(value) => updateDraft(location.id, { claimRadiusM: Math.max(1, Number(value) || 1) })}
                     />
-                    <EditorField
+                    <ReadonlyField
+                      label="Power"
+                      value={String(draft.power)}
+                    />
+                    <ReadonlyField
                       label="Area"
-                      type="number"
-                      value={String(draft.area)}
-                      onChange={(value) => updateDraft(location.id, { area: Math.max(1, Number(value) || 1) })}
+                      value={`${computedArea} m²`}
                     />
                     <p className="text-xs text-[var(--muted)]">
-                      Click the map above to move this location. New rows start at the current map focus and keep placeholder text until you replace it.
+                      Area is computed automatically from territory polygons. Click the map above to move this location. New rows start at the current map focus and keep placeholder text until you replace it.
                     </p>
                     <div className="flex gap-3">
                       <button
@@ -518,5 +624,18 @@ function EditorField({
         />
       )}
     </label>
+  );
+}
+
+function ReadonlyField({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+        {label}
+      </span>
+      <div className="w-full rounded-lg border border-[var(--line)] bg-white/40 px-3 py-2 text-sm font-mono text-[var(--ink)]">
+        {value}
+      </div>
+    </div>
   );
 }

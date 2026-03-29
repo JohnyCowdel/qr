@@ -6,6 +6,11 @@ import { TerritoryMap } from "@/components/territory-map";
 import { formatMeters } from "@/lib/geo";
 import { getLocationPageData } from "@/lib/game";
 
+function formatAreaKm2(areaM2: number) {
+  const km2 = areaM2 / 1_000_000;
+  return `${km2.toFixed(km2 >= 1 ? 2 : 3)}`;
+}
+
 function formatDate(date: string) {
   return new Intl.DateTimeFormat("en", {
     dateStyle: "medium",
@@ -21,7 +26,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
     notFound();
   }
 
-  const { location, teams } = data;
+  const { location, mapLocations, teams } = data;
 
   return (
     <main className="terrain-grid min-h-screen px-4 py-6 sm:px-6 lg:px-8">
@@ -47,15 +52,8 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                 </p>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-[22px] border border-[var(--line)] bg-white/70 p-4">
-                  <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
-                    Claim radius
-                  </div>
-                  <div className="mt-2 text-3xl font-semibold">
-                    {formatMeters(location.claimRadiusM)}
-                  </div>
-                </div>
+              <div className="grid gap-3 sm:grid-cols-4">
+                
                 <div className="rounded-[22px] border border-[var(--line)] bg-white/70 p-4">
                   <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
                     Location type
@@ -66,10 +64,18 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                 </div>
                 <div className="rounded-[22px] border border-[var(--line)] bg-white/70 p-4">
                   <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
-                    Area
+                    👨‍🌾 Lidé
                   </div>
                   <div className="mt-2 text-base font-medium">
-                    {formatMeters(location.area)}
+                    {formatAreaKm2(location.area)}
+                  </div>
+                </div>
+                <div className="rounded-[22px] border border-[var(--line)] bg-white/70 p-4">
+                  <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
+                    🛡️ Obrana
+                  </div>
+                  <div className="mt-2 text-base font-medium">
+                    {location.power}
                   </div>
                 </div>
               </div>
@@ -99,42 +105,14 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
             </div>
 
             <div className="space-y-4">
-              <div className="overflow-hidden rounded-[28px] border border-[var(--line)] bg-white/75 p-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold tracking-[-0.03em]">Printable QR</h2>
-                  <span className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
-                    Scan to open
-                  </span>
-                </div>
-                <div className="mt-4 flex items-center justify-center rounded-[24px] bg-white p-4">
-                  <Image
-                    src={`/qr/${location.slug}`}
-                    alt={`QR code for ${location.name}`}
-                    width={224}
-                    height={224}
-                    unoptimized
-                    className="h-56 w-56"
-                  />
-                </div>
-              </div>
+              
 
               <div className="h-[260px] overflow-hidden rounded-[28px] border border-[var(--line)]">
                 <TerritoryMap
-                  locations={[
-                    {
-                      id: location.id,
-                      slug: location.slug,
-                      name: location.name,
-                      type: location.type,
-                      area: location.area,
-                      image: location.image,
-                      summary: location.summary,
-                      latitude: location.latitude,
-                      longitude: location.longitude,
-                      claimRadiusM: location.claimRadiusM,
-                      ownerTeam: location.ownerTeam,
-                    },
-                  ]}
+                  locations={mapLocations}
+                  center={[location.latitude, location.longitude]}
+                  initialZoom={16}
+                  autoFitBounds={false}
                 />
               </div>
             </div>
