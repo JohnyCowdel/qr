@@ -1,12 +1,11 @@
 import { z } from "zod";
 
+import { readUserIdFromCookieHeader } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { calculateDistanceMeters } from "@/lib/geo";
 
 const claimSchema = z.object({
   locationId: z.number().int().positive(),
-  handle: z.string().trim().min(2).max(32),
-  teamId: z.number().int().positive(),
   message: z.string().trim().max(240).optional().or(z.literal("")),
   latitude: z.number(),
   longitude: z.number(),
@@ -14,6 +13,14 @@ const claimSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const userId = readUserIdFromCookieHeader(request.headers.get("cookie"));
+  if (!userId) {
+    return Response.json(
+      { ok: false, message: "Sign in is required before claiming a location." },
+      { status: 401 },
+    );
+  }
+
   const payload = claimSchema.safeParse(await request.json());
 
   if (!payload.success) {
@@ -23,7 +30,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { locationId, handle, teamId, message, latitude, longitude, accuracyM } = payload.data;
+  const { locationId, message, latitude, longitude, accuracyM } = payload.data;
 
   const location = await db.location.findUnique({
     where: { id: locationId },
@@ -61,24 +68,16 @@ export async function POST(request: Request) {
     );
   }
 
-  const team = await db.team.findUnique({
-    where: { id: teamId },
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    include: { team: true },
   });
 
-  if (!team) {
-    return Response.json({ ok: false, message: "Team not found." }, { status: 404 });
+  if (!user) {
+    return Response.json({ ok: false, message: "User account not found." }, { status: 404 });
   }
 
-  const user = await db.user.upsert({
-    where: { handle },
-    create: {
-      handle,
-      teamId,
-    },
-    update: {
-      teamId,
-    },
-  });
+  const teamId = user.teamId;
 
   const claim = await db.$transaction(async (tx) => {
     const createdClaim = await tx.claim.create({
@@ -112,7 +111,7 @@ export async function POST(request: Request) {
 
   return Response.json({
     ok: true,
-    message: `${claim.user.handle} claimed ${claim.location.name} for ${claim.team.name}.`,
+    message: `${user.handle} claimed ${claim.location.name} for ${claim.team.name}.`,
     distanceM,
   });
 }

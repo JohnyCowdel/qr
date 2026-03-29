@@ -1,4 +1,8 @@
+import Link from "next/link";
+import { cookies } from "next/headers";
 import { TerritoryMap } from "@/components/territory-map";
+import { USER_COOKIE_NAME, verifyUserSessionToken } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { getHomePageData } from "@/lib/game";
 
 function formatDate(date: string) {
@@ -9,11 +13,63 @@ function formatDate(date: string) {
 }
 
 export default async function Home() {
-  const { locations, recentClaims, teamSummary } = await getHomePageData();
+  const { locations, recentClaims, teamSummary, totalTeamPower, totalPlayerPower } = await getHomePageData();
+
+  const cookieStore = await cookies();
+  const token = cookieStore.get(USER_COOKIE_NAME)?.value;
+  const userId = token ? verifyUserSessionToken(token) : null;
+  const currentUser = userId
+    ? await db.user.findUnique({
+        where: { id: userId },
+        include: { team: true },
+      })
+    : null;
 
   return (
     <main className="terrain-grid min-h-screen px-4 py-6 text-foreground sm:px-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+        {currentUser ? (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <form action="/api/auth/logout" method="post">
+              <button
+                type="submit"
+                className="rounded-full border border-[var(--line)] bg-white/70 px-4 py-2 text-sm font-semibold hover:bg-white"
+              >
+                Sign out
+              </button>
+            </form>
+
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Link
+                href="/me"
+                className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]"
+              >
+                {currentUser.handle}
+              </Link>
+              <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 text-sm">
+                Player power: 💪 {currentUser.power}
+              </span>
+              <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 text-sm">
+                Team: <span style={{ color: currentUser.team.colorHex }}>{currentUser.team.name}</span>
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <Link
+              href="/auth/login"
+              className="rounded-full border border-[var(--line)] bg-white/70 px-4 py-2 text-sm font-semibold hover:bg-white"
+            >
+              Sign in
+            </Link>
+            <Link
+              href="/auth/register"
+              className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]"
+            >
+              Create account
+            </Link>
+          </div>
+        )}
 
         <section className="glass-panel overflow-hidden rounded-[32px] border border-[var(--line)] p-5 sm:p-6">
           <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
@@ -32,15 +88,15 @@ export default async function Home() {
                 </div>
                 <div className="rounded-[22px] border border-[var(--line)] bg-[var(--panel-strong)] p-3">
                   <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
-                    Získaná území
+                    Síla týmů
                   </div>
-                  <div className="mt-2 text-3xl font-semibold">{recentClaims.length}</div>
+                  <div className="mt-2 text-3xl font-semibold">💪 {totalTeamPower}</div>
                 </div>
                 <div className="rounded-[22px] border border-[var(--line)] bg-[var(--panel-strong)] p-3">
                   <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
-                    Týmy v akci
+                    Síla hráčů
                   </div>
-                  <div className="mt-2 text-3xl font-semibold">{teamSummary.length}</div>
+                  <div className="mt-2 text-3xl font-semibold">💪 {totalPlayerPower}</div>
                 </div>
               </div>
             </div>
@@ -72,7 +128,7 @@ export default async function Home() {
                       <span className="font-medium">{team.name}</span>
                     </div>
                     <span className="font-mono text-sm text-[var(--muted)]">
-                      {team.claimedCount} claimed
+                      {team.claimedCount} claimed · team 💪 {team.power} · players 💪 {team.playerPower}
                     </span>
                   </div>
                 ))}

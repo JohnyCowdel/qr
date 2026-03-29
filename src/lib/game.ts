@@ -56,6 +56,7 @@ export async function getHomePageData() {
     db.team.findMany({
       include: {
         ownedLocations: true,
+        users: true,
       },
       orderBy: {
         name: "asc",
@@ -79,8 +80,12 @@ export async function getHomePageData() {
       slug: team.slug,
       name: team.name,
       colorHex: team.colorHex,
+      power: team.power,
+      playerPower: team.users.reduce((sum, user) => sum + user.power, 0),
       claimedCount: team.ownedLocations.length,
     })),
+    totalTeamPower: teams.reduce((sum, team) => sum + team.power, 0),
+    totalPlayerPower: teams.reduce((sum, team) => sum + team.users.reduce((s, user) => s + user.power, 0), 0),
   };
 }
 
@@ -116,12 +121,6 @@ export async function getLocationPageData(slug: string) {
     return null;
   }
 
-  const teams = await db.team.findMany({
-    orderBy: {
-      name: "asc",
-    },
-  });
-
   const computedAreas = computeLocationAreas(allLocations);
   const computedArea = Math.max(1, Math.round(computedAreas[String(location.id)] ?? location.area));
   const mapLocations = allLocations.map((mapLocation) => ({
@@ -129,7 +128,7 @@ export async function getLocationPageData(slug: string) {
     slug: mapLocation.slug,
     name: mapLocation.name,
     type: mapLocation.type,
-    power: mapLocation.power,
+    armor: mapLocation.armor,
     area: Math.max(1, Math.round(computedAreas[String(mapLocation.id)] ?? mapLocation.area)),
     image: mapLocation.image,
     summary: mapLocation.summary,
@@ -150,6 +149,5 @@ export async function getLocationPageData(slug: string) {
       })),
     },
     mapLocations,
-    teams,
   };
 }

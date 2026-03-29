@@ -13,7 +13,7 @@ export type MapLocation = {
   slug: string;
   name: string;
   type?: string;
-  power?: number;
+  armor?: number;
   area?: number;
   image?: string;
   summary: string;

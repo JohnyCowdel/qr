@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { db } from "@/lib/db";
-import { basePowerForType, LOCATION_TYPES } from "@/lib/location-types";
+import { baseArmorForType, LOCATION_TYPES } from "@/lib/location-types";
 
 const updateSchema = z.object({
   name: z.string().trim().min(1).optional(),
@@ -41,7 +41,7 @@ export async function PUT(
 
   const updateData = {
     ...parsed.data,
-    ...(parsed.data.type ? { power: basePowerForType(parsed.data.type) } : {}),
+    ...(parsed.data.type ? { armor: baseArmorForType(parsed.data.type) } : {}),
   };
 
   try {

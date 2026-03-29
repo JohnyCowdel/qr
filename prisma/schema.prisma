@@ -17,6 +17,7 @@ model Team {
   slug           String     @unique
   name           String
   colorHex       String
+  power          Int        @default(10)
   createdAt      DateTime   @default(now())
   users          User[]
   claims         Claim[]
@@ -26,6 +27,13 @@ model Team {
 model User {
   id        Int      @id @default(autoincrement())
   handle    String   @unique
+  firstName String?
+  lastName  String?
+  email     String?  @unique
+  age       Int?
+  isApproved Boolean @default(false)
+  passwordHash String?
+  power     Int      @default(5)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   teamId    Int
@@ -39,7 +47,7 @@ model Location {
   qrCode           String    @unique
   name             String
   type             String    @default("camp")
-  power            Int       @default(8)
+  armor            Int       @default(8)
   area             Int       @default(1000)
   image            String    @default("⛺")
   summary          String

@@ -14,7 +14,7 @@ import {
   findRealmLocationPolygonAtPoint,
   smoothRealmLocationPolygons,
 } from "@/lib/realm";
-import { basePowerForType, normalizeLocationType } from "@/lib/location-types";
+import { baseArmorForType, normalizeLocationType } from "@/lib/location-types";
 
 type TeamRef = {
   id?: number;
@@ -27,7 +27,7 @@ export type UnifiedMapLocation = {
   slug?: string | null;
   name: string;
   type?: string;
-  power?: number;
+  armor?: number;
   area?: number;
   image?: string;
   summary: string;
@@ -220,11 +220,11 @@ function AutoFitBounds({
 
 function buildLocationPopupContent({
   location,
-  power,
+  armor,
   area,
 }: {
   location: UnifiedMapLocation;
-  power: number;
+  armor: number;
   area: number;
 }) {
   const image = typeof location.image === "string" && location.image.trim() ? location.image : "⛺";
@@ -234,7 +234,7 @@ function buildLocationPopupContent({
       <div className="font-semibold">{image} {location.name}</div>
       <div>{location.summary}</div>
       <div className="font-mono text-xs text-[#5a6259]">
-        🛡️{power} · 👨‍🌾{formatAreaKm2(area)}
+        🛡️{armor} · 👨‍🌾{formatAreaKm2(area)}
       </div>
       <div>
         👑: {location.ownerTeam ? location.ownerTeam.name : "Neutral"}
@@ -376,6 +376,7 @@ export default function TerritoryMapInner({
     <MapContainer
       center={effectiveCenter}
       zoom={defaultZoom}
+      maxZoom={19}
       scrollWheelZoom
       className="h-full w-full"
       style={{ height: "100%", width: "100%", minHeight: "240px" }}
@@ -385,6 +386,8 @@ export default function TerritoryMapInner({
         attribution={tileUrl === PRIMARY_TILE_URL ? PRIMARY_TILE_ATTRIBUTION : FALLBACK_TILE_ATTRIBUTION}
         url={tileUrl}
         subdomains={tileUrl === PRIMARY_TILE_URL ? "abc" : "abcd"}
+        maxZoom={19}
+        maxNativeZoom={19}
         eventHandlers={{
           load: () => setTileLoadSucceeded(true),
           tileerror: () => setTileErrorCount((count) => count + 1),
@@ -457,9 +460,9 @@ export default function TerritoryMapInner({
         const icon = buildEmojiIconForZoom(location.image, zoom, isSelected);
         const area = computedAreaByLocationId[locationId] ?? (Number.isFinite(location.area) ? location.area : 1_000_000);
         const type = location.type || "camp";
-        const power = typeof location.power === "number" && Number.isFinite(location.power)
-          ? Math.max(1, location.power)
-          : basePowerForType(normalizeLocationType(type));
+        const armor = typeof location.armor === "number" && Number.isFinite(location.armor)
+          ? Math.max(1, location.armor)
+          : baseArmorForType(normalizeLocationType(type));
         const latitude = Number.isFinite(location.latitude) ? location.latitude : 49.7332;
         const longitude = Number.isFinite(location.longitude) ? location.longitude : 15.768;
         const claimRadiusM = Number.isFinite(location.claimRadiusM)
@@ -467,7 +470,7 @@ export default function TerritoryMapInner({
           : 50;
         const popupContent = buildLocationPopupContent({
           location,
-          power,
+          armor,
           area,
         });
 

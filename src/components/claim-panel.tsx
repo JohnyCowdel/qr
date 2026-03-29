@@ -1,13 +1,8 @@
 "use client";
 
+import Link from "next/link";
+import { useEffect } from "react";
 import { useState, useTransition } from "react";
-
-type Team = {
-  id: number;
-  slug: string;
-  name: string;
-  colorHex: string;
-};
 
 type ClaimPanelProps = {
   location: {
@@ -17,7 +12,6 @@ type ClaimPanelProps = {
     latitude: number;
     longitude: number;
   };
-  teams: Team[];
 };
 
 type ClaimResult = {
@@ -26,14 +20,83 @@ type ClaimResult = {
   distanceM?: number;
 };
 
-export function ClaimPanel({ location, teams }: ClaimPanelProps) {
-  const [handle, setHandle] = useState("User1234");
-  const [teamId, setTeamId] = useState<number>(teams[0]?.id ?? 0);
+type AuthState = {
+  loading: boolean;
+  authenticated: boolean;
+  handle: string | null;
+  teamName: string | null;
+};
+
+export function ClaimPanel({ location }: ClaimPanelProps) {
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<string>("Ready to verify position.");
+  const [auth, setAuth] = useState<AuthState>({
+    loading: true,
+    authenticated: false,
+    handle: null,
+    teamName: null,
+  });
   const [isPending, startTransition] = useTransition();
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadAuth() {
+      try {
+        const res = await fetch("/api/auth/me", { cache: "no-store" });
+        const data = (await res.json()) as {
+          authenticated: boolean;
+          user?: { handle: string; team: { name: string } };
+        };
+
+        if (cancelled) {
+          return;
+        }
+
+        if (data.authenticated && data.user) {
+          setAuth({
+            loading: false,
+            authenticated: true,
+            handle: data.user.handle,
+            teamName: data.user.team.name,
+          });
+          setStatus("Signed in. Ready to verify position.");
+          return;
+        }
+
+        setAuth({
+          loading: false,
+          authenticated: false,
+          handle: null,
+          teamName: null,
+        });
+        setStatus("Sign in to claim this location.");
+      } catch {
+        if (!cancelled) {
+          setAuth({
+            loading: false,
+            authenticated: false,
+            handle: null,
+            teamName: null,
+          });
+          setStatus("Could not verify your session. Try again.");
+        }
+      }
+    }
+
+    loadAuth();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   async function submitClaim() {
+    if (!auth.authenticated) {
+      setStatus("Sign in to claim this location.");
+      return;
+    }
+
     if (!navigator.geolocation) {
       setStatus("This browser does not expose GPS coordinates.");
       return;
@@ -52,8 +115,6 @@ export function ClaimPanel({ location, teams }: ClaimPanelProps) {
               },
               body: JSON.stringify({
                 locationId: location.id,
-                handle,
-                teamId,
                 message,
                 latitude: position.coords.latitude,
                 longitude: position.coords.longitude,
@@ -105,30 +166,20 @@ export function ClaimPanel({ location, teams }: ClaimPanelProps) {
       </div>
 
       <div className="mt-4 space-y-4">
-        <label className="block">
-          <span className="mb-2 block text-sm font-medium">Player handle</span>
-          <input
-            value={handle}
-            onChange={(event) => setHandle(event.target.value)}
-            className="w-full rounded-2xl border border-[var(--line)] bg-white/80 px-4 py-3 outline-none transition focus:border-[var(--accent)]"
-            placeholder="User1234"
-          />
-        </label>
-
-        <label className="block">
-          <span className="mb-2 block text-sm font-medium">Team</span>
-          <select
-            value={teamId}
-            onChange={(event) => setTeamId(Number(event.target.value))}
-            className="w-full rounded-2xl border border-[var(--line)] bg-white/80 px-4 py-3 outline-none transition focus:border-[var(--accent)]"
-          >
-            {teams.map((team) => (
-              <option key={team.id} value={team.id}>
-                {team.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="rounded-2xl border border-[var(--line)] bg-white/70 px-4 py-3 text-sm">
+          {auth.loading ? (
+            <p className="text-[var(--muted)]">Checking active session...</p>
+          ) : auth.authenticated ? (
+            <p>
+              Signed in as <span className="font-semibold">{auth.handle}</span> ({auth.teamName}).
+            </p>
+          ) : (
+            <p className="text-[var(--muted)]">
+              Not signed in. <Link href="/auth/login" className="font-semibold text-[var(--accent-strong)]">Sign in</Link> or{" "}
+              <Link href="/auth/register" className="font-semibold text-[var(--accent-strong)]">create an account</Link>.
+            </p>
+          )}
+        </div>
 
         <label className="block">
           <span className="mb-2 block text-sm font-medium">Claim message</span>
@@ -143,7 +194,7 @@ export function ClaimPanel({ location, teams }: ClaimPanelProps) {
         <button
           type="button"
           onClick={submitClaim}
-          disabled={isPending || !handle.trim() || !teamId}
+          disabled={isPending || auth.loading || !auth.authenticated}
           className="w-full rounded-full bg-[var(--accent)] px-5 py-3 font-medium text-white transition hover:bg-[var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isPending ? "Verifying position..." : "Share GPS and claim"}

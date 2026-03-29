@@ -1,7 +1,10 @@
-import Image from "next/image";
+import Link from "next/link";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
 import { ClaimPanel } from "@/components/claim-panel";
+import { USER_COOKIE_NAME, verifyUserSessionToken } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { TerritoryMap } from "@/components/territory-map";
 import { formatMeters } from "@/lib/geo";
 import { getLocationPageData } from "@/lib/game";
@@ -21,16 +24,68 @@ function formatDate(date: string) {
 export default async function LocationPage(props: PageProps<"/l/[slug]">) {
   const { slug } = await props.params;
   const data = await getLocationPageData(slug);
+  const cookieStore = await cookies();
+  const token = cookieStore.get(USER_COOKIE_NAME)?.value;
+  const userId = token ? verifyUserSessionToken(token) : null;
+  const currentUser = userId
+    ? await db.user.findUnique({
+        where: { id: userId },
+        include: { team: true },
+      })
+    : null;
 
   if (!data) {
     notFound();
   }
 
-  const { location, mapLocations, teams } = data;
+  const { location, mapLocations } = data;
 
   return (
     <main className="terrain-grid min-h-screen px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+        {currentUser ? (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <form action="/api/auth/logout" method="post">
+              <button
+                type="submit"
+                className="rounded-full border border-[var(--line)] bg-white/70 px-4 py-2 text-sm font-semibold hover:bg-white"
+              >
+                Sign out
+              </button>
+            </form>
+
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Link
+                href="/me"
+                className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]"
+              >
+                {currentUser.handle}
+              </Link>
+              <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 text-sm">
+                Player power: 💪 {currentUser.power}
+              </span>
+              <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 text-sm">
+                Team: <span style={{ color: currentUser.team.colorHex }}>{currentUser.team.name}</span>
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <Link
+              href="/auth/login"
+              className="rounded-full border border-[var(--line)] bg-white/70 px-4 py-2 text-sm font-semibold hover:bg-white"
+            >
+              Sign in
+            </Link>
+            <Link
+              href="/auth/register"
+              className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]"
+            >
+              Create account
+            </Link>
+          </div>
+        )}
+
         <section className="glass-panel rounded-[32px] border border-[var(--line)] p-6 sm:p-8">
           <div className="grid gap-8 lg:grid-cols-[1fr_0.9fr]">
             <div className="space-y-5">
@@ -75,7 +130,15 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                     🛡️ Obrana
                   </div>
                   <div className="mt-2 text-base font-medium">
-                    {location.power}
+                    {location.armor}
+                  </div>
+                </div>
+                <div className="rounded-[22px] border border-[var(--line)] bg-white/70 p-4">
+                  <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
+                    👑 Vlastní
+                  </div>
+                  <div className="mt-2 text-base font-medium">
+                    {location.ownerTeam ? location.ownerTeam.name : "Neutral"}
                   </div>
                 </div>
               </div>
@@ -128,7 +191,6 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
               longitude: location.longitude,
               claimRadiusM: location.claimRadiusM,
             }}
-            teams={teams}
           />
 
           <section className="glass-panel rounded-[28px] border border-[var(--line)] p-5">

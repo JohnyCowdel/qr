@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useMemo, useState, useTransition } from "react";
 
 import {
-  basePowerForType,
+  baseArmorForType,
   defaultImageForType,
   LOCATION_TYPES,
   normalizeLocationType,
@@ -40,7 +40,7 @@ export type AdminLocationDraft = {
   slug: string | null;
   name: string;
   type: LocationType;
-  power: number;
+  armor: number;
   area: number;
   image: string;
   summary: string;
@@ -109,7 +109,7 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
         claimRadiusM: Math.max(1, safeNumber(location.claimRadiusM, 50)),
         area: Math.max(1, safeNumber(location.area, 1000)),
         type: normalizeLocationType(location.type),
-        power: Math.max(1, safeNumber(location.power, basePowerForType(normalizeLocationType(location.type)))),
+        armor: Math.max(1, safeNumber((location as { armor?: number }).armor, baseArmorForType(normalizeLocationType(location.type)))),
         image: location.image?.trim() || defaultImageForType(normalizeLocationType(location.type)),
         id: location.slug,
         isNew: false,
@@ -196,7 +196,7 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
       slug: null,
       name: "<new location>",
       type: "camp",
-      power: basePowerForType("camp"),
+      armor: baseArmorForType("camp"),
       area: 1000,
       image: "⛺",
       summary: "<summary>",
@@ -272,7 +272,7 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
         slug: string;
         name: string;
         type: LocationType;
-        power: number;
+        armor: number;
         area: number;
         image: string;
         summary: string;
@@ -287,7 +287,7 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
         slug: savedLocation.slug,
         name: savedLocation.name,
         type: savedLocation.type,
-        power: savedLocation.power,
+        armor: savedLocation.armor,
         area: savedLocation.area,
         image: savedLocation.image,
         summary: savedLocation.summary,
@@ -402,7 +402,7 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
                     <p className="truncate font-semibold">{draft.name}</p>
                     <p className="truncate text-xs font-mono text-[var(--muted)]">
                       {draft.slug ?? "<unsaved>"} · {draft.latitude.toFixed(4)}, {draft.longitude.toFixed(4)} · r=
-                      {draft.claimRadiusM}m · area={computedArea}m² · power={draft.power} · {draft.type} {draft.image} · {location.ownerTeam ? location.ownerTeam.name : draft.isNew ? "new draft" : "unclaimed"}
+                      {draft.claimRadiusM}m · area={computedArea}m² · armor={draft.armor} · {draft.type} {draft.image} · {location.ownerTeam ? location.ownerTeam.name : draft.isNew ? "new draft" : "unclaimed"}
                     </p>
                   </div>
                 </button>
@@ -451,7 +451,7 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
                           const shouldSwapImage = draft.image === currentDefault;
                           updateDraft(location.id, {
                             type: nextType,
-                            power: basePowerForType(nextType),
+                            armor: baseArmorForType(nextType),
                             image: shouldSwapImage ? defaultImageForType(nextType) : draft.image,
                           });
                         }}
@@ -541,8 +541,8 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
                       onChange={(value) => updateDraft(location.id, { claimRadiusM: Math.max(1, Number(value) || 1) })}
                     />
                     <ReadonlyField
-                      label="Power"
-                      value={String(draft.power)}
+                      label="Armor"
+                      value={String(draft.armor)}
                     />
                     <ReadonlyField
                       label="Area"

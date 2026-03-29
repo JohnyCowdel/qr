@@ -1,0 +1,7 @@
+ALTER TABLE "User" ADD COLUMN "firstName" TEXT;
+ALTER TABLE "User" ADD COLUMN "lastName" TEXT;
+ALTER TABLE "User" ADD COLUMN "email" TEXT;
+ALTER TABLE "User" ADD COLUMN "age" INTEGER;
+ALTER TABLE "User" ADD COLUMN "isApproved" BOOLEAN NOT NULL DEFAULT false;
+
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
