@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { TerritoryMap } from "@/components/territory-map";
+import { ClaimEventCard } from "@/components/claim-event-card";
 import { USER_COOKIE_NAME, verifyUserSessionToken } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getHomePageData } from "@/lib/game";
@@ -161,22 +162,17 @@ export default async function Home() {
           </div>
           <div className="mt-4 space-y-3">
             {recentClaims.map((claim) => (
-              <div
+              <ClaimEventCard
                 key={claim.id}
-                className="rounded-[24px] border border-[var(--line)] bg-white/70 p-4"
-              >
-                <p className="text-sm leading-6">
-                  <span className="font-medium">{claim.user.handle}</span>{" "}
-                  claimed <span className="font-medium">{claim.location.name}</span>{" "}
-                  for <span className="font-medium">{claim.team.name}</span> on{" "}
-                  {formatDate(claim.createdAt)}.
-                </p>
-                {claim.message ? (
-                  <p className="mt-2 rounded-2xl bg-[rgba(213,108,50,0.08)] px-3 py-2 text-sm leading-6 text-[var(--accent-strong)]">
-                    “{claim.message}”
-                  </p>
-                ) : null}
-              </div>
+                user={claim.user}
+                message={claim.message}
+                summary={(
+                  <>
+                    claimed <span className="font-medium">{claim.location.name}</span>{" "}
+                    for <span className="font-medium">{claim.team.name}</span> on {formatDate(claim.createdAt)}.
+                  </>
+                )}
+              />
             ))}
           </div>
         </section>

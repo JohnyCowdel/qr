@@ -46,7 +46,16 @@ export async function getHomePageData() {
       include: {
         location: true,
         team: true,
-        user: true,
+        user: {
+          select: {
+            id: true,
+            handle: true,
+            avatarType: true,
+            avatarSprite: true,
+            avatarSeed: true,
+            avatarPhotoDataUrl: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
@@ -98,7 +107,16 @@ export async function getLocationPageData(slug: string) {
         claims: {
           include: {
             team: true,
-            user: true,
+            user: {
+              select: {
+                id: true,
+                handle: true,
+                avatarType: true,
+                avatarSprite: true,
+                avatarSeed: true,
+                avatarPhotoDataUrl: true,
+              },
+            },
           },
           orderBy: {
             createdAt: "desc",

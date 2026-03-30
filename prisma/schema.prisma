@@ -32,6 +32,10 @@ model User {
   email     String?  @unique
   age       Int?
   isApproved Boolean @default(false)
+  avatarType String  @default("sprite")
+  avatarSprite String @default("adventurer")
+  avatarSeed String?
+  avatarPhotoDataUrl String?
   passwordHash String?
   power     Int      @default(5)
   createdAt DateTime @default(now())

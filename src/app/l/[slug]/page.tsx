@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
 import { ClaimPanel } from "@/components/claim-panel";
+import { ClaimEventCard } from "@/components/claim-event-card";
 import { USER_COOKIE_NAME, verifyUserSessionToken } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { TerritoryMap } from "@/components/territory-map";
@@ -209,21 +210,18 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
             <div className="mt-4 space-y-3">
               {location.claims.length ? (
                 location.claims.map((claim) => (
-                  <div
+                  <ClaimEventCard
                     key={claim.id}
-                    className="rounded-[24px] border border-[var(--line)] bg-white/70 p-4"
-                  >
-                    <p className="text-sm leading-6">
-                      <span className="font-medium">{claim.user.handle}</span>{" "}
-                      claimed this position for <span className="font-medium">{claim.team.name}</span>{" "}
-                      on {formatDate(claim.createdAt)} at {formatMeters(claim.distanceM)}.
-                    </p>
-                    {claim.message ? (
-                      <p className="mt-2 rounded-2xl bg-[rgba(47,125,93,0.08)] px-3 py-2 text-sm leading-6 text-[#255943]">
-                        “{claim.message}”
-                      </p>
-                    ) : null}
-                  </div>
+                    user={claim.user}
+                    message={claim.message}
+                    messageClassName="bg-[rgba(47,125,93,0.08)] text-[#255943]"
+                    summary={(
+                      <>
+                        claimed this position for <span className="font-medium">{claim.team.name}</span>{" "}
+                        on {formatDate(claim.createdAt)} at {formatMeters(claim.distanceM)}.
+                      </>
+                    )}
+                  />
                 ))
               ) : (
                 <div className="rounded-[24px] border border-dashed border-[var(--line)] bg-white/55 p-4 text-sm text-[var(--muted)]">

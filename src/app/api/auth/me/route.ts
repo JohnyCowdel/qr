@@ -27,6 +27,10 @@ export async function GET(request: Request) {
       lastName: user.lastName,
       email: user.email,
       age: user.age,
+      avatarType: user.avatarType,
+      avatarSprite: user.avatarSprite,
+      avatarSeed: user.avatarSeed,
+      avatarPhotoDataUrl: user.avatarPhotoDataUrl,
       power: user.power,
       team: {
         id: user.team.id,
