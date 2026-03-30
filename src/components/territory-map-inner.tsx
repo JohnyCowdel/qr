@@ -14,6 +14,7 @@ import {
   findRealmLocationPolygonAtPoint,
   smoothRealmLocationPolygons,
 } from "@/lib/realm";
+import { deriveLocationPopulation } from "@/lib/location-population";
 import { baseArmorForType, normalizeLocationType } from "@/lib/location-types";
 
 type TeamRef = {
@@ -29,6 +30,9 @@ export type UnifiedMapLocation = {
   type?: string;
   armor?: number;
   area?: number;
+  minPopulation?: number;
+  maxPopulation?: number;
+  currentPopulation?: number;
   image?: string;
   summary: string;
   latitude: number;
@@ -54,9 +58,8 @@ const FALLBACK_TILE_URL = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{
 const PRIMARY_TILE_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 const FALLBACK_TILE_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
-function formatAreaKm2(areaM2: number) {
-  const km2 = areaM2 / 1_000_000;
-  return `${km2.toFixed(km2 >= 1 ? 2 : 3)}`;
+function formatPopulation(population: number) {
+  return new Intl.NumberFormat("en").format(population);
 }
 
 function withOpacity(hexColor: string, opacity: string) {
@@ -221,20 +224,21 @@ function AutoFitBounds({
 function buildLocationPopupContent({
   location,
   armor,
-  area,
+  currentPopulation,
 }: {
   location: UnifiedMapLocation;
   armor: number;
-  area: number;
+  currentPopulation: number;
 }) {
   const image = typeof location.image === "string" && location.image.trim() ? location.image : "⛺";
+  const type = location.type || "camp";
 
   return (
     <div className="space-y-2 text-sm text-[#223027]">
       <div className="font-semibold">{image} {location.name}</div>
       <div>{location.summary}</div>
       <div className="font-mono text-xs text-[#5a6259]">
-        🛡️{armor} · 👨‍🌾{formatAreaKm2(area)}
+        {type} · 🛡️{armor} · 👨‍🌾{formatPopulation(currentPopulation)}
       </div>
       <div>
         👑: {location.ownerTeam ? location.ownerTeam.name : "Neutral"}
@@ -468,10 +472,11 @@ export default function TerritoryMapInner({
         const claimRadiusM = Number.isFinite(location.claimRadiusM)
           ? Math.max(1, location.claimRadiusM)
           : 50;
+        const population = deriveLocationPopulation(area, location.currentPopulation);
         const popupContent = buildLocationPopupContent({
           location,
           armor,
-          area,
+          currentPopulation: population.currentPopulation,
         });
 
         return (

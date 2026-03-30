@@ -52,12 +52,13 @@ export default function AdminSettingsPage() {
 
   return (
     <main className="terrain-grid min-h-screen px-4 py-10">
-      <div className="max-w-lg mx-auto">
+      <div className="max-w-2xl mx-auto">
         <AdminNav />
 
-        <h1 className="text-2xl font-bold mb-6">Change password</h1>
+        <h1 className="text-2xl font-bold mb-6">Settings</h1>
 
         <div className="glass-panel rounded-xl p-6">
+          <h2 className="text-lg font-semibold mb-4">Change password</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <PasswordField
               label="Current password"

@@ -8,7 +8,8 @@ const updateUserSchema = z.object({
   lastName: z.string().trim().min(1).max(80),
   email: z.string().trim().email().max(254),
   age: z.coerce.number().int().min(6).max(120),
-  power: z.coerce.number().int().min(0).max(100000),
+  power: z.coerce.number().min(0).max(100000),
+  money: z.coerce.number().min(0).max(1000000),
   teamId: z.coerce.number().int().positive(),
   isApproved: z.boolean(),
 });
@@ -24,7 +25,7 @@ async function updateUser(userId: number, payload: unknown) {
     return { ok: false as const, status: 404, body: { error: "User not found." } };
   }
 
-  const { handle, firstName, lastName, email, age, power, teamId, isApproved } = parsed.data;
+  const { handle, firstName, lastName, email, age, power, money, teamId, isApproved } = parsed.data;
 
   const [otherHandleUser, otherEmailUser, team] = await Promise.all([
     db.user.findFirst({ where: { handle, id: { not: userId } }, select: { id: true } }),
@@ -53,6 +54,7 @@ async function updateUser(userId: number, payload: unknown) {
       email,
       age,
       power,
+      money,
       teamId,
       isApproved,
     },
@@ -124,6 +126,7 @@ export async function POST(
     email: formData.get("email"),
     age: formData.get("age"),
     power: formData.get("power"),
+    money: formData.get("money"),
     teamId: formData.get("teamId"),
     isApproved: formData.get("isApproved") === "on",
   };

@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { db } from "@/lib/db";
+import { calculateMinPopulation } from "@/lib/location-population";
 import { baseArmorForType, defaultImageForType, LOCATION_TYPES } from "@/lib/location-types";
 
 const createSchema = z.object({
@@ -61,10 +62,13 @@ export async function POST(request: Request) {
   }
 
   const identifiers = await generateIdentifiers(parsed.data.name);
+  const area = parsed.data.area;
   const location = await db.location.create({
     data: {
       ...parsed.data,
+      area,
       armor: baseArmorForType(parsed.data.type),
+      currentPopulation: calculateMinPopulation(area),
       image: parsed.data.image?.trim() || defaultImageForType(parsed.data.type),
       ownerTeamId: parsed.data.ownerTeamId ?? null,
       ...identifiers,

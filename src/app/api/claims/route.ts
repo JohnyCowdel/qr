@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { readUserIdFromCookieHeader } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { runEconomyTick } from "@/lib/economy";
 import { calculateDistanceMeters } from "@/lib/geo";
 
 const claimSchema = z.object({
@@ -13,6 +14,8 @@ const claimSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  await runEconomyTick();
+
   const userId = readUserIdFromCookieHeader(request.headers.get("cookie"));
   if (!userId) {
     return Response.json(
@@ -103,6 +106,10 @@ export async function POST(request: Request) {
       data: {
         ownerTeamId: teamId,
         lastClaimedAt: createdClaim.createdAt,
+        popToMoney: 0,
+        popToPower: 0,
+        popToPopulation: 30,
+        economyUpdatedAt: createdClaim.createdAt,
       },
     });
 

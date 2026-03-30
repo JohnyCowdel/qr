@@ -1,4 +1,6 @@
 import { db } from "@/lib/db";
+import { runEconomyTick } from "@/lib/economy";
+import { deriveLocationPopulation } from "@/lib/location-population";
 import {
   calculateLocationAreasSquareMeters,
   createRealmBorder,
@@ -33,6 +35,8 @@ function computeLocationAreas(locations: Array<{ id: string | number; latitude: 
 }
 
 export async function getHomePageData() {
+  await runEconomyTick();
+
   const [locations, recentClaims, teams] = await Promise.all([
     db.location.findMany({
       include: {
@@ -77,6 +81,10 @@ export async function getHomePageData() {
   const locationsWithComputedAreas = locations.map((location) => ({
     ...location,
     area: Math.max(1, Math.round(computedAreas[String(location.id)] ?? location.area)),
+    ...deriveLocationPopulation(
+      Math.max(1, Math.round(computedAreas[String(location.id)] ?? location.area)),
+      location.currentPopulation,
+    ),
   }));
 
   return {
@@ -99,6 +107,8 @@ export async function getHomePageData() {
 }
 
 export async function getLocationPageData(slug: string) {
+  await runEconomyTick();
+
   const [location, allLocations] = await Promise.all([
     db.location.findUnique({
       where: { slug },
@@ -142,6 +152,10 @@ export async function getLocationPageData(slug: string) {
   const computedAreas = computeLocationAreas(allLocations);
   const computedArea = Math.max(1, Math.round(computedAreas[String(location.id)] ?? location.area));
   const mapLocations = allLocations.map((mapLocation) => ({
+    ...deriveLocationPopulation(
+      Math.max(1, Math.round(computedAreas[String(mapLocation.id)] ?? mapLocation.area)),
+      mapLocation.currentPopulation,
+    ),
     id: mapLocation.id,
     slug: mapLocation.slug,
     name: mapLocation.name,
@@ -160,6 +174,8 @@ export async function getLocationPageData(slug: string) {
     location: {
       ...location,
       area: computedArea,
+      ownerUser: location.claims[0]?.user ?? null,
+      ...deriveLocationPopulation(computedArea, location.currentPopulation),
       lastClaimedAt: location.lastClaimedAt?.toISOString() ?? null,
       claims: location.claims.map((claim) => ({
         ...claim,

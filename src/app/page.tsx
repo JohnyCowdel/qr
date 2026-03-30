@@ -1,10 +1,15 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
+import { AutoRefresh } from "@/components/auto-refresh";
 import { TerritoryMap } from "@/components/territory-map";
 import { ClaimEventCard } from "@/components/claim-event-card";
 import { USER_COOKIE_NAME, verifyUserSessionToken } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getHomePageData } from "@/lib/game";
+
+function formatPower(power: number) {
+  return power.toFixed(2);
+}
 
 function formatDate(date: string) {
   return new Intl.DateTimeFormat("en", {
@@ -28,6 +33,7 @@ export default async function Home() {
 
   return (
     <main className="terrain-grid min-h-screen px-4 py-6 text-foreground sm:px-6 lg:px-8">
+      <AutoRefresh intervalMs={5000} />
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
         {currentUser ? (
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -48,7 +54,7 @@ export default async function Home() {
                 {currentUser.handle}
               </Link>
               <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 text-sm">
-                Player power: 💪 {currentUser.power}
+                Player power: 💪 {formatPower(currentUser.power)}
               </span>
               <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 text-sm">
                 Team: <span style={{ color: currentUser.team.colorHex }}>{currentUser.team.name}</span>
@@ -97,7 +103,7 @@ export default async function Home() {
                   <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
                     Síla hráčů
                   </div>
-                  <div className="mt-2 text-3xl font-semibold">💪 {totalPlayerPower}</div>
+                  <div className="mt-2 text-3xl font-semibold">💪 {formatPower(totalPlayerPower)}</div>
                 </div>
               </div>
             </div>
@@ -129,7 +135,7 @@ export default async function Home() {
                       <span className="font-medium">{team.name}</span>
                     </div>
                     <span className="font-mono text-sm text-[var(--muted)]">
-                      {team.claimedCount} claimed · team 💪 {team.power} · players 💪 {team.playerPower}
+                      {team.claimedCount} claimed · team 💪 {team.power} · players 💪 {formatPower(team.playerPower)}
                     </span>
                   </div>
                 ))}

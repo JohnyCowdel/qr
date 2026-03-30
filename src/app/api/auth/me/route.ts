@@ -32,6 +32,8 @@ export async function GET(request: Request) {
       avatarSeed: user.avatarSeed,
       avatarPhotoDataUrl: user.avatarPhotoDataUrl,
       power: user.power,
+      money: user.money,
+      population: user.population,
       team: {
         id: user.team.id,
         name: user.team.name,

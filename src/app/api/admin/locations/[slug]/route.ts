@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { db } from "@/lib/db";
+import { clampCurrentPopulation } from "@/lib/location-population";
 import { baseArmorForType, LOCATION_TYPES } from "@/lib/location-types";
 
 const updateSchema = z.object({
@@ -39,8 +40,16 @@ export async function PUT(
     return Response.json({ error: "Invalid payload", issues: parsed.error.flatten() }, { status: 400 });
   }
 
+  const existingLocation = await db.location.findUnique({ where: { slug } });
+  if (!existingLocation) {
+    return Response.json({ error: "Not found" }, { status: 404 });
+  }
+
+  const nextArea = parsed.data.area ?? existingLocation.area;
+
   const updateData = {
     ...parsed.data,
+    currentPopulation: clampCurrentPopulation(nextArea, existingLocation.currentPopulation),
     ...(parsed.data.type ? { armor: baseArmorForType(parsed.data.type) } : {}),
   };
 

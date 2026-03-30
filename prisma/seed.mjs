@@ -82,10 +82,12 @@ async function main() {
 
   for (const [index, location] of locations.entries()) {
     const ownerTeam = index === 0 ? createdTeams["crimson-foxes"] : null;
+    const currentPopulation = Math.max(1, Math.round((location.area / 1_000_000) * 10));
 
     createdLocations[location.slug] = await prisma.location.create({
       data: {
         ...location,
+        currentPopulation,
         ownerTeamId: ownerTeam?.id,
         lastClaimedAt: ownerTeam ? new Date("2026-04-03T12:32:00.000Z") : null,
       },
@@ -102,7 +104,8 @@ async function main() {
       isApproved: true,
       avatarType: "sprite",
       avatarSprite: "adventurer",
-      power: 12,
+      power: 12.35,
+      money: 10,
       teamId: createdTeams["crimson-foxes"].id,
     },
   });
@@ -117,7 +120,8 @@ async function main() {
       isApproved: true,
       avatarType: "sprite",
       avatarSprite: "adventurer",
-      power: 11,
+      power: 11.5,
+      money: 10,
       teamId: createdTeams["pine-riders"].id,
     },
   });

@@ -15,6 +15,9 @@ export type MapLocation = {
   type?: string;
   armor?: number;
   area?: number;
+  minPopulation?: number;
+  maxPopulation?: number;
+  currentPopulation?: number;
   image?: string;
   summary: string;
   latitude: number;

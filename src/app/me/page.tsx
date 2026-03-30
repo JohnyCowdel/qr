@@ -3,10 +3,20 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { USER_COOKIE_NAME, verifyUserSessionToken } from "@/lib/auth";
+import { AutoRefresh } from "@/components/auto-refresh";
 import { ClaimEventCard } from "@/components/claim-event-card";
 import { PlayerAvatarEditor } from "@/components/player-avatar-editor";
 import { resolveAvatarSrc } from "@/lib/avatar-sprites";
 import { db } from "@/lib/db";
+import { runEconomyTick } from "@/lib/economy";
+
+function formatPower(power: number) {
+  return power.toFixed(2);
+}
+
+function formatMoney(money: number) {
+  return `$${money.toFixed(2)}`;
+}
 
 function formatDate(date: string) {
   return new Intl.DateTimeFormat("en", {
@@ -25,6 +35,8 @@ function formatPlayerName(player: {
 }
 
 export default async function MePage() {
+  await runEconomyTick();
+
   const cookieStore = await cookies();
   const token = cookieStore.get(USER_COOKIE_NAME)?.value;
   const userId = token ? verifyUserSessionToken(token) : null;
@@ -71,6 +83,7 @@ export default async function MePage() {
         firstName: true,
         lastName: true,
         power: true,
+        money: true,
         avatarType: true,
         avatarSprite: true,
         avatarSeed: true,
@@ -121,6 +134,7 @@ export default async function MePage() {
 
   return (
     <main className="terrain-grid min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+      <AutoRefresh intervalMs={5000} />
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
         <div className="flex justify-end">
           <Link href="/" className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]">
@@ -159,11 +173,11 @@ export default async function MePage() {
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
             <div className="rounded-[20px] border border-[var(--line)] bg-white/70 p-4">
               <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Player power</div>
-              <div className="mt-2 text-2xl font-semibold">💪 {user.power}</div>
+              <div className="mt-2 text-2xl font-semibold">💪 {formatPower(user.power)}</div>
             </div>
             <div className="rounded-[20px] border border-[var(--line)] bg-white/70 p-4">
-              <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Team power</div>
-              <div className="mt-2 text-2xl font-semibold">💪 {user.team.power}</div>
+              <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Money</div>
+              <div className="mt-2 text-2xl font-semibold">💰 {formatMoney(user.money)}</div>
             </div>
             <div className="rounded-[20px] border border-[var(--line)] bg-white/70 p-4">
               <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Total claims</div>
@@ -174,7 +188,7 @@ export default async function MePage() {
           <div className="mt-3 rounded-[20px] border border-[var(--line)] bg-white/70 p-4 text-sm">
             <p className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Profile details</p>
             <p className="mt-2">
-              {user.firstName ?? "-"} {user.lastName ?? "-"} · {user.email ?? "-"} · age {user.age ?? "-"}
+              {user.firstName ?? "-"} {user.lastName ?? "-"} · {user.email ?? "-"} · age {user.age ?? "-"} · resource pop {Math.round(user.population)}
             </p>
           </div>
         </section>
@@ -198,7 +212,7 @@ export default async function MePage() {
                           <p className="text-sm text-[var(--muted)]">@{player.handle}{player.id === user.id ? " · you" : ""}</p>
                         </div>
                       </div>
-                      <div className="text-sm font-semibold">💪 {player.power}</div>
+                      <div className="text-sm font-semibold">💪 {formatPower(player.power)}</div>
                     </div>
                   </div>
                 )) : (
@@ -228,7 +242,7 @@ export default async function MePage() {
                           </p>
                         </div>
                       </div>
-                      <div className="text-sm font-semibold">💪 {player.power}</div>
+                      <div className="text-sm font-semibold">💪 {formatPower(player.power)}</div>
                     </div>
                   </div>
                 )) : (
@@ -252,7 +266,7 @@ export default async function MePage() {
           <div className="mt-4 space-y-3">
             {claimedPositions.length ? claimedPositions.map((position) => (
               <div key={position.id} className="rounded-[20px] border border-[var(--line)] bg-white/70 p-4">
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="font-medium">{position.image} {position.name}</p>
                     <p className="text-sm text-[var(--muted)]">
@@ -271,6 +285,14 @@ export default async function MePage() {
                       {position.lastClaimedAt ? formatDate(position.lastClaimedAt.toISOString()) : "-"}
                     </p>
                   </div>
+                </div>
+                <div className="mt-3">
+                  <Link
+                    href={`/l/${position.slug}`}
+                    className="inline-flex rounded-full border border-[var(--line)] bg-white px-3 py-1.5 text-sm font-semibold hover:bg-[var(--background-strong)]"
+                  >
+                    Open location
+                  </Link>
                 </div>
               </div>
             )) : (
@@ -291,6 +313,7 @@ export default async function MePage() {
                 key={claim.id}
                 user={user}
                 message={claim.message}
+                actionHref={`/l/${claim.location.slug}`}
                 summary={(
                   <>
                     claimed <span className="font-medium">{claim.location.name}</span> for <span className="font-medium">{claim.team.name}</span> on {formatDate(claim.createdAt.toISOString())}.

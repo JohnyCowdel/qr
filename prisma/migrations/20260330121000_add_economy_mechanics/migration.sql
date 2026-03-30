@@ -1,0 +1,9 @@
+ALTER TABLE "Location" ADD COLUMN "economyUpdatedAt" DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00';
+
+ALTER TABLE "AdminSettings" ADD COLUMN "moneyRate" REAL NOT NULL DEFAULT 0.5;
+ALTER TABLE "AdminSettings" ADD COLUMN "powerRate" REAL NOT NULL DEFAULT 0.5;
+ALTER TABLE "AdminSettings" ADD COLUMN "populationRate" REAL NOT NULL DEFAULT 1;
+
+UPDATE "Location"
+SET "economyUpdatedAt" = COALESCE("lastClaimedAt", CURRENT_TIMESTAMP)
+WHERE "economyUpdatedAt" = '1970-01-01 00:00:00';

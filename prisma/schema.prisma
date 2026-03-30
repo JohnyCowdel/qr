@@ -37,7 +37,9 @@ model User {
   avatarSeed String?
   avatarPhotoDataUrl String?
   passwordHash String?
-  power     Int      @default(5)
+  power     Float    @default(5)
+  money     Float    @default(10)
+  population Float   @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   teamId    Int
@@ -53,6 +55,11 @@ model Location {
   type             String    @default("camp")
   armor            Int       @default(8)
   area             Int       @default(1000)
+  currentPopulation Float    @default(1)
+  popToMoney       Int       @default(0)
+  popToPower       Int       @default(0)
+  popToPopulation  Int       @default(30)
+  economyUpdatedAt DateTime  @default(now())
   image            String    @default("⛺")
   summary          String
   content          String
@@ -90,6 +97,9 @@ model Claim {
 }
 
 model AdminSettings {
-  id           Int    @id @default(1)
-  passwordHash String
+  id             Int   @id @default(1)
+  passwordHash   String
+  moneyRate      Float @default(0.5)
+  powerRate      Float @default(0.5)
+  populationRate Float @default(1)
 }

@@ -4,15 +4,20 @@ import { notFound } from "next/navigation";
 
 import { ClaimPanel } from "@/components/claim-panel";
 import { ClaimEventCard } from "@/components/claim-event-card";
+import { AutoRefresh } from "@/components/auto-refresh";
+import { LocationEconomyControls } from "@/components/location-economy-controls";
 import { USER_COOKIE_NAME, verifyUserSessionToken } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { TerritoryMap } from "@/components/territory-map";
 import { formatMeters } from "@/lib/geo";
 import { getLocationPageData } from "@/lib/game";
 
-function formatAreaKm2(areaM2: number) {
-  const km2 = areaM2 / 1_000_000;
-  return `${km2.toFixed(km2 >= 1 ? 2 : 3)}`;
+function formatPopulation(population: number) {
+  return new Intl.NumberFormat("en").format(population);
+}
+
+function formatPower(power: number) {
+  return power.toFixed(2);
 }
 
 function formatDate(date: string) {
@@ -40,9 +45,16 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
   }
 
   const { location, mapLocations } = data;
+  const locationEconomy = location as typeof location & {
+    popToMoney?: number;
+    popToPower?: number;
+    popToPopulation?: number;
+  };
+  const canManageEconomy = Boolean(currentUser && location.ownerUser && currentUser.id === location.ownerUser.id);
 
   return (
     <main className="terrain-grid min-h-screen px-4 py-6 sm:px-6 lg:px-8">
+      <AutoRefresh intervalMs={5000} />
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
         {currentUser ? (
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -63,7 +75,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                 {currentUser.handle}
               </Link>
               <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 text-sm">
-                Player power: 💪 {currentUser.power}
+                Player power: 💪 {formatPower(currentUser.power)}
               </span>
               <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 text-sm">
                 Team: <span style={{ color: currentUser.team.colorHex }}>{currentUser.team.name}</span>
@@ -120,10 +132,10 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                 </div>
                 <div className="rounded-[22px] border border-[var(--line)] bg-white/70 p-4">
                   <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
-                    👨‍🌾 Lidé
+                    👨‍🌾 Population
                   </div>
                   <div className="mt-2 text-base font-medium">
-                    {formatAreaKm2(location.area)}
+                    {formatPopulation(location.currentPopulation)}
                   </div>
                 </div>
                 <div className="rounded-[22px] border border-[var(--line)] bg-white/70 p-4">
@@ -155,10 +167,10 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                 </div>
                 <div className="rounded-[22px] border border-[var(--line)] bg-white/70 p-4">
                   <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
-                    Neighbors
+                    Owner player
                   </div>
                   <div className="mt-2 text-base font-medium">
-                    {location.neighbors ?? "No adjacent points yet"}
+                    {location.ownerUser ? `@${location.ownerUser.handle}` : "No player owner yet"}
                   </div>
                 </div>
               </div>
@@ -169,8 +181,6 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
             </div>
 
             <div className="space-y-4">
-              
-
               <div className="h-[260px] overflow-hidden rounded-[28px] border border-[var(--line)]">
                 <TerritoryMap
                   locations={mapLocations}
@@ -179,20 +189,33 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                   autoFitBounds={false}
                 />
               </div>
+
+              {canManageEconomy ? (
+                <LocationEconomyControls
+                  slug={location.slug}
+                  currentPopulation={location.currentPopulation}
+                  maxPopulation={location.maxPopulation}
+                  popToMoney={locationEconomy.popToMoney ?? 0}
+                  popToPower={locationEconomy.popToPower ?? 0}
+                  popToPopulation={locationEconomy.popToPopulation ?? 30}
+                />
+              ) : null}
             </div>
           </div>
         </section>
 
         <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <ClaimPanel
-            location={{
-              id: location.id,
-              slug: location.slug,
-              latitude: location.latitude,
-              longitude: location.longitude,
-              claimRadiusM: location.claimRadiusM,
-            }}
-          />
+          <div className="space-y-6">
+            <ClaimPanel
+              location={{
+                id: location.id,
+                slug: location.slug,
+                latitude: location.latitude,
+                longitude: location.longitude,
+                claimRadiusM: location.claimRadiusM,
+              }}
+            />
+          </div>
 
           <section className="glass-panel rounded-[28px] border border-[var(--line)] p-5">
             <div className="flex items-center justify-between gap-4">
