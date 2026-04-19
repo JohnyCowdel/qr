@@ -12,6 +12,7 @@ type ClaimPanelProps = {
     latitude: number;
     longitude: number;
   };
+  isOwner?: boolean;
 };
 
 type ClaimResult = {
@@ -27,7 +28,7 @@ type AuthState = {
   teamName: string | null;
 };
 
-export function ClaimPanel({ location }: ClaimPanelProps) {
+export function ClaimPanel({ location, isOwner = false }: ClaimPanelProps) {
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<string>("Připraven ověřit polohu.");
   const [auth, setAuth] = useState<AuthState>({
@@ -194,10 +195,10 @@ export function ClaimPanel({ location }: ClaimPanelProps) {
         <button
           type="button"
           onClick={submitClaim}
-          disabled={isPending || auth.loading || !auth.authenticated}
+          disabled={isPending || auth.loading || !auth.authenticated || isOwner}
           className="w-full rounded-full bg-[var(--accent)] px-5 py-3 font-medium text-white transition hover:bg-[var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isPending ? "Ověřuji polohu..." : "Sdílet GPS a obsadit"}
+          {isPending ? "Ověřuji polohu..." : isOwner ? "Již obsazeno" : "Sdílet GPS a obsadit"}
         </button>
 
         <div className="rounded-2xl border border-dashed border-[var(--line)] bg-white/45 px-4 py-3 text-sm leading-6 text-[var(--muted)]">

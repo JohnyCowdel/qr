@@ -135,9 +135,12 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                   <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
                     👨‍🌾 Populace
                   </div>
-                  <div className="mt-2 text-base font-medium">
+                  <div className={`mt-2 text-base font-medium${Math.floor(location.currentPopulation) >= location.maxPopulation ? " text-red-600" : ""}`}>
                     {formatPopulation(location.currentPopulation)}
                   </div>
+                  {Math.floor(location.currentPopulation) >= location.maxPopulation && (
+                    <p className="mt-1 text-xs italic text-red-500">Populace na maximu</p>
+                  )}
                 </div>
                 <div className="rounded-[22px] border border-[var(--line)] bg-white/70 p-4">
                   <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
@@ -215,6 +218,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                 longitude: location.longitude,
                 claimRadiusM: location.claimRadiusM,
               }}
+              isOwner={canManageEconomy}
             />
           </div>
 

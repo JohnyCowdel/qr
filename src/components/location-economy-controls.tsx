@@ -267,8 +267,11 @@ export function LocationEconomyControls({
       </p>
 
       <div className="mt-3 grid gap-2 sm:grid-cols-3">
-        <div className="rounded-xl border border-[var(--line)] bg-white/70 px-3 py-2 text-sm">
-          Aktuální pracovníci: <span className="font-semibold">{totalWorkers}</span>
+        <div className={`rounded-xl border px-3 py-2 text-sm${Math.floor(currentPopulationValue) >= maxPopulation ? " border-red-300 bg-red-50" : " border-[var(--line)] bg-white/70"}`}>
+          Aktuální pracovníci: <span className={`font-semibold${Math.floor(currentPopulationValue) >= maxPopulation ? " text-red-600" : ""}`}>{totalWorkers}</span>
+          {Math.floor(currentPopulationValue) >= maxPopulation && (
+            <p className="mt-0.5 text-xs italic text-red-500">Populace na maximu</p>
+          )}
         </div>
         <div className="rounded-xl border border-[var(--line)] bg-white/70 px-3 py-2 text-sm">
           Přiřazeno: <span className="font-semibold">{assigned}</span>
