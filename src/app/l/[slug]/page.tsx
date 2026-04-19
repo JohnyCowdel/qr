@@ -14,7 +14,7 @@ import { getLocationPageData } from "@/lib/game";
 import { czechNameForType, normalizeLocationType } from "@/lib/location-types";
 
 function formatPopulation(population: number) {
-  return new Intl.NumberFormat("en").format(population);
+  return new Intl.NumberFormat("cs").format(Math.floor(population));
 }
 
 function formatPower(power: number) {

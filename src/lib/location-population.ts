@@ -1,11 +1,13 @@
 export function calculateMinPopulation(areaM2: number) {
   const safeArea = Number.isFinite(areaM2) ? Math.max(1, areaM2) : 1;
-  return Math.max(1, Math.round((safeArea / 1_000) * 10));
+  return Math.max(1, Math.round((safeArea / 1_000_000) * 10));
 }
 
 export function calculateMaxPopulation(areaM2: number) {
   const safeArea = Number.isFinite(areaM2) ? Math.max(1, areaM2) : 1;
-  return Math.max(calculateMinPopulation(safeArea), Math.round((safeArea / 1_000) * 20));
+  const computed = Math.round((safeArea / 1_000_000) * 20);
+  // Guarantee at least 20 so the logistic growth factor never collapses to 0.
+  return Math.max(20, calculateMinPopulation(safeArea), computed);
 }
 
 export function clampCurrentPopulation(areaM2: number, currentPopulation?: number | null) {

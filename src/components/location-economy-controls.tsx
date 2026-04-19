@@ -233,7 +233,7 @@ export function LocationEconomyControls({
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold">{emoji} {label}</p>
-            <p className="text-xs text-[var(--muted)]">⬆️ {growth.toFixed(2)} / day</p>
+            <p className="text-xs text-[var(--muted)]">⬆️ {Number.isInteger(growth) ? growth : growth.toFixed(2)} / den</p>
           </div>
           <div className="flex items-center gap-2">
             <button
