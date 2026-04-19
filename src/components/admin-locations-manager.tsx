@@ -261,10 +261,10 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
       if (!response.ok) {
         const errorPayload = (await response.json().catch(() => null)) as { error?: string } | null;
         if (response.status === 401) {
-          setError("Admin session expired. Reload the page and log in again.");
+          setError("Relace admin vypršela. Znovu načtěte stránku a přihlašte se.");
           return;
         }
-        setError(errorPayload?.error ?? `Unable to save this location (${response.status}).`);
+        setError(errorPayload?.error ?? `Lokaci nelze uložit (${response.status}).`);
         return;
       }
 
@@ -318,9 +318,9 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
         <div className="mb-3 flex items-center justify-between gap-3">
           <div>
             <p className="text-xs font-mono uppercase tracking-widest text-[var(--muted)]">
-              Terrain Editor
+              Terrén editor
             </p>
-            <h2 className="text-xl font-bold">Map-first maintenance</h2>
+            <h2 className="text-xl font-bold">Správa mapy</h2>
           </div>
           <div className="flex flex-col items-end gap-2">
             <GenerateQRPdfButton
@@ -329,7 +329,7 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
                 .map((l) => ({ slug: l.slug!, name: l.name }))}
             />
             <p className="max-w-sm text-right text-xs text-[var(--muted)]">
-              Select a location from the list or map. While a row is open, click anywhere on the map to move it.
+              Vyberte lokaci ze seznamu nebo mapy. Když je řádek otevřen, kliknutím na mapu ji přemístíte.
             </p>
           </div>
         </div>
@@ -378,7 +378,7 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
         </div>
         {orderedLocations.length === 0 && (
           <p className="px-6 py-10 text-center text-sm text-[var(--muted)]">
-            No locations yet. Create one to get started.
+            Žádné lokace. Vytvořte jednu pro začátek.
           </p>
         )}
         {orderedLocations.map((location) => {

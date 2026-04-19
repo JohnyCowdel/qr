@@ -14,7 +14,7 @@ export function DeleteLocationButton({
   const [isPending, startTransition] = useTransition();
 
   function handleDelete() {
-    if (!confirm(`Delete "${slug}"? All associated claims will also be removed.`)) return;
+    if (!confirm(`Smazat "${slug}"? Všechny přidružené nároky budou také smazány.`)) return;
     startTransition(async () => {
       const response = await fetch(`/api/admin/locations/${slug}`, { method: "DELETE" });
       if (!response.ok) {
@@ -31,7 +31,7 @@ export function DeleteLocationButton({
       disabled={isPending}
       className="px-3 py-1.5 text-xs font-semibold text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
     >
-      {isPending ? "…" : "Delete"}
+      {isPending ? "…" : "Smazat"}
     </button>
   );
 }

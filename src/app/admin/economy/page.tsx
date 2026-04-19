@@ -81,18 +81,18 @@ export default function AdminEconomyPage() {
       <div className="max-w-3xl mx-auto">
         <AdminNav />
 
-        <h1 className="mb-2 text-2xl font-bold">Economy</h1>
+        <h1 className="mb-2 text-2xl font-bold">Ekonomika</h1>
         <p className="mb-6 text-sm text-[var(--muted)]">
-          Configure how quickly each assigned worker generates money, power, and population growth.
+          Nastav, jak rychle každý přiřazený pracovník generuje peníze, sílu a růst populace.
         </p>
 
         <div className="glass-panel rounded-xl p-6">
-          <h2 className="mb-4 text-lg font-semibold">Increase rates</h2>
+          <h2 className="mb-4 text-lg font-semibold">Sazby nárůstu</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-3">
               <label className="block">
                 <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-                  Money / pop / day
+                  Peňíze / pop / den
                 </span>
                 <input
                   type="number"
@@ -106,7 +106,7 @@ export default function AdminEconomyPage() {
 
               <label className="block">
                 <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-                  Power / pop / day
+                  Síla / pop / den
                 </span>
                 <input
                   type="number"

@@ -18,11 +18,11 @@ export default function AdminSettingsPage() {
     setSuccess(false);
 
     if (newPassword !== confirmPassword) {
-      setError("New passwords do not match.");
+      setError("Nová hesla se neshodují.");
       return;
     }
     if (newPassword.length < 4) {
-      setError("New password must be at least 4 characters.");
+      setError("Nové heslo musí mít alespoň 4 znaky.");
       return;
     }
 
@@ -36,7 +36,7 @@ export default function AdminSettingsPage() {
 
         if (!res.ok) {
           const data = await res.json();
-          setError((data.error as string | undefined) ?? "Failed to update password.");
+          setError((data.error as string | undefined) ?? "Aktualizace hesla selhala.");
           return;
         }
 
@@ -45,7 +45,7 @@ export default function AdminSettingsPage() {
         setNewPassword("");
         setConfirmPassword("");
       } catch {
-        setError("Network error. Try again.");
+        setError("Chyba sítě. Zkus to znovu.");
       }
     });
   }
@@ -55,23 +55,23 @@ export default function AdminSettingsPage() {
       <div className="max-w-2xl mx-auto">
         <AdminNav />
 
-        <h1 className="text-2xl font-bold mb-6">Settings</h1>
+        <h1 className="text-2xl font-bold mb-6">Nastavení</h1>
 
         <div className="glass-panel rounded-xl p-6">
-          <h2 className="text-lg font-semibold mb-4">Change password</h2>
+          <h2 className="text-lg font-semibold mb-4">Změnit heslo</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <PasswordField
-              label="Current password"
+              label="Současné heslo"
               value={currentPassword}
               onChange={setCurrentPassword}
             />
             <PasswordField
-              label="New password"
+              label="Nové heslo"
               value={newPassword}
               onChange={setNewPassword}
             />
             <PasswordField
-              label="Confirm new password"
+              label="Potvrdit nové heslo"
               value={confirmPassword}
               onChange={setConfirmPassword}
             />
@@ -83,7 +83,7 @@ export default function AdminSettingsPage() {
             )}
             {success && (
               <p className="text-sm text-green-700 bg-green-50 border border-green-200 px-4 py-2.5 rounded-lg">
-                Password updated successfully.
+                Heslo bylo úspěšně změněno.
               </p>
             )}
 
@@ -92,7 +92,7 @@ export default function AdminSettingsPage() {
               disabled={isPending}
               className="w-full py-2.5 bg-[var(--accent)] text-white rounded-lg text-sm font-semibold hover:bg-[var(--accent-strong)] transition-colors disabled:opacity-50"
             >
-              {isPending ? "Saving…" : "Update password"}
+              {isPending ? "Ukládám…" : "Aktualizovat heslo"}
             </button>
           </form>
         </div>

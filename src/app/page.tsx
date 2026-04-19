@@ -42,7 +42,7 @@ export default async function Home() {
                 type="submit"
                 className="rounded-full border border-[var(--line)] bg-white/70 px-4 py-2 text-sm font-semibold hover:bg-white"
               >
-                Sign out
+                Odhlásit se
               </button>
             </form>
 
@@ -54,10 +54,10 @@ export default async function Home() {
                 {currentUser.handle}
               </Link>
               <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 text-sm">
-                Player power: 💪 {formatPower(currentUser.power)}
+                Síla hráče: 💪 {formatPower(currentUser.power)}
               </span>
               <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 text-sm">
-                Team: <span style={{ color: currentUser.team.colorHex }}>{currentUser.team.name}</span>
+                Tým: <span style={{ color: currentUser.team.colorHex }}>{currentUser.team.name}</span>
               </span>
             </div>
           </div>
@@ -67,13 +67,13 @@ export default async function Home() {
               href="/auth/login"
               className="rounded-full border border-[var(--line)] bg-white/70 px-4 py-2 text-sm font-semibold hover:bg-white"
             >
-              Sign in
+              Přihlásit se
             </Link>
             <Link
               href="/auth/register"
               className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]"
             >
-              Create account
+              Vytvořit účet
             </Link>
           </div>
         )}
@@ -135,7 +135,7 @@ export default async function Home() {
                       <span className="font-medium">{team.name}</span>
                     </div>
                     <span className="font-mono text-sm text-[var(--muted)]">
-                      {team.claimedCount} claimed · team 💪 {team.power} · players 💪 {formatPower(team.playerPower)}
+                      {team.claimedCount} obsazeno · tým 💪 {team.power} · hráči 💪 {formatPower(team.playerPower)}
                     </span>
                   </div>
                 ))}
@@ -146,10 +146,10 @@ export default async function Home() {
         <section className="glass-panel rounded-[32px] border border-[var(--line)] p-4 sm:p-5">
           <div className="mb-4 px-2">
             <h2 className="text-2xl font-semibold tracking-[-0.03em]">
-              Claimed terrain map
+              Mapa obsazeného územní
             </h2>
             <p className="mt-1 text-sm text-[var(--muted)]">
-              Colored circles visualize each location&apos;s current claim radius.
+              Barevné kruhy znázorňují poloměr nároku každé lokace.
             </p>
           </div>
           <div className="aspect-square w-full overflow-hidden rounded-[28px] border border-[var(--line)]">
@@ -160,10 +160,10 @@ export default async function Home() {
         <section className="glass-panel rounded-[32px] border border-[var(--line)] p-5">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold tracking-[-0.03em]">
-              Recent claims
+              Poslední nároky
             </h2>
             <span className="font-mono text-xs uppercase tracking-[0.18em] text-[var(--muted)]">
-              Event feed
+              Aktivity
             </span>
           </div>
           <div className="mt-4 space-y-3">
@@ -174,8 +174,8 @@ export default async function Home() {
                 message={claim.message}
                 summary={(
                   <>
-                    claimed <span className="font-medium">{claim.location.name}</span>{" "}
-                    for <span className="font-medium">{claim.team.name}</span> on {formatDate(claim.createdAt)}.
+                    claimed <span className="font-medium">{claim.location.name}</span>{" "}
+                    pro <span className="font-medium">{claim.team.name}</span> dne {formatDate(claim.createdAt)}.
                   </>
                 )}
               />

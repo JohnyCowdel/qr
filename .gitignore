@@ -36,6 +36,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local data exports (contain sensitive data)
+scripts/sqlite-export.json
+prisma/dev.db
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

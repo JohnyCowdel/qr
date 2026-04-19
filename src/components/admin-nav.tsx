@@ -10,19 +10,19 @@ export function AdminNav() {
           href="/admin"
           className="px-3 py-1.5 text-xs font-semibold border border-[var(--line)] rounded-lg hover:bg-[var(--background-strong)] transition-colors"
         >
-          Locations
+          Lokace
         </Link>
         <Link
           href="/admin/players"
           className="px-3 py-1.5 text-xs font-semibold border border-[var(--line)] rounded-lg hover:bg-[var(--background-strong)] transition-colors"
         >
-          Players
+          Hráči
         </Link>
         <Link
           href="/admin/economy"
           className="px-3 py-1.5 text-xs font-semibold border border-[var(--line)] rounded-lg hover:bg-[var(--background-strong)] transition-colors"
         >
-          Economy
+          Ekonomika
         </Link>
       </div>
       <div className="flex items-center gap-2">
@@ -30,7 +30,7 @@ export function AdminNav() {
           href="/admin/settings"
           className="px-3 py-1.5 text-xs font-semibold border border-[var(--line)] rounded-lg hover:bg-[var(--background-strong)] transition-colors"
         >
-          Change password
+          Změnit heslo
         </Link>
         <LogoutButton />
       </div>

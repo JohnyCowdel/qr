@@ -12,9 +12,9 @@ export default async function RegisterPage() {
       <div className="mx-auto w-full max-w-md">
         <section className="glass-panel rounded-[28px] border border-[var(--line)] p-6 sm:p-7">
           <p className="text-xs font-mono uppercase tracking-widest text-[var(--muted)]">Territory QR</p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-[-0.03em]">Create account</h1>
+          <h1 className="mt-1 text-3xl font-semibold tracking-[-0.03em]">Vytvořit účet</h1>
           <p className="mt-2 text-sm text-[var(--muted)]">
-            Register your player profile, choose your team, and wait for admin approval.
+            Zaregistruj se, zvol tým a počkej na schválení správcem.
           </p>
           <RegisterForm teams={teams} />
         </section>

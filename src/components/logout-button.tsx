@@ -18,7 +18,7 @@ export function LogoutButton() {
       disabled={isPending}
       className="px-3 py-1.5 text-xs font-semibold border border-[var(--line)] rounded-lg hover:bg-[var(--background-strong)] transition-colors disabled:opacity-50"
     >
-      {isPending ? "…" : "Log out"}
+      {isPending ? "…" : "Odhlásit se"}
     </button>
   );
 }

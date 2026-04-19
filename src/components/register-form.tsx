@@ -38,13 +38,13 @@ export function RegisterForm({ teams }: RegisterFormProps) {
 
         if (!res.ok) {
           const data = (await res.json().catch(() => null)) as { error?: string } | null;
-          setError(data?.error ?? "Registration failed.");
+          setError(data?.error ?? "Registrace selhala.");
           return;
         }
 
         window.location.href = "/auth/login?pending=1";
       } catch {
-        setError("Network error. Try again.");
+        setError("Chyba sítě. Zkus to znovu.");
       }
     });
   }
@@ -52,7 +52,7 @@ export function RegisterForm({ teams }: RegisterFormProps) {
   return (
     <form className="mt-5 space-y-4" onSubmit={submit}>
       <label className="block">
-        <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Handle</span>
+        <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Přezdívka</span>
         <input
           value={handle}
           onChange={(e) => setHandle(e.target.value)}
@@ -64,7 +64,7 @@ export function RegisterForm({ teams }: RegisterFormProps) {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className="block">
-          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Name</span>
+          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Jméno</span>
           <input
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
@@ -75,7 +75,7 @@ export function RegisterForm({ teams }: RegisterFormProps) {
         </label>
 
         <label className="block">
-          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Surname</span>
+          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Příjmení</span>
           <input
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
@@ -87,7 +87,7 @@ export function RegisterForm({ teams }: RegisterFormProps) {
       </div>
 
       <label className="block">
-        <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Email</span>
+        <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">E-mail</span>
         <input
           type="email"
           value={email}
@@ -99,7 +99,7 @@ export function RegisterForm({ teams }: RegisterFormProps) {
       </label>
 
       <label className="block">
-        <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Age</span>
+        <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Věk</span>
         <input
           type="number"
           min={6}
@@ -112,7 +112,7 @@ export function RegisterForm({ teams }: RegisterFormProps) {
       </label>
 
       <label className="block">
-        <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Password</span>
+        <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Heslo</span>
         <input
           type="password"
           value={password}
@@ -120,12 +120,12 @@ export function RegisterForm({ teams }: RegisterFormProps) {
           required
           minLength={6}
           className="w-full rounded-xl border border-[var(--line)] bg-white/80 px-3 py-2 outline-none focus:border-[var(--accent)]"
-          placeholder="At least 6 characters"
+          placeholder="Alespoň 6 znaků"
         />
       </label>
 
       <label className="block">
-        <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Team</span>
+        <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Tým</span>
         <select
           value={teamId}
           onChange={(e) => setTeamId(Number(e.target.value))}
@@ -162,15 +162,15 @@ export function RegisterForm({ teams }: RegisterFormProps) {
         disabled={isPending || !teamId}
         className="w-full rounded-full bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--accent-strong)] disabled:opacity-60"
       >
-        {isPending ? "Creating account..." : "Create account"}
+        {isPending ? "Vytvářím účet..." : "Vytvořit účet"}
       </button>
 
       <p className="text-sm text-[var(--muted)]">
-        Already registered? <Link href="/auth/login" className="font-semibold text-[var(--accent-strong)]">Sign in</Link>
+        Už máš účet? <Link href="/auth/login" className="font-semibold text-[var(--accent-strong)]">Přihlásit se</Link>
       </p>
 
       <p className="text-xs text-[var(--muted)]">
-        Registration requires admin approval before your first sign in.
+        Registrace vyžaduje schválení správcem před prvním přihlášením.
       </p>
     </form>
   );

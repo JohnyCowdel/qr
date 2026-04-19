@@ -63,7 +63,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                 type="submit"
                 className="rounded-full border border-[var(--line)] bg-white/70 px-4 py-2 text-sm font-semibold hover:bg-white"
               >
-                Sign out
+                Odhlásit se
               </button>
             </form>
 
@@ -75,10 +75,10 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                 {currentUser.handle}
               </Link>
               <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 text-sm">
-                Player power: 💪 {formatPower(currentUser.power)}
+                  Síla hráče: 💪 {formatPower(currentUser.power)}
               </span>
               <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 text-sm">
-                Team: <span style={{ color: currentUser.team.colorHex }}>{currentUser.team.name}</span>
+                  Tým: <span style={{ color: currentUser.team.colorHex }}>{currentUser.team.name}</span>
               </span>
             </div>
           </div>
@@ -88,13 +88,13 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
               href="/auth/login"
               className="rounded-full border border-[var(--line)] bg-white/70 px-4 py-2 text-sm font-semibold hover:bg-white"
             >
-              Sign in
+              Přihlásit se
             </Link>
             <Link
               href="/auth/register"
               className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]"
             >
-              Create account
+              Vytvořit účet
             </Link>
           </div>
         )}
@@ -107,7 +107,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                   QR code {location.qrCode}
                 </span>
                 <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 text-sm">
-                  {location.ownerTeam ? `${location.ownerTeam.name} controls this point` : "Neutral point"}
+                  {location.ownerTeam ? `${location.ownerTeam.name} ovládá tento bod` : "Neutrální bod"}
                 </span>
               </div>
 
@@ -124,7 +124,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                 
                 <div className="rounded-[22px] border border-[var(--line)] bg-white/70 p-4">
                   <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
-                    Location type
+                    Typ lokace
                   </div>
                   <div className="mt-2 text-base font-medium">
                     {location.image} {location.type}
@@ -151,7 +151,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                     👑 Vlastní
                   </div>
                   <div className="mt-2 text-base font-medium">
-                    {location.ownerTeam ? location.ownerTeam.name : "Neutral"}
+                    {location.ownerTeam ? location.ownerTeam.name : "Neutrální"}
                   </div>
                 </div>
               </div>
@@ -159,18 +159,18 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-[22px] border border-[var(--line)] bg-white/70 p-4">
                   <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
-                    Last capture
+                    Poslední obdělení
                   </div>
                   <div className="mt-2 text-base font-medium">
-                    {location.lastClaimedAt ? formatDate(location.lastClaimedAt) : "Not claimed yet"}
+                    {location.lastClaimedAt ? formatDate(location.lastClaimedAt) : "Ještě nezabráno"}
                   </div>
                 </div>
                 <div className="rounded-[22px] border border-[var(--line)] bg-white/70 p-4">
                   <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
-                    Owner player
+                    Hráč-vlastník
                   </div>
                   <div className="mt-2 text-base font-medium">
-                    {location.ownerUser ? `@${location.ownerUser.handle}` : "No player owner yet"}
+                    {location.ownerUser ? `@${location.ownerUser.handle}` : "Zatím žádný vlastník"}
                   </div>
                 </div>
               </div>
@@ -220,13 +220,13 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
           <section className="glass-panel rounded-[28px] border border-[var(--line)] p-5">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <h2 className="text-2xl font-semibold tracking-[-0.03em]">Claim history</h2>
+                <h2 className="text-2xl font-semibold tracking-[-0.03em]">Historie nároků</h2>
                 <p className="mt-1 text-sm text-[var(--muted)]">
-                  Every successful claim and message is stored as an immutable event.
+                  Každý úspěšný nárok a zpráva je uložena jako neměnná událost.
                 </p>
               </div>
               <div className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
-                {location.claims.length} entries
+                {location.claims.length} záznamů
               </div>
             </div>
 
@@ -240,15 +240,15 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                     messageClassName="bg-[rgba(47,125,93,0.08)] text-[#255943]"
                     summary={(
                       <>
-                        claimed this position for <span className="font-medium">{claim.team.name}</span>{" "}
-                        on {formatDate(claim.createdAt)} at {formatMeters(claim.distanceM)}.
+                        zabrán pro <span className="font-medium">{claim.team.name}</span>{" "}
+                        dne {formatDate(claim.createdAt)} ve vzdálenosti {formatMeters(claim.distanceM)}.
                       </>
                     )}
                   />
                 ))
               ) : (
                 <div className="rounded-[24px] border border-dashed border-[var(--line)] bg-white/55 p-4 text-sm text-[var(--muted)]">
-                  No one has claimed this point yet.
+                  Tento bod ještě nikdo nenabral.
                 </div>
               )}
             </div>

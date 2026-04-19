@@ -29,13 +29,13 @@ export default function UserLoginPage() {
 
         if (!res.ok) {
           const data = (await res.json().catch(() => null)) as { error?: string } | null;
-          setError(data?.error ?? "Login failed.");
+          setError(data?.error ?? "Přihlášení selhalo.");
           return;
         }
 
         window.location.href = "/me";
       } catch {
-        setError("Network error. Try again.");
+        setError("Chyba sítě. Zkus to znovu.");
       }
     });
   }
@@ -45,20 +45,20 @@ export default function UserLoginPage() {
       <div className="mx-auto w-full max-w-md">
         <section className="glass-panel rounded-[28px] border border-[var(--line)] p-6 sm:p-7">
           <p className="text-xs font-mono uppercase tracking-widest text-[var(--muted)]">Territory QR</p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-[-0.03em]">Sign in</h1>
+          <h1 className="mt-1 text-3xl font-semibold tracking-[-0.03em]">Přihlásit se</h1>
           <p className="mt-2 text-sm text-[var(--muted)]">
-            Access your player profile and claim locations under your account.
+            Přihlaš se ke svému profilu hráče a zabirávej lokace.
           </p>
 
           {pendingNotice ? (
             <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-              Registration submitted. Wait for admin approval, then sign in.
+              Registrace proběhla. Čekej na schválení správcem, poté se přihlaš.
             </p>
           ) : null}
 
           <form className="mt-5 space-y-4" onSubmit={submit}>
             <label className="block">
-              <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Handle</span>
+              <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Přezdívka</span>
               <input
                 value={handle}
                 onChange={(e) => setHandle(e.target.value)}
@@ -69,7 +69,7 @@ export default function UserLoginPage() {
             </label>
 
             <label className="block">
-              <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Password</span>
+              <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Heslo</span>
               <input
                 type="password"
                 value={password}
@@ -91,12 +91,12 @@ export default function UserLoginPage() {
               disabled={isPending}
               className="w-full rounded-full bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--accent-strong)] disabled:opacity-60"
             >
-              {isPending ? "Signing in..." : "Sign in"}
+              {isPending ? "Přihlašuji..." : "Přihlásit se"}
             </button>
           </form>
 
           <p className="mt-4 text-sm text-[var(--muted)]">
-            New player? <Link href="/auth/register" className="font-semibold text-[var(--accent-strong)]">Create account</Link>
+            Nový hráč? <Link href="/auth/register" className="font-semibold text-[var(--accent-strong)]">Vytvořit účet</Link>
           </p>
         </section>
       </div>

@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 
 function formatDate(date: Date | null) {
   if (!date) {
-    return "No activity yet";
+    return "Bez aktivit";
   }
 
   return new Intl.DateTimeFormat("en", {
@@ -66,12 +66,12 @@ function EditPlayerDropdown({
   return (
     <details className="w-full rounded-2xl border border-[var(--line)] bg-[rgba(255,255,255,0.55)] px-4 py-3">
       <summary className="cursor-pointer text-sm font-semibold text-[var(--accent-strong)]">
-        Edit player
+        Upravit hráče
       </summary>
       <form action={`/api/admin/users/${user.id}`} method="post" className="mt-4 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
-            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Handle</span>
+            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Přezdívka</span>
             <input name="handle" defaultValue={user.handle} required className="w-full rounded-lg border border-[var(--line)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--accent)]" />
           </label>
           <label className="block">
@@ -82,22 +82,22 @@ function EditPlayerDropdown({
 
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
-            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Name</span>
+            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Jméno</span>
             <input name="firstName" defaultValue={user.firstName ?? ""} required className="w-full rounded-lg border border-[var(--line)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--accent)]" />
           </label>
           <label className="block">
-            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Surname</span>
+            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Příjmení</span>
             <input name="lastName" defaultValue={user.lastName ?? ""} required className="w-full rounded-lg border border-[var(--line)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--accent)]" />
           </label>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-4">
           <label className="block">
-            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Age</span>
+            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Věk</span>
             <input name="age" type="number" min="6" max="120" defaultValue={user.age ?? 18} required className="w-full rounded-lg border border-[var(--line)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--accent)]" />
           </label>
           <label className="block">
-            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Power</span>
+            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Síla</span>
             <input name="power" type="number" min="0" step="0.01" defaultValue={user.power} required className="w-full rounded-lg border border-[var(--line)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--accent)]" />
           </label>
           <label className="block">
@@ -105,7 +105,7 @@ function EditPlayerDropdown({
             <input name="money" type="number" min="0" step="0.01" defaultValue={user.money} required className="w-full rounded-lg border border-[var(--line)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--accent)]" />
           </label>
           <label className="block">
-            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Team</span>
+            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Tým</span>
             <select name="teamId" defaultValue={String(user.teamId)} className="w-full rounded-lg border border-[var(--line)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--accent)]">
               {teams.map((team) => (
                 <option key={team.id} value={team.id}>{team.name}</option>
@@ -116,12 +116,12 @@ function EditPlayerDropdown({
 
         <label className="flex items-center gap-3 text-sm font-medium">
           <input type="checkbox" name="isApproved" defaultChecked={user.isApproved} className="h-4 w-4 rounded border-[var(--line)]" />
-          Player approved
+          Hráč schválen
         </label>
 
         <div className="flex justify-end">
           <button type="submit" className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]">
-            Save changes
+            Uložit změny
           </button>
         </div>
       </form>
@@ -204,36 +204,36 @@ export default async function AdminPlayersPage(props: PageProps<"/admin/players"
 
         <div className="mb-8">
           <p className="text-xs font-mono uppercase tracking-widest text-[var(--muted)] mb-1">
-            Maintainer
+            Správce
           </p>
-          <h1 className="text-3xl font-bold">Players</h1>
+          <h1 className="text-3xl font-bold">Hráči</h1>
         </div>
 
         <section className="mb-8 rounded-3xl border border-[var(--line)] bg-white/70 p-5">
           <form method="get" className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px_auto] md:items-end">
             <label className="block">
               <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-                Search players
+                Hledat hráče
               </span>
               <input
                 type="text"
                 name="q"
                 defaultValue={search}
-                placeholder="Handle, name, or email"
+                placeholder="Přezdívka, jméno nebo e-mail"
                 className="w-full rounded-xl border border-[var(--line)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
               />
             </label>
 
             <label className="block">
               <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-                Team filter
+                Filtr týmu
               </span>
               <select
                 name="team"
                 defaultValue={teamFilter}
                 className="w-full rounded-xl border border-[var(--line)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
               >
-                <option value="all">All teams</option>
+                <option value="all">Všechny týmy</option>
                 {teams.map((team) => (
                   <option key={team.slug} value={team.slug}>
                     {team.name}
@@ -247,13 +247,13 @@ export default async function AdminPlayersPage(props: PageProps<"/admin/players"
                 type="submit"
                 className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]"
               >
-                Apply
+                Použít
               </button>
               <a
                 href="/admin/players"
                 className="rounded-full border border-[var(--line)] bg-white px-4 py-2 text-sm font-semibold hover:bg-[var(--background-strong)]"
               >
-                Reset
+                Resetovat
               </a>
             </div>
           </form>
@@ -261,9 +261,9 @@ export default async function AdminPlayersPage(props: PageProps<"/admin/players"
 
         <section className="rounded-3xl border border-[var(--line)] bg-white/70 p-5">
           <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="text-xl font-semibold">Pending player approvals</h2>
+            <h2 className="text-xl font-semibold">Schválení žadatelů</h2>
             <span className="rounded-full border border-[var(--line)] bg-white px-3 py-1 font-mono text-xs uppercase tracking-wide text-[var(--muted)]">
-              {pendingUsers.length} pending
+              {pendingUsers.length} čekajících
             </span>
           </div>
 
@@ -279,11 +279,11 @@ export default async function AdminPlayersPage(props: PageProps<"/admin/players"
                       {user.firstName ?? "?"} {user.lastName ?? "?"} · @{user.handle}
                     </p>
                     <p className="text-sm text-[var(--muted)]">
-                      {user.email ?? "No email"} · age {user.age ?? "?"} · team{" "}
+                      {user.email ?? "Bez e-mailu"} · věk {user.age ?? "?"} · tým{" "}
                       <span style={{ color: user.team.colorHex }}>{user.team.name}</span>
                     </p>
                     <p className="text-xs text-[var(--muted)]">
-                      Registered {formatDate(user.createdAt)}
+                      Registrován/a {formatDate(user.createdAt)}
                     </p>
                     <EditPlayerDropdown user={user} teams={teams} />
                   </div>
@@ -294,7 +294,7 @@ export default async function AdminPlayersPage(props: PageProps<"/admin/players"
                         type="submit"
                         className="rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100"
                       >
-                        Reject
+                        Zamítnout
                       </button>
                     </form>
                     <form action={`/api/admin/users/${user.id}/approve`} method="post">

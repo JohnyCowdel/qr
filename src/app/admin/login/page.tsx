@@ -21,13 +21,13 @@ export default function AdminLoginPage() {
 
         if (!res.ok) {
           const data = await res.json();
-          setError((data.error as string | undefined) ?? "Login failed.");
+          setError((data.error as string | undefined) ?? "Přihlášení selhalo.");
           return;
         }
 
         window.location.href = "/admin";
       } catch {
-        setError("Network error. Try again.");
+        setError("Chyba sítě. Zkus to znovu.");
       }
     });
   }
@@ -39,12 +39,12 @@ export default function AdminLoginPage() {
           <p className="text-xs font-mono uppercase tracking-widest text-[var(--muted)] mb-1">
             Territory QR
           </p>
-          <h1 className="text-2xl font-bold mb-6">Admin login</h1>
+          <h1 className="text-2xl font-bold mb-6">Přihlášení správce</h1>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <label className="block">
               <span className="block text-xs font-semibold uppercase tracking-wide text-[var(--muted)] mb-1">
-                Password
+                Heslo
               </span>
               <input
                 type="password"
@@ -68,12 +68,12 @@ export default function AdminLoginPage() {
               disabled={isPending}
               className="w-full py-2.5 bg-[var(--accent)] text-white rounded-lg text-sm font-semibold hover:bg-[var(--accent-strong)] transition-colors disabled:opacity-50"
             >
-              {isPending ? "Checking…" : "Log in"}
+              {isPending ? "Ověřuji…" : "Přihlásit se"}
             </button>
           </form>
 
           <p className="mt-4 text-xs text-[var(--muted)] text-center">
-            Default: <span className="font-mono">admin</span>
+            Výchozí heslo: <span className="font-mono">admin</span>
           </p>
         </div>
       </div>

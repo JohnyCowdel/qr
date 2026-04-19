@@ -28,16 +28,16 @@ export default async function AdminPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <p className="text-xs font-mono uppercase tracking-widest text-[var(--muted)] mb-1">
-              Maintainer
+              Správce
             </p>
-            <h1 className="text-3xl font-bold">Locations</h1>
+            <h1 className="text-3xl font-bold">Lokace</h1>
           </div>
         </div>
 
         <AdminLocationsManager initialLocations={locations} initialTeams={teams} />
 
         <p className="mt-6 text-xs text-[var(--muted)] text-center">
-          Protected admin area. Keep your admin password and session secret private.
+          Chráněná administrativní oblast. Uchovej heslo a tajný klíč relace v bezpečí.
         </p>
       </div>
     </main>

@@ -133,7 +133,7 @@ export function PlayerAvatarEditor({
 
         if (!res.ok) {
           const data = await res.json().catch(() => null);
-          setError((data?.error as string | undefined) ?? "Failed to save sprite avatar.");
+          setError((data?.error as string | undefined) ?? "Nepodařilo se uložit sprite avatar.");
           return;
         }
 
@@ -167,7 +167,7 @@ export function PlayerAvatarEditor({
 
         if (!res.ok) {
           const data = await res.json().catch(() => null);
-          setError((data?.error as string | undefined) ?? "Failed to upload photo.");
+          setError((data?.error as string | undefined) ?? "Nepodařilo se nahrát fotku.");
           return;
         }
 
@@ -189,13 +189,13 @@ export function PlayerAvatarEditor({
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Profile avatar</p>
-                <h2 className="mt-1 text-2xl font-semibold tracking-[-0.03em]">Choose your look</h2>
+                <p className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Avatar profilu</p>
+                <h2 className="mt-1 text-2xl font-semibold tracking-[-0.03em]">Vyber svůj vzhled</h2>
                 <p className="mt-2 text-sm text-[var(--muted)]">
-                  Pick one of the generated Adventurer avatars, or upload a real photo (PNG, JPG, WEBP up to 1 MB).
+                  Vyber jeden z vygenerovaných Dobrodruhořských avatarů, nebo nahrej fotku (PNG, JPG, WEBP do 1 MB).
                 </p>
                 <p className="mt-1 text-xs text-[var(--muted)]">
-                  Current mode: {currentAvatarType === "photo" ? "Photo" : "Sprite"}
+                  Aktuální režim: {currentAvatarType === "photo" ? "Fotografie" : "Sprite"}
                 </p>
               </div>
 
@@ -218,10 +218,10 @@ export function PlayerAvatarEditor({
               <div className="min-w-[240px] flex-1">
                 <div>
                   <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-                    Adventurer avatars
+                    Avatary dobrodruhů
                   </p>
                   <p className="mb-4 text-sm text-[var(--muted)]">
-                    The first option matches your current sprite seed. Use Next and Previous to browse the other {AVATAR_OPTION_COUNT - 1} Adventurer variants without resetting the list when you reopen the popup.
+                    První možnost odpovídá tvému aktuálnímu spritu. Použij Další a Předchozí pro procházení {AVATAR_OPTION_COUNT - 1} variant bez resetování seznamu při znovuotevření.
                   </p>
                   <div className="mb-4 flex flex-wrap gap-2">
                     <button
@@ -230,7 +230,7 @@ export function PlayerAvatarEditor({
                       onClick={showPreviousSessionAvatars}
                       className="rounded-full border border-[var(--line)] bg-white px-4 py-2 text-sm font-semibold hover:bg-[var(--background-strong)] disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      &lt;- Previous {AVATAR_OPTION_COUNT - 1}
+                      &lt;- Předchozích {AVATAR_OPTION_COUNT - 1}
                     </button>
                     <button
                       type="button"
@@ -238,7 +238,7 @@ export function PlayerAvatarEditor({
                       onClick={regenerateSessionAvatars}
                       className="rounded-full border border-[var(--line)] bg-white px-4 py-2 text-sm font-semibold hover:bg-[var(--background-strong)] disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      Next {AVATAR_OPTION_COUNT - 1} -&gt;
+                      Dalších {AVATAR_OPTION_COUNT - 1} -&gt;
                     </button>
                   </div>
                 </div>
@@ -263,7 +263,7 @@ export function PlayerAvatarEditor({
 
                 <div className="mt-4 flex flex-wrap items-center gap-3">
                   <label className="rounded-full border border-[var(--line)] bg-white px-4 py-2 text-sm font-semibold hover:bg-[var(--background-strong)]">
-                    Upload photo
+                    Nahrát fotku
                     <input
                       type="file"
                       accept="image/png,image/jpeg,image/webp"
@@ -271,7 +271,7 @@ export function PlayerAvatarEditor({
                       className="hidden"
                     />
                   </label>
-                  {isPending ? <span className="text-sm text-[var(--muted)]">Saving avatar...</span> : null}
+                  {isPending ? <span className="text-sm text-[var(--muted)]">Ukládám avatar...</span> : null}
                 </div>
 
                 {error ? (

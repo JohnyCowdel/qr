@@ -109,13 +109,13 @@ export function AdminLocationForm(props: Props) {
         });
         if (!res.ok) {
           const data = await res.json();
-          setError((data.error as string | undefined) ?? "Something went wrong.");
+          setError((data.error as string | undefined) ?? "Něco se pokazilo.");
           return;
         }
         router.push("/admin");
         router.refresh();
       } catch {
-        setError("Network error. Try again.");
+        setError("Chyba sítě. Zkus to znovu.");
       }
     });
   }
@@ -129,20 +129,20 @@ export function AdminLocationForm(props: Props) {
       {/* Map Picker */}
       <div>
         <label className="block text-sm font-semibold mb-2 text-[var(--foreground)]">
-          Location — click map to place point
+          Lokace — klikni na mapu pro umístění bodu
         </label>
         <div className="h-72 rounded-xl overflow-hidden border border-[var(--line)]">
           <LocationPickerMap lat={lat} lng={lng} radiusM={radius} onPick={handleMapPick} />
         </div>
         <div className="grid grid-cols-2 gap-3 mt-3">
           <Field
-            label="Latitude"
+            label="Zeměpisná šířka"
             value={form.latitude}
             onChange={(v) => set("latitude", v)}
             required
           />
           <Field
-            label="Longitude"
+            label="Zeměpisná délka"
             value={form.longitude}
             onChange={(v) => set("longitude", v)}
             required
@@ -150,7 +150,7 @@ export function AdminLocationForm(props: Props) {
         </div>
       </div>
 
-      <Field label="Name" value={form.name} onChange={(v) => set("name", v)} required />
+      <Field label="Název" value={form.name} onChange={(v) => set("name", v)} required />
       <Field
         label="Summary"
         value={form.summary}
@@ -176,7 +176,7 @@ export function AdminLocationForm(props: Props) {
 
       {props.mode === "create" && (
         <p className="text-xs text-[var(--muted)]">
-          Slug and QR code ID will be generated automatically from the name.
+          Slug a ID QR kódu budou vygenerovány automaticky z názvu.
         </p>
       )}
 
@@ -192,13 +192,13 @@ export function AdminLocationForm(props: Props) {
           disabled={isPending}
           className="px-5 py-2.5 bg-[var(--accent)] text-white rounded-lg text-sm font-semibold hover:bg-[var(--accent-strong)] transition-colors disabled:opacity-50"
         >
-          {isPending ? "Saving…" : props.mode === "create" ? "Create Location" : "Save Changes"}
+          {isPending ? "Ukládám…" : props.mode === "create" ? "Vytvořit lokaci" : "Uložit změny"}
         </button>
         <a
           href="/admin"
           className="px-5 py-2.5 border border-[var(--line)] rounded-lg text-sm font-semibold hover:bg-[var(--background-strong)] transition-colors"
         >
-          Cancel
+          Zrušit
         </a>
       </div>
     </form>

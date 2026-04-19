@@ -29,7 +29,7 @@ type AuthState = {
 
 export function ClaimPanel({ location }: ClaimPanelProps) {
   const [message, setMessage] = useState("");
-  const [status, setStatus] = useState<string>("Ready to verify position.");
+  const [status, setStatus] = useState<string>("Připraven ověřit polohu.");
   const [auth, setAuth] = useState<AuthState>({
     loading: true,
     authenticated: false,
@@ -60,7 +60,7 @@ export function ClaimPanel({ location }: ClaimPanelProps) {
             handle: data.user.handle,
             teamName: data.user.team.name,
           });
-          setStatus("Signed in. Ready to verify position.");
+          setStatus("Přihlášen/a. Připraven/a ověřit polohu.");
           return;
         }
 
@@ -70,7 +70,7 @@ export function ClaimPanel({ location }: ClaimPanelProps) {
           handle: null,
           teamName: null,
         });
-        setStatus("Sign in to claim this location.");
+        setStatus("Přihlaš se, abys mohl/a nárokovat tuto lokaci.");
       } catch {
         if (!cancelled) {
           setAuth({
@@ -79,7 +79,7 @@ export function ClaimPanel({ location }: ClaimPanelProps) {
             handle: null,
             teamName: null,
           });
-          setStatus("Could not verify your session. Try again.");
+          setStatus("Relaci nelze ověřit. Zkus to znovu.");
         }
       }
     }
@@ -93,16 +93,16 @@ export function ClaimPanel({ location }: ClaimPanelProps) {
 
   async function submitClaim() {
     if (!auth.authenticated) {
-      setStatus("Sign in to claim this location.");
+      setStatus("Přihlaš se, abys mohl/a nárokovat tuto lokaci.");
       return;
     }
 
     if (!navigator.geolocation) {
-      setStatus("This browser does not expose GPS coordinates.");
+      setStatus("Tento prohlížeč neposkytuje GPS souřadnice.");
       return;
     }
 
-    setStatus("Requesting current GPS position...");
+    setStatus("Získatávám aktuální GPS polohu...");
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -131,17 +131,17 @@ export function ClaimPanel({ location }: ClaimPanelProps) {
 
             setStatus(
               `${result.message}${
-                result.distanceM ? ` Verified at ${result.distanceM.toFixed(1)} m.` : ""
-              } Refresh to see the updated feed.`,
+                result.distanceM ? ` Ověřeno ve vzdálenosti ${result.distanceM.toFixed(1)} m.` : ""
+              } Obnovte stránku, abyste viděli aktualizovaný feed.`,
             );
             setMessage("");
           } catch {
-            setStatus("Claim request failed. Try again.");
+            setStatus("Nárok selhal. Zkus to znovu.");
           }
         });
       },
       (error) => {
-        setStatus(error.message || "Unable to read current GPS position.");
+        setStatus(error.message || "Nelze přečíst aktuální GPS polohu.");
       },
       {
         enableHighAccuracy: true,
@@ -155,39 +155,39 @@ export function ClaimPanel({ location }: ClaimPanelProps) {
     <section className="glass-panel rounded-[28px] border border-[var(--line)] p-5">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold tracking-[-0.03em]">Claim this point</h2>
+          <h2 className="text-2xl font-semibold tracking-[-0.03em]">Nárokovat tento bod</h2>
           <p className="mt-1 text-sm text-[var(--muted)]">
-            The server checks that your live GPS reading is within {location.claimRadiusM} m.
+            Server ověří, že tvá aktuální GPS polóha je do {location.claimRadiusM} m.
           </p>
         </div>
         <div className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
-          GPS lock
+          GPS zámek
         </div>
       </div>
 
       <div className="mt-4 space-y-4">
         <div className="rounded-2xl border border-[var(--line)] bg-white/70 px-4 py-3 text-sm">
           {auth.loading ? (
-            <p className="text-[var(--muted)]">Checking active session...</p>
+            <p className="text-[var(--muted)]">Ověřuji relaci...</p>
           ) : auth.authenticated ? (
             <p>
-              Signed in as <span className="font-semibold">{auth.handle}</span> ({auth.teamName}).
+              Přihlášen/a jako <span className="font-semibold">{auth.handle}</span> ({auth.teamName}).
             </p>
           ) : (
             <p className="text-[var(--muted)]">
-              Not signed in. <Link href="/auth/login" className="font-semibold text-[var(--accent-strong)]">Sign in</Link> or{" "}
-              <Link href="/auth/register" className="font-semibold text-[var(--accent-strong)]">create an account</Link>.
+              Nejsi přihlášen/a. <Link href="/auth/login" className="font-semibold text-[var(--accent-strong)]">Přihlásit se</Link> nebo{" "}
+              <Link href="/auth/register" className="font-semibold text-[var(--accent-strong)]">vytvořit účet</Link>.
             </p>
           )}
         </div>
 
         <label className="block">
-          <span className="mb-2 block text-sm font-medium">Claim message</span>
+          <span className="mb-2 block text-sm font-medium">Zpráva k nárokugen</span>
           <textarea
             value={message}
             onChange={(event) => setMessage(event.target.value)}
             className="min-h-28 w-full rounded-2xl border border-[var(--line)] bg-white/80 px-4 py-3 outline-none transition focus:border-[var(--accent)]"
-            placeholder="Now it's ours. Move in from the north ridge."
+            placeholder="Teď je naše. Postupujte ze severního hřebene."
           />
         </label>
 
@@ -197,7 +197,7 @@ export function ClaimPanel({ location }: ClaimPanelProps) {
           disabled={isPending || auth.loading || !auth.authenticated}
           className="w-full rounded-full bg-[var(--accent)] px-5 py-3 font-medium text-white transition hover:bg-[var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isPending ? "Verifying position..." : "Share GPS and claim"}
+          {isPending ? "Ověřuji polohu..." : "Sdílet GPS a nárokovat"}
         </button>
 
         <div className="rounded-2xl border border-dashed border-[var(--line)] bg-white/45 px-4 py-3 text-sm leading-6 text-[var(--muted)]">

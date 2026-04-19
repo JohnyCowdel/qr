@@ -15,7 +15,7 @@ const monoFont = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: "Territory QR",
-  description: "QR-driven territory claiming game with GPS verification.",
+  description: "Hra o obsazování územních bodů pomocí QR kódů s GPS ověřením.",
 };
 
 export default function RootLayout({
@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="cs"
       className={`${displayFont.variable} ${monoFont.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>

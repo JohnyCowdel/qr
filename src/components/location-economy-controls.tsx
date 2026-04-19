@@ -110,7 +110,7 @@ export function LocationEconomyControls({
 
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-          setError((data.error as string | undefined) ?? "Failed to update worker allocation.");
+          setError((data.error as string | undefined) ?? "Aktualizace pracovníků selhala.");
           return;
         }
 
@@ -125,7 +125,7 @@ export function LocationEconomyControls({
           setCurrentPopulationValue(data.allocation.currentPopulation);
         }
       } catch {
-        setError("Network error. Try again.");
+        setError("Chyba sítě. Zkus to znovu.");
       }
     });
   }
@@ -246,27 +246,27 @@ export function LocationEconomyControls({
 
   return (
     <section className="glass-panel rounded-[28px] border border-[var(--line)] p-5">
-      <h2 className="text-2xl font-semibold tracking-[-0.03em]">Resource assignment</h2>
+      <h2 className="text-2xl font-semibold tracking-[-0.03em]">Přiřazení zdrojů</h2>
       <p className="mt-1 text-sm text-[var(--muted)]">
-        Use +/- to assign workers. Changes save instantly and stay within available workers.
+        Použij +/- pro přiřazení pracovníků. Změny se ukládají okamžitě.
       </p>
 
       <div className="mt-3 grid gap-2 sm:grid-cols-3">
         <div className="rounded-xl border border-[var(--line)] bg-white/70 px-3 py-2 text-sm">
-          Current workers: <span className="font-semibold">{totalWorkers}</span>
+          Aktuální pracovníci: <span className="font-semibold">{totalWorkers}</span>
         </div>
         <div className="rounded-xl border border-[var(--line)] bg-white/70 px-3 py-2 text-sm">
-          Assigned: <span className="font-semibold">{assigned}</span>
+          Přiřazeno: <span className="font-semibold">{assigned}</span>
         </div>
         <div className="rounded-xl border border-[var(--line)] bg-white/70 px-3 py-2 text-sm">
-          Free workers: <span className="font-semibold">{freeWorkers}</span>
+          Volní pracovníci: <span className="font-semibold">{freeWorkers}</span>
         </div>
       </div>
 
       <div className="mt-4 space-y-3">
         <ResourceRow
           emoji="💰"
-          label="Money"
+          label="Peníze"
           workers={moneyWorkers}
           growth={moneyPerDay}
           onPlus={() => adjustWorkers("money", 1)}
@@ -274,7 +274,7 @@ export function LocationEconomyControls({
         />
         <ResourceRow
           emoji="💪"
-          label="Power"
+          label="Síla"
           workers={powerWorkers}
           growth={powerPerDay}
           onPlus={() => adjustWorkers("power", 1)}
@@ -282,7 +282,7 @@ export function LocationEconomyControls({
         />
         <ResourceRow
           emoji="👨‍🌾"
-          label="Population"
+          label="Populace"
           workers={populationWorkers}
           growth={populationPerDay}
           onPlus={() => adjustWorkers("population", 1)}

@@ -140,7 +140,7 @@ export default async function MePage() {
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
         <div className="flex justify-end">
           <Link href="/" className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]">
-            Back to map
+            Zpět na mapu
           </Link>
         </div>
 
@@ -155,10 +155,10 @@ export default async function MePage() {
                 currentHandle={user.handle}
               />
               <div>
-                <p className="font-mono text-xs uppercase tracking-[0.16em] text-[var(--muted)]">Player profile</p>
+                <p className="font-mono text-xs uppercase tracking-[0.16em] text-[var(--muted)]">Profil hráče</p>
                 <h1 className="mt-1 text-3xl font-semibold tracking-[-0.03em]">{user.handle}</h1>
                 <p className="mt-2 text-sm text-[var(--muted)]">
-                  Team: <span className="font-medium" style={{ color: user.team.colorHex }}>{user.team.name}</span>
+                  Tým: <span className="font-medium" style={{ color: user.team.colorHex }}>{user.team.name}</span>
                 </p>
               </div>
             </div>
@@ -167,28 +167,28 @@ export default async function MePage() {
                 type="submit"
                 className="rounded-full border border-[var(--line)] bg-white/70 px-4 py-2 text-sm font-semibold hover:bg-white"
               >
-                Sign out
+                Odhlásit se
               </button>
             </form>
           </div>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
             <div className="rounded-[20px] border border-[var(--line)] bg-white/70 p-4">
-              <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Player power</div>
+              <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Síla hráče</div>
               <div className="mt-2 text-2xl font-semibold">💪 {formatPower(user.power)}</div>
             </div>
             <div className="rounded-[20px] border border-[var(--line)] bg-white/70 p-4">
-              <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Money</div>
+              <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Peníze</div>
               <div className="mt-2 text-2xl font-semibold">💰 {formatMoney(user.money)}</div>
             </div>
             <div className="rounded-[20px] border border-[var(--line)] bg-white/70 p-4">
-              <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Total claims</div>
+              <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Celkem nároků</div>
               <div className="mt-2 text-2xl font-semibold">{user.claims.length}</div>
             </div>
           </div>
 
           <div className="mt-3 rounded-[20px] border border-[var(--line)] bg-white/70 p-4 text-sm">
-            <p className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Profile details</p>
+            <p className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Detaily profilu</p>
             <p className="mt-2">
               {user.firstName ?? "-"} {user.lastName ?? "-"} · {user.email ?? "-"} · age {user.age ?? "-"} · resource pop {Math.round(user.population)}
             </p>
@@ -198,7 +198,7 @@ export default async function MePage() {
         <section className="glass-panel rounded-[30px] border border-[var(--line)] p-6 sm:p-7">
           <div className="grid gap-6 lg:grid-cols-2">
             <div>
-              <h2 className="text-2xl font-semibold tracking-[-0.03em]">Your team</h2>
+              <h2 className="text-2xl font-semibold tracking-[-0.03em]">Váš tým</h2>
               <div className="mt-4 space-y-3">
                 {teamPlayers.length ? teamPlayers.map((player) => (
                   <div key={player.id} className="rounded-[20px] border border-[var(--line)] bg-white/70 p-4">
@@ -219,14 +219,14 @@ export default async function MePage() {
                   </div>
                 )) : (
                   <p className="rounded-[20px] border border-dashed border-[var(--line)] bg-white/55 p-4 text-sm text-[var(--muted)]">
-                    No approved teammates found.
+                    Žádní schválení spolu hráči nebyli nalezeni.
                   </p>
                 )}
               </div>
             </div>
 
             <div>
-              <h2 className="text-2xl font-semibold tracking-[-0.03em]">Other players</h2>
+              <h2 className="text-2xl font-semibold tracking-[-0.03em]">Ostatní hráči</h2>
               <div className="mt-4 space-y-3">
                 {otherPlayers.length ? otherPlayers.map((player) => (
                   <div key={player.id} className="rounded-[20px] border border-[var(--line)] bg-white/70 p-4">
@@ -259,7 +259,7 @@ export default async function MePage() {
 
         <section className="glass-panel rounded-[30px] border border-[var(--line)] p-6 sm:p-7">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-2xl font-semibold tracking-[-0.03em]">All claimed positions</h2>
+            <h2 className="text-2xl font-semibold tracking-[-0.03em]">Všechny obsazené pozice</h2>
             <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
               {claimedPositions.length} claimed
             </span>
@@ -274,10 +274,10 @@ export default async function MePage() {
                     <p className="text-sm text-[var(--muted)]">
                       {position.ownerTeam ? (
                         <>
-                          Owner: <span style={{ color: position.ownerTeam.colorHex }}>{position.ownerTeam.name}</span>
+                          Vlastník: <span style={{ color: position.ownerTeam.colorHex }}>{position.ownerTeam.name}</span>
                         </>
                       ) : (
-                        "Owner: Neutral"
+                        "Vlastník: Neutrální"
                       )}
                     </p>
                   </div>
