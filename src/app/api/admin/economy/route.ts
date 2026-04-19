@@ -4,9 +4,9 @@ import { hashPassword } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 const schema = z.object({
-  moneyRate: z.coerce.number().min(0).max(100),
-  powerRate: z.coerce.number().min(0).max(100),
-  populationRate: z.coerce.number().min(0).max(100),
+  moneyRate: z.coerce.number().min(0).max(10000),
+  powerRate: z.coerce.number().min(0).max(10000),
+  populationRate: z.coerce.number().min(0).max(10000),
 });
 
 export async function GET() {
