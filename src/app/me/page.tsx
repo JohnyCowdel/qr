@@ -10,6 +10,8 @@ import { resolveAvatarSrc } from "@/lib/avatar-sprites";
 import { db } from "@/lib/db";
 import { runEconomyTick } from "@/lib/economy";
 
+export const dynamic = "force-dynamic";
+
 function formatPower(power: number) {
   return power.toFixed(2);
 }

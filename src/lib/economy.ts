@@ -54,21 +54,10 @@ function sanitizeWorkers(totalPopulation: number, workers: { money: number; powe
 }
 
 export async function getEconomyRates(): Promise<EconomyRates> {
-  const existing = await db.adminSettings.findUnique({
+  return db.adminSettings.upsert({
     where: { id: 1 },
-    select: {
-      moneyRate: true,
-      powerRate: true,
-      populationRate: true,
-    },
-  });
-
-  if (existing) {
-    return existing;
-  }
-
-  const settings = await db.adminSettings.create({
-    data: {
+    update: {},
+    create: {
       id: 1,
       passwordHash: hashPassword("admin"),
       moneyRate: 0.5,
@@ -81,8 +70,6 @@ export async function getEconomyRates(): Promise<EconomyRates> {
       populationRate: true,
     },
   });
-
-  return settings;
 }
 
 export async function runEconomyTick(now = new Date()) {

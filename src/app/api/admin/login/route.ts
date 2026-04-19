@@ -8,11 +8,11 @@ import {
 } from "@/lib/auth";
 
 async function getOrInitSettings() {
-  const existing = await db.adminSettings.findUnique({ where: { id: 1 } });
-  if (existing) return existing;
-  // First boot: persist default admin / admin credentials
-  return db.adminSettings.create({
-    data: { id: 1, passwordHash: hashPassword("admin") },
+  // First boot: persist default admin/admin credentials; concurrent calls stay safe.
+  return db.adminSettings.upsert({
+    where: { id: 1 },
+    update: {},
+    create: { id: 1, passwordHash: hashPassword("admin") },
   });
 }
 

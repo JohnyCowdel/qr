@@ -10,21 +10,10 @@ const schema = z.object({
 });
 
 export async function GET() {
-  const existing = await db.adminSettings.findUnique({
+  const settings = await db.adminSettings.upsert({
     where: { id: 1 },
-    select: {
-      moneyRate: true,
-      powerRate: true,
-      populationRate: true,
-    },
-  });
-
-  if (existing) {
-    return Response.json(existing);
-  }
-
-  const settings = await db.adminSettings.create({
-    data: {
+    update: {},
+    create: {
       id: 1,
       passwordHash: hashPassword("admin"),
       moneyRate: 0.5,
@@ -47,30 +36,20 @@ export async function PUT(request: Request) {
     return Response.json({ error: "Invalid economy rates." }, { status: 400 });
   }
 
-  const existing = await db.adminSettings.findUnique({ where: { id: 1 }, select: { id: true } });
-
-  const updated = existing
-    ? await db.adminSettings.update({
-        where: { id: 1 },
-        data: payload.data,
-        select: {
-          moneyRate: true,
-          powerRate: true,
-          populationRate: true,
-        },
-      })
-    : await db.adminSettings.create({
-        data: {
-          id: 1,
-          passwordHash: hashPassword("admin"),
-          ...payload.data,
-        },
-        select: {
-          moneyRate: true,
-          powerRate: true,
-          populationRate: true,
-        },
-      });
+  const updated = await db.adminSettings.upsert({
+    where: { id: 1 },
+    update: payload.data,
+    create: {
+      id: 1,
+      passwordHash: hashPassword("admin"),
+      ...payload.data,
+    },
+    select: {
+      moneyRate: true,
+      powerRate: true,
+      populationRate: true,
+    },
+  });
 
   return Response.json({ ok: true, rates: updated });
 }
