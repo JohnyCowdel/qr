@@ -149,7 +149,7 @@ export default async function Home() {
               Mapa obsazeného územní
             </h2>
             <p className="mt-1 text-sm text-[var(--muted)]">
-              Barevné kruhy znázorňují poloměr nároku každé lokace.
+              Barevné kruhy znázorňují poloměr záboru každé lokace.
             </p>
           </div>
           <div className="aspect-square w-full overflow-hidden rounded-[28px] border border-[var(--line)]">
@@ -160,7 +160,7 @@ export default async function Home() {
         <section className="glass-panel rounded-[32px] border border-[var(--line)] p-5">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold tracking-[-0.03em]">
-              Poslední nároky
+              Poslední zábory
             </h2>
             <span className="font-mono text-xs uppercase tracking-[0.18em] text-[var(--muted)]">
               Aktivity

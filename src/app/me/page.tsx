@@ -182,7 +182,7 @@ export default async function MePage() {
               <div className="mt-2 text-2xl font-semibold">💰 {formatMoney(user.money)}</div>
             </div>
             <div className="rounded-[20px] border border-[var(--line)] bg-white/70 p-4">
-              <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Celkem nároků</div>
+              <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Celkem záborů</div>
               <div className="mt-2 text-2xl font-semibold">{user.claims.length}</div>
             </div>
           </div>

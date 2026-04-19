@@ -70,7 +70,7 @@ export function ClaimPanel({ location }: ClaimPanelProps) {
           handle: null,
           teamName: null,
         });
-        setStatus("Přihlaš se, abys mohl/a nárokovat tuto lokaci.");
+        setStatus("Přihlaš se, abys mohl/a obsadit tuto lokaci.");
       } catch {
         if (!cancelled) {
           setAuth({
@@ -93,7 +93,7 @@ export function ClaimPanel({ location }: ClaimPanelProps) {
 
   async function submitClaim() {
     if (!auth.authenticated) {
-      setStatus("Přihlaš se, abys mohl/a nárokovat tuto lokaci.");
+      setStatus("Přihlaš se, abys mohl/a obsadit tuto lokaci.");
       return;
     }
 
@@ -136,7 +136,7 @@ export function ClaimPanel({ location }: ClaimPanelProps) {
             );
             setMessage("");
           } catch {
-            setStatus("Nárok selhal. Zkus to znovu.");
+            setStatus("Zábor selhal. Zkus to znovu.");
           }
         });
       },
@@ -155,7 +155,7 @@ export function ClaimPanel({ location }: ClaimPanelProps) {
     <section className="glass-panel rounded-[28px] border border-[var(--line)] p-5">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold tracking-[-0.03em]">Nárokovat tento bod</h2>
+          <h2 className="text-2xl font-semibold tracking-[-0.03em]">Obsadit tento bod</h2>
           <p className="mt-1 text-sm text-[var(--muted)]">
             Server ověří, že tvá aktuální GPS polóha je do {location.claimRadiusM} m.
           </p>
@@ -182,7 +182,7 @@ export function ClaimPanel({ location }: ClaimPanelProps) {
         </div>
 
         <label className="block">
-          <span className="mb-2 block text-sm font-medium">Zpráva k nárokugen</span>
+          <span className="mb-2 block text-sm font-medium">Zpráva k záboru</span>
           <textarea
             value={message}
             onChange={(event) => setMessage(event.target.value)}
@@ -197,7 +197,7 @@ export function ClaimPanel({ location }: ClaimPanelProps) {
           disabled={isPending || auth.loading || !auth.authenticated}
           className="w-full rounded-full bg-[var(--accent)] px-5 py-3 font-medium text-white transition hover:bg-[var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isPending ? "Ověřuji polohu..." : "Sdílet GPS a nárokovat"}
+          {isPending ? "Ověřuji polohu..." : "Sdílet GPS a obsadit"}
         </button>
 
         <div className="rounded-2xl border border-dashed border-[var(--line)] bg-white/45 px-4 py-3 text-sm leading-6 text-[var(--muted)]">

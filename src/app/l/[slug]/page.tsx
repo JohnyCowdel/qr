@@ -220,9 +220,9 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
           <section className="glass-panel rounded-[28px] border border-[var(--line)] p-5">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <h2 className="text-2xl font-semibold tracking-[-0.03em]">Historie nároků</h2>
+                <h2 className="text-2xl font-semibold tracking-[-0.03em]">Historie záborů</h2>
                 <p className="mt-1 text-sm text-[var(--muted)]">
-                  Každý úspěšný nárok a zpráva je uložena jako neměnná událost.
+                  Každý úspěšný zábor a zpráva je uložena jako neměnná událost.
                 </p>
               </div>
               <div className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">

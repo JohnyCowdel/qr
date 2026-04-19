@@ -14,7 +14,7 @@ export function DeleteLocationButton({
   const [isPending, startTransition] = useTransition();
 
   function handleDelete() {
-    if (!confirm(`Smazat "${slug}"? Všechny přidružené nároky budou také smazány.`)) return;
+    if (!confirm(`Smazat "${slug}"? Všechny přidružené zábory budou také smazány.`)) return;
     startTransition(async () => {
       const response = await fetch(`/api/admin/locations/${slug}`, { method: "DELETE" });
       if (!response.ok) {
