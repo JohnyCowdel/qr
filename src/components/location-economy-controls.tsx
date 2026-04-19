@@ -32,6 +32,8 @@ export function LocationEconomyControls({
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const requestIdRef = useRef(0);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingValuesRef = useRef<{ money: number; power: number; population: number } | null>(null);
 
   useEffect(() => {
     setMoneyWorkers(popToMoney);
@@ -49,20 +51,13 @@ export function LocationEconomyControls({
     async function loadRates() {
       try {
         const response = await fetch("/api/admin/economy", { cache: "no-store" });
-        if (!response.ok) {
-          return;
-        }
-
+        if (!response.ok) return;
         const data = (await response.json()) as {
           moneyRate: number;
           powerRate: number;
           populationRate: number;
         };
-
-        if (canceled) {
-          return;
-        }
-
+        if (canceled) return;
         setMoneyRate(data.moneyRate);
         setPowerRate(data.powerRate);
         setPopulationRate(data.populationRate);
@@ -72,8 +67,14 @@ export function LocationEconomyControls({
     }
 
     loadRates();
+
+    // Re-fetch when the user returns to the tab so admin changes propagate.
+    function onFocus() { void loadRates(); }
+    window.addEventListener("focus", onFocus);
+
     return () => {
       canceled = true;
+      window.removeEventListener("focus", onFocus);
     };
   }, []);
 
@@ -130,6 +131,20 @@ export function LocationEconomyControls({
     });
   }
 
+  function schedulePersist(values: { money: number; power: number; population: number }) {
+    pendingValuesRef.current = values;
+    if (debounceTimerRef.current !== null) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    debounceTimerRef.current = setTimeout(() => {
+      debounceTimerRef.current = null;
+      if (pendingValuesRef.current) {
+        void persist(pendingValuesRef.current);
+        pendingValuesRef.current = null;
+      }
+    }, 600);
+  }
+
   function adjustWorkers(target: "money" | "power" | "population", delta: 1 | -1) {
     let money = moneyWorkers;
     let power = powerWorkers;
@@ -146,7 +161,7 @@ export function LocationEconomyControls({
         return;
       }
 
-      void persist({ money, power, population });
+      schedulePersist({ money, power, population });
       setMoneyWorkers(money);
       setPowerWorkers(power);
       setPopulationWorkers(population);
@@ -195,7 +210,7 @@ export function LocationEconomyControls({
     setMoneyWorkers(money);
     setPowerWorkers(power);
     setPopulationWorkers(population);
-    void persist({ money, power, population });
+    schedulePersist({ money, power, population });
   }
 
   function ResourceRow({
@@ -224,7 +239,7 @@ export function LocationEconomyControls({
             <button
               type="button"
               onClick={onMinus}
-              disabled={isPending || workers <= 0}
+              disabled={workers <= 0}
               className="h-8 w-8 rounded-full border border-[var(--line)] bg-white text-base font-bold hover:bg-[var(--background-strong)] disabled:opacity-50"
             >
               -
@@ -233,7 +248,7 @@ export function LocationEconomyControls({
             <button
               type="button"
               onClick={onPlus}
-              disabled={isPending}
+              disabled={false}
               className="h-8 w-8 rounded-full border border-[var(--line)] bg-white text-base font-bold hover:bg-[var(--background-strong)] disabled:opacity-50"
             >
               +

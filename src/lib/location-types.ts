@@ -26,6 +26,18 @@ export function baseArmorForType(type: LocationType): number {
   return BASE_ARMOR[type] ?? BASE_ARMOR.camp;
 }
 
+const CZECH_NAMES: Record<LocationType, string> = {
+  fortress: "Pevnost",
+  tower: "Věž",
+  town: "Město",
+  camp: "Tábor",
+  mine: "Důl",
+};
+
+export function czechNameForType(type: LocationType): string {
+  return CZECH_NAMES[type] ?? type;
+}
+
 export function normalizeLocationType(value: string): LocationType {
   if (LOCATION_TYPES.includes(value as LocationType)) {
     return value as LocationType;

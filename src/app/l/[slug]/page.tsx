@@ -11,6 +11,7 @@ import { db } from "@/lib/db";
 import { TerritoryMap } from "@/components/territory-map";
 import { formatMeters } from "@/lib/geo";
 import { getLocationPageData } from "@/lib/game";
+import { czechNameForType, normalizeLocationType } from "@/lib/location-types";
 
 function formatPopulation(population: number) {
   return new Intl.NumberFormat("en").format(population);
@@ -127,12 +128,12 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                     Typ lokace
                   </div>
                   <div className="mt-2 text-base font-medium">
-                    {location.image} {location.type}
+                    {location.image} {czechNameForType(normalizeLocationType(location.type))}
                   </div>
                 </div>
                 <div className="rounded-[22px] border border-[var(--line)] bg-white/70 p-4">
                   <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
-                    👨‍🌾 Population
+                    👨‍🌾 Populace
                   </div>
                   <div className="mt-2 text-base font-medium">
                     {formatPopulation(location.currentPopulation)}
@@ -159,7 +160,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-[22px] border border-[var(--line)] bg-white/70 p-4">
                   <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
-                    Poslední obdělení
+                    Poslední zábor
                   </div>
                   <div className="mt-2 text-base font-medium">
                     {location.lastClaimedAt ? formatDate(location.lastClaimedAt) : "Ještě nezabráno"}
