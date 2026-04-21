@@ -9,7 +9,7 @@ import { PlayerAvatarEditor } from "@/components/player-avatar-editor";
 import { TradeOffersPanel } from "@/components/trade-offers-panel";
 import { resolveAvatarSrc } from "@/lib/avatar-sprites";
 import { db } from "@/lib/db";
-import { runEconomyTick } from "@/lib/economy";
+import { getEconomyRates, normalizeWorkerSplit, runEconomyTick } from "@/lib/economy";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +19,10 @@ function formatPower(power: number) {
 
 function formatMoney(money: number) {
   return `$${money.toFixed(2)}`;
+}
+
+function formatGrowth(value: number) {
+  return `+${value.toFixed(2)}/den`;
 }
 
 function formatDate(date: string) {
@@ -69,7 +73,7 @@ export default async function MePage() {
     redirect("/auth/login");
   }
 
-  const [teamPlayers, otherPlayers, claimedPositions, offerTargets, pendingOffers] = await Promise.all([
+  const [teamPlayers, otherPlayers, claimedPositions, offerTargets, pendingOffers, economyRates, activeOwnedLocations] = await Promise.all([
     db.user.findMany({
       where: {
         teamId: user.teamId,
@@ -114,22 +118,32 @@ export default async function MePage() {
         { handle: "asc" },
       ],
     }),
-    db.location.findMany({
+    db.claim.findMany({
       where: {
-        ownerTeamId: { not: null },
+        userId: user.id,
       },
       include: {
-        ownerTeam: {
+        team: {
           select: {
             name: true,
             colorHex: true,
           },
         },
+        location: {
+          include: {
+            ownerTeam: {
+              select: {
+                name: true,
+                colorHex: true,
+              },
+            },
+          },
+        },
       },
-      orderBy: [
-        { lastClaimedAt: "desc" },
-        { name: "asc" },
-      ],
+      orderBy: {
+        createdAt: "desc",
+      },
+      distinct: ["locationId"],
     }),
     db.user.findMany({
       where: {
@@ -174,6 +188,28 @@ export default async function MePage() {
         createdAt: "desc",
       },
     }),
+    getEconomyRates(),
+    db.location.findMany({
+      where: {
+        ownerTeamId: { not: null },
+      },
+      select: {
+        id: true,
+        currentPopulation: true,
+        popToMoney: true,
+        popToPower: true,
+        popToPopulation: true,
+        claims: {
+          select: {
+            userId: true,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 1,
+        },
+      },
+    }),
   ]);
 
   const incomingOffers = pendingOffers
@@ -207,6 +243,31 @@ export default async function MePage() {
     }));
 
   const currentAvatarSrc = resolveAvatarSrc(user);
+  const activeLocationsForUser = activeOwnedLocations.filter((location) => location.claims[0]?.userId === user.id);
+  const growthPerDay = activeLocationsForUser.reduce(
+    (acc, location) => {
+      const workers = normalizeWorkerSplit(location.currentPopulation, {
+        money: location.popToMoney,
+        power: location.popToPower,
+        population: location.popToPopulation,
+      });
+
+      return {
+        money: acc.money + workers.money * economyRates.moneyRate,
+        power: acc.power + workers.power * economyRates.powerRate,
+      };
+    },
+    { money: 0, power: 0 },
+  );
+  const myClaimedPositions = claimedPositions.map((claim) => ({
+    id: claim.location.id,
+    slug: claim.location.slug,
+    name: claim.location.name,
+    image: claim.location.image,
+    ownerTeam: claim.location.ownerTeam,
+    claimedAt: claim.createdAt,
+    claimedForTeam: claim.team,
+  }));
 
   return (
     <main className="terrain-grid min-h-screen px-4 py-8 sm:px-6 lg:px-8">
@@ -250,10 +311,12 @@ export default async function MePage() {
             <div className="rounded-[20px] border border-[var(--line)] bg-white/70 p-4">
               <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Síla hráče</div>
               <div className="mt-2 text-2xl font-semibold">💪 {formatPower(user.power)}</div>
+              <div className="mt-1 text-sm font-medium text-emerald-700">↗ {formatGrowth(growthPerDay.power)}</div>
             </div>
             <div className="rounded-[20px] border border-[var(--line)] bg-white/70 p-4">
               <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Peníze</div>
               <div className="mt-2 text-2xl font-semibold">💰 {formatMoney(user.money)}</div>
+              <div className="mt-1 text-sm font-medium text-emerald-700">↗ {formatGrowth(growthPerDay.money)}</div>
             </div>
             <div className="rounded-[20px] border border-[var(--line)] bg-white/70 p-4">
               <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Celkem záborů</div>
@@ -282,95 +345,36 @@ export default async function MePage() {
         />
 
         <section className="glass-panel rounded-[30px] border border-[var(--line)] p-6 sm:p-7">
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div>
-              <h2 className="text-2xl font-semibold tracking-[-0.03em]">Váš tým</h2>
-              <div className="mt-4 space-y-3">
-                {teamPlayers.length ? teamPlayers.map((player) => (
-                  <div key={player.id} className="rounded-[20px] border border-[var(--line)] bg-white/70 p-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={resolveAvatarSrc(player)}
-                          alt={formatPlayerName(player)}
-                          className="h-12 w-12 rounded-[14px] border border-[var(--line)] bg-white object-cover"
-                        />
-                        <div>
-                          <p className="font-medium">{formatPlayerName(player)}</p>
-                          <p className="text-sm text-[var(--muted)]">@{player.handle}{player.id === user.id ? " · you" : ""}</p>
-                        </div>
-                      </div>
-                      <div className="text-sm font-semibold">💪 {formatPower(player.power)}</div>
-                    </div>
-                  </div>
-                )) : (
-                  <p className="rounded-[20px] border border-dashed border-[var(--line)] bg-white/55 p-4 text-sm text-[var(--muted)]">
-                    Žádní schválení spolu hráči nebyli nalezeni.
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <h2 className="text-2xl font-semibold tracking-[-0.03em]">Ostatní hráči</h2>
-              <div className="mt-4 space-y-3">
-                {otherPlayers.length ? otherPlayers.map((player) => (
-                  <div key={player.id} className="rounded-[20px] border border-[var(--line)] bg-white/70 p-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={resolveAvatarSrc(player)}
-                          alt={formatPlayerName(player)}
-                          className="h-12 w-12 rounded-[14px] border border-[var(--line)] bg-white object-cover"
-                        />
-                        <div>
-                          <p className="font-medium">{formatPlayerName(player)}</p>
-                          <p className="text-sm text-[var(--muted)]">
-                            @{player.handle} · <span style={{ color: player.team.colorHex }}>{player.team.name}</span>
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-sm font-semibold">💪 {formatPower(player.power)}</div>
-                    </div>
-                  </div>
-                )) : (
-                  <p className="rounded-[20px] border border-dashed border-[var(--line)] bg-white/55 p-4 text-sm text-[var(--muted)]">
-                    No other approved players found.
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="glass-panel rounded-[30px] border border-[var(--line)] p-6 sm:p-7">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-2xl font-semibold tracking-[-0.03em]">Všechny obsazené pozice</h2>
+            <h2 className="text-2xl font-semibold tracking-[-0.03em]">Tvoje pozice</h2>
             <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
-              {claimedPositions.length} claimed
+              {myClaimedPositions.length} obsazeno
             </span>
           </div>
 
           <div className="mt-4 space-y-3">
-            {claimedPositions.length ? claimedPositions.map((position) => (
+            {myClaimedPositions.length ? myClaimedPositions.map((position) => (
               <div key={position.id} className="rounded-[20px] border border-[var(--line)] bg-white/70 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="font-medium">{position.image} {position.name}</p>
                     <p className="text-sm text-[var(--muted)]">
+                      Obsazeno pro tým: <span style={{ color: position.claimedForTeam.colorHex }}>{position.claimedForTeam.name}</span>
+                    </p>
+                    <p className="text-sm text-[var(--muted)]">
                       {position.ownerTeam ? (
                         <>
-                          Vlastník: <span style={{ color: position.ownerTeam.colorHex }}>{position.ownerTeam.name}</span>
+                          Aktuální vlastník: <span style={{ color: position.ownerTeam.colorHex }}>{position.ownerTeam.name}</span>
                         </>
                       ) : (
-                        "Vlastník: Neutrální"
+                        "Aktuální vlastník: Neutrální"
                       )}
                     </p>
                   </div>
                   <div className="text-right text-xs text-[var(--muted)]">
-                    <p className="font-mono uppercase tracking-[0.12em]">Last claimed</p>
+                    <p className="font-mono uppercase tracking-[0.12em]">Obsazeno dne</p>
                     <p className="mt-1 text-sm font-medium text-[var(--foreground)]">
-                      {position.lastClaimedAt ? formatDate(position.lastClaimedAt.toISOString()) : "-"}
+                      {formatDate(position.claimedAt.toISOString())}
                     </p>
                   </div>
                 </div>
@@ -385,7 +389,7 @@ export default async function MePage() {
               </div>
             )) : (
               <p className="rounded-[20px] border border-dashed border-[var(--line)] bg-white/55 p-4 text-sm text-[var(--muted)]">
-                No positions have been claimed yet.
+                Zatím jsi neobsadil/a žádnou pozici.
               </p>
             )}
           </div>
@@ -413,6 +417,79 @@ export default async function MePage() {
                 No claims yet. Scan a QR and claim your first location.
               </p>
             )}
+          </div>
+        </section>
+
+        <section className="glass-panel rounded-[30px] border border-[var(--line)] p-6 sm:p-7">
+          <h2 className="text-2xl font-semibold tracking-[-0.03em]">Týmy</h2>
+          <div className="mt-4 space-y-3">
+            <details className="rounded-[20px] border border-[var(--line)] bg-white/70 p-4">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-medium">
+                <span>Váš tým</span>
+                <span className="rounded-full border border-[var(--line)] bg-white px-3 py-1 font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
+                  {teamPlayers.length} hráčů
+                </span>
+              </summary>
+              <div className="mt-4 space-y-3">
+                {teamPlayers.length ? teamPlayers.map((player) => (
+                  <div key={player.id} className="rounded-[20px] border border-[var(--line)] bg-white/70 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={resolveAvatarSrc(player)}
+                          alt={formatPlayerName(player)}
+                          className="h-12 w-12 rounded-[14px] border border-[var(--line)] bg-white object-cover"
+                        />
+                        <div>
+                          <p className="font-medium">{formatPlayerName(player)}</p>
+                          <p className="text-sm text-[var(--muted)]">@{player.handle}{player.id === user.id ? " · ty" : ""}</p>
+                        </div>
+                      </div>
+                      <div className="text-sm font-semibold">💪 {formatPower(player.power)}</div>
+                    </div>
+                  </div>
+                )) : (
+                  <p className="rounded-[20px] border border-dashed border-[var(--line)] bg-white/55 p-4 text-sm text-[var(--muted)]">
+                    Žádní schválení spoluhráči nebyli nalezeni.
+                  </p>
+                )}
+              </div>
+            </details>
+
+            <details className="rounded-[20px] border border-[var(--line)] bg-white/70 p-4">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-medium">
+                <span>Ostatní týmy</span>
+                <span className="rounded-full border border-[var(--line)] bg-white px-3 py-1 font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
+                  {otherPlayers.length} hráčů
+                </span>
+              </summary>
+              <div className="mt-4 space-y-3">
+                {otherPlayers.length ? otherPlayers.map((player) => (
+                  <div key={player.id} className="rounded-[20px] border border-[var(--line)] bg-white/70 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={resolveAvatarSrc(player)}
+                          alt={formatPlayerName(player)}
+                          className="h-12 w-12 rounded-[14px] border border-[var(--line)] bg-white object-cover"
+                        />
+                        <div>
+                          <p className="font-medium">{formatPlayerName(player)}</p>
+                          <p className="text-sm text-[var(--muted)]">
+                            @{player.handle} · <span style={{ color: player.team.colorHex }}>{player.team.name}</span>
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-sm font-semibold">💪 {formatPower(player.power)}</div>
+                    </div>
+                  </div>
+                )) : (
+                  <p className="rounded-[20px] border border-dashed border-[var(--line)] bg-white/55 p-4 text-sm text-[var(--muted)]">
+                    Žádní další schválení hráči nebyli nalezeni.
+                  </p>
+                )}
+              </div>
+            </details>
           </div>
         </section>
       </div>

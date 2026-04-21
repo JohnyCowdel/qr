@@ -8,6 +8,8 @@ export default function AdminEconomyPage() {
   const [moneyRate, setMoneyRate] = useState("0.5");
   const [powerRate, setPowerRate] = useState("0.5");
   const [populationRate, setPopulationRate] = useState("1");
+  const [claimPopulationLossPercent, setClaimPopulationLossPercent] = useState("25");
+  const [claimPopulationMin, setClaimPopulationMin] = useState("3");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -26,6 +28,8 @@ export default function AdminEconomyPage() {
           moneyRate: number;
           powerRate: number;
           populationRate: number;
+          claimPopulationLossPercent: number;
+          claimPopulationMin: number;
         };
 
         if (canceled) {
@@ -35,6 +39,8 @@ export default function AdminEconomyPage() {
         setMoneyRate(String(data.moneyRate));
         setPowerRate(String(data.powerRate));
         setPopulationRate(String(data.populationRate));
+        setClaimPopulationLossPercent(String(data.claimPopulationLossPercent));
+        setClaimPopulationMin(String(data.claimPopulationMin));
       } catch {
         // keep defaults on fetch failure
       }
@@ -60,6 +66,8 @@ export default function AdminEconomyPage() {
             moneyRate: Number(moneyRate),
             powerRate: Number(powerRate),
             populationRate: Number(populationRate),
+            claimPopulationLossPercent: Number(claimPopulationLossPercent),
+            claimPopulationMin: Number(claimPopulationMin),
           }),
         });
 
@@ -84,6 +92,9 @@ export default function AdminEconomyPage() {
         <h1 className="mb-2 text-2xl font-bold">Ekonomika</h1>
         <p className="mb-6 text-sm text-[var(--muted)]">
           Nastav, jak rychle každý přiřazený pracovník generuje peníze, sílu a růst populace.
+        </p>
+        <p className="mb-6 text-sm text-[var(--muted)]">
+          Zde také nastavíš, o kolik procent se při každém záboru okamžitě sníží populace lokace a jaký je absolutní minimální limit.
         </p>
 
         <div className="glass-panel rounded-xl p-6">
@@ -128,6 +139,37 @@ export default function AdminEconomyPage() {
                   step="0.01"
                   value={populationRate}
                   onChange={(e) => setPopulationRate(e.target.value)}
+                  className="w-full rounded-lg border border-[var(--line)] bg-white/60 px-3 py-2 text-sm focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                />
+              </label>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                  Odběr populace při záboru (%)
+                </span>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  value={claimPopulationLossPercent}
+                  onChange={(e) => setClaimPopulationLossPercent(e.target.value)}
+                  className="w-full rounded-lg border border-[var(--line)] bg-white/60 px-3 py-2 text-sm focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                  Minimální populace po záboru
+                </span>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={claimPopulationMin}
+                  onChange={(e) => setClaimPopulationMin(e.target.value)}
                   className="w-full rounded-lg border border-[var(--line)] bg-white/60 px-3 py-2 text-sm focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
                 />
               </label>

@@ -104,6 +104,8 @@ model AdminSettings {
   moneyRate      Float @default(0.5)
   powerRate      Float @default(0.5)
   populationRate Float @default(1)
+  claimPopulationLossPercent Float @default(25)
+  claimPopulationMin Int @default(3)
 }
 
 enum TradeResourceType {

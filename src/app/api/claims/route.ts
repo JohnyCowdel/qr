@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { readUserIdFromCookieHeader } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { runEconomyTick } from "@/lib/economy";
+import { getEconomyRates, runEconomyTick } from "@/lib/economy";
 import { calculateDistanceMeters } from "@/lib/geo";
 
 const claimSchema = z.object({
@@ -92,6 +92,12 @@ export async function POST(request: Request) {
   }
 
   const teamId = user.teamId;
+  const rates = await getEconomyRates();
+  const lossRatio = Math.max(0, Math.min(1, rates.claimPopulationLossPercent / 100));
+  const reducedPopulation = Math.max(
+    rates.claimPopulationMin,
+    location.currentPopulation * (1 - lossRatio),
+  );
 
   const claim = await db.$transaction(async (tx) => {
     const createdClaim = await tx.claim.create({
@@ -122,6 +128,7 @@ export async function POST(request: Request) {
       data: {
         ownerTeamId: teamId,
         lastClaimedAt: createdClaim.createdAt,
+        currentPopulation: reducedPopulation,
         popToMoney: 0,
         popToPower: 0,
         popToPopulation: 30,

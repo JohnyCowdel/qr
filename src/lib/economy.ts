@@ -10,6 +10,8 @@ type EconomyRates = {
   moneyRate: number;
   powerRate: number;
   populationRate: number;
+  claimPopulationLossPercent: number;
+  claimPopulationMin: number;
 };
 
 function sanitizeWorkers(totalPopulation: number, workers: { money: number; power: number; population: number }) {
@@ -63,11 +65,15 @@ export async function getEconomyRates(): Promise<EconomyRates> {
       moneyRate: 0.5,
       powerRate: 0.5,
       populationRate: 1,
+      claimPopulationLossPercent: 25,
+      claimPopulationMin: 3,
     },
     select: {
       moneyRate: true,
       powerRate: true,
       populationRate: true,
+      claimPopulationLossPercent: true,
+      claimPopulationMin: true,
     },
   });
 }

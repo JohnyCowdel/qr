@@ -7,6 +7,8 @@ const schema = z.object({
   moneyRate: z.coerce.number().min(0).max(10000),
   powerRate: z.coerce.number().min(0).max(10000),
   populationRate: z.coerce.number().min(0).max(10000),
+  claimPopulationLossPercent: z.coerce.number().min(0).max(100),
+  claimPopulationMin: z.coerce.number().int().min(0).max(100000),
 });
 
 export async function GET() {
@@ -19,11 +21,15 @@ export async function GET() {
       moneyRate: 0.5,
       powerRate: 0.5,
       populationRate: 1,
+      claimPopulationLossPercent: 25,
+      claimPopulationMin: 3,
     },
     select: {
       moneyRate: true,
       powerRate: true,
       populationRate: true,
+      claimPopulationLossPercent: true,
+      claimPopulationMin: true,
     },
   });
 
@@ -48,6 +54,8 @@ export async function PUT(request: Request) {
       moneyRate: true,
       powerRate: true,
       populationRate: true,
+      claimPopulationLossPercent: true,
+      claimPopulationMin: true,
     },
   });
 

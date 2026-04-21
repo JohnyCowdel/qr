@@ -35,7 +35,7 @@ export default function HowToPage() {
             <h2 className="text-lg font-semibold">📍 Obsazování lokací</h2>
             <ul className="space-y-2 text-sm leading-7 text-[var(--muted)]">
               <li>🚶 Musíš být fyzicky na místě – hra ověří tvou GPS polohu.</li>
-              <li>⚡ Obsazení stojí sílu. Cena = obrana lokace + 1. Pokud nemáš dost síly, lokaci obsadit nemůžeš.</li>
+              <li>⚡ Obsazení stojí sílu. Cena za obsazení je obrana lokace 🛡️ + 1. Pokud nemáš dost síly, lokaci obsadit nemůžeš.</li>
               <li>🔄 Obsazenou lokaci může kdykoliv přebít jiný hráč s dostatečnou silou.</li>
               <li>🏗️ Když lokaci převezme jiný hráč, přebírá ji se vším, co v ní už bylo vybudováno.</li>
             </ul>
@@ -63,6 +63,24 @@ export default function HowToPage() {
                 přidělovat víc pracovníků a tím zvyšovat produkci všeho ostatního. Populace zůstává v lokaci,
                 takže při převzetí ji získá nový vlastník lokace.
               </li>
+            </ul>
+          </div>
+
+          <hr className="border-[var(--line)]" />
+
+          <div className="space-y-2">
+            <h2 className="text-lg font-semibold">🤝 Obchod mezi hráči</h2>
+            <p className="text-sm leading-7 text-[var(--muted)]">
+              V profilu najdeš sekci Nabídky, kde můžeš obchodovat s ostatními hráči.
+              Nastavíš, co <span className="font-medium text-foreground">nabízíš</span> (⚡ nebo 💰) a co
+              <span className="font-medium text-foreground"> požaduješ</span> zpět.
+            </p>
+            <ul className="space-y-2 text-sm leading-7 text-[var(--muted)]">
+              <li>📤 Nabídku vytvoříš přes tlačítko Vytvořit nabídku.</li>
+              <li>📥 Nabídka se zobrazí v profilu cílového hráče v sekci Nabídky.</li>
+              <li>✅ Když hráč nabídku přijme, proběhne transakce automaticky mezi oběma účty.</li>
+              <li>🎁 Dar funguje tak, že v poli Požaduji nastavíš hodnotu 0.</li>
+              <li>🔒 Obchod lze přijmout jen pokud mají oba hráči dost prostředků na splnění nabídky.</li>
             </ul>
           </div>
 
