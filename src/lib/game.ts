@@ -93,14 +93,15 @@ export async function getHomePageData() {
       ...claim,
       createdAt: claim.createdAt.toISOString(),
     })),
-    teamSummary: teams.map((team) => ({
-      slug: team.slug,
-      name: team.name,
-      colorHex: team.colorHex,
-      power: team.power,
-      playerPower: team.users.reduce((sum, user) => sum + user.power, 0),
-      claimedCount: team.ownedLocations.length,
-    })),
+    teamSummary: teams
+      .map((team) => ({
+        slug: team.slug,
+        name: team.name,
+        colorHex: team.colorHex,
+        playerPower: team.users.reduce((sum, user) => sum + user.power, 0),
+        claimedCount: team.ownedLocations.length,
+      }))
+      .sort((a, b) => b.playerPower - a.playerPower),
     totalTeamPower: teams.reduce((sum, team) => sum + team.power, 0),
     totalPlayerPower: teams.reduce((sum, team) => sum + team.users.reduce((s, user) => s + user.power, 0), 0),
   };

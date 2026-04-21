@@ -1,0 +1,26 @@
+{
+  "svg": "mine1.svg",
+  "version": 1,
+  "buildingMap": {
+    "building1": {
+      "name": "Sachta",
+      "stats": { "gpop": 0, "pow": 0, "maxpop": 0, "mny": 3, "arm": 0 },
+      "cost": 60
+    },
+    "building2": {
+      "name": "Kovarna",
+      "stats": { "gpop": 0, "pow": 0, "maxpop": 1, "mny": 4, "arm": 0 },
+      "cost": 50
+    },
+    "building3": {
+      "name": "Plot",
+      "stats": { "gpop": 0, "pow": 2, "maxpop": 0, "mny": 0, "arm": 5 },
+      "cost": 70
+    },
+    "building4": {
+      "name": "Strážní věž",
+      "stats": { "gpop": 0, "pow": 0, "maxpop": 2, "mny": 0, "arm": 7 },
+      "cost": 100
+    }
+  }
+}

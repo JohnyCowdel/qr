@@ -63,12 +63,20 @@ export default async function Home() {
           </div>
         ) : (
           <div className="flex items-center justify-between">
-            <Link
-              href="/auth/login"
-              className="rounded-full border border-[var(--line)] bg-white/70 px-4 py-2 text-sm font-semibold hover:bg-white"
-            >
-              Přihlásit se
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/auth/login"
+                className="rounded-full border border-[var(--line)] bg-white/70 px-4 py-2 text-sm font-semibold hover:bg-white"
+              >
+                Přihlásit se
+              </Link>
+              <Link
+                href="/jak-na-to"
+                className="rounded-full border border-[var(--line)] bg-white/70 px-4 py-2 text-sm font-semibold hover:bg-white"
+              >
+                Jak na to? 📖
+              </Link>
+            </div>
             <Link
               href="/auth/register"
               className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]"
@@ -83,7 +91,7 @@ export default async function Home() {
             <div className="space-y-4">
               <div className="space-y-3">
                 <h1 className="max-w-2xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
-                  Naskenuj QR kód, prozkoumej lokaci, a získej ji pro svůj tým.
+                  Prozkoumej, naskenuj, obsazuj pro svůj tým.
                 </h1>
               </div>
               <div className="grid gap-2 sm:grid-cols-3">
@@ -95,9 +103,9 @@ export default async function Home() {
                 </div>
                 <div className="rounded-[22px] border border-[var(--line)] bg-[var(--panel-strong)] p-3">
                   <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
-                    Síla týmů
+                    Obsazené lokace
                   </div>
-                  <div className="mt-2 text-3xl font-semibold">💪 {totalTeamPower}</div>
+                  <div className="mt-2 text-3xl font-semibold">{locations.filter((l) => l.ownerTeam !== null).length}</div>
                 </div>
                 <div className="rounded-[22px] border border-[var(--line)] bg-[var(--panel-strong)] p-3">
                   <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
@@ -135,7 +143,7 @@ export default async function Home() {
                       <span className="font-medium">{team.name}</span>
                     </div>
                     <span className="font-mono text-sm text-[var(--muted)]">
-                      {team.claimedCount} obsazeno · tým 💪 {team.power} · hráči 💪 {formatPower(team.playerPower)}
+                      {team.claimedCount} obsazeno · 💪 {formatPower(team.playerPower)}
                     </span>
                   </div>
                 ))}
@@ -149,7 +157,7 @@ export default async function Home() {
               Mapa obsazeného územní
             </h2>
             <p className="mt-1 text-sm text-[var(--muted)]">
-              Barevné kruhy znázorňují poloměr záboru každé lokace.
+              Klikni na bod pro více informací.
             </p>
           </div>
           <div className="aspect-square w-full overflow-hidden rounded-[28px] border border-[var(--line)]">

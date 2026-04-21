@@ -1,0 +1,36 @@
+{
+  "svg": "camp1.svg",
+  "version": 1,
+  "buildingMap": {
+    "building1": {
+      "name": "Ohniště",
+      "stats": { "gpop": 2, "pow": 2, "maxpop": 0, "mny": 0, "arm": 2 },
+      "cost": 60
+    },
+    "building2": {
+      "name": "Palisáda",
+      "stats": { "gpop": 0, "pow": 0, "maxpop": 5, "mny": 0, "arm": 10 },
+      "cost": 130
+    },
+    "building3": {
+      "name": "Koželužna",
+      "stats": { "gpop": 0, "pow": 1, "maxpop": 0, "mny": 2, "arm": 0 },
+      "cost": 30
+    },
+    "building4": {
+      "name": "Koňské Teepee",
+      "stats": { "gpop": 1, "pow": 1, "maxpop": 5, "mny": 0, "arm": 0 },
+      "cost": 60
+    },
+    "building5": {
+      "name": "Medvědovo Teepee",
+      "stats": { "gpop": 1, "pow": 1, "maxpop": 5, "mny": 0, "arm": 0 },
+      "cost": 60
+    },
+    "building6": {
+      "name": "Hlavní Teepee",
+      "stats": { "gpop": 1, "pow": 1, "maxpop": 5, "mny": 0, "arm": 0 },
+      "cost": 60
+    }
+  }
+}

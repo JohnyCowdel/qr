@@ -45,6 +45,8 @@ model User {
   teamId    Int
   team      Team     @relation(fields: [teamId], references: [id])
   claims    Claim[]
+  sentTradeOffers     TradeOffer[] @relation("SentTradeOffers")
+  receivedTradeOffers TradeOffer[] @relation("ReceivedTradeOffers")
 }
 
 model Location {
@@ -102,4 +104,36 @@ model AdminSettings {
   moneyRate      Float @default(0.5)
   powerRate      Float @default(0.5)
   populationRate Float @default(1)
+}
+
+enum TradeResourceType {
+  MONEY
+  POWER
+}
+
+enum TradeOfferStatus {
+  PENDING
+  ACCEPTED
+  CANCELLED
+}
+
+model TradeOffer {
+  id              Int               @id @default(autoincrement())
+  fromUserId      Int
+  toUserId        Int
+  offerType       TradeResourceType
+  offerAmount     Float
+  requestType     TradeResourceType
+  requestAmount   Float             @default(0)
+  status          TradeOfferStatus  @default(PENDING)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  acceptedAt      DateTime?
+  cancelledAt     DateTime?
+  fromUser        User              @relation("SentTradeOffers", fields: [fromUserId], references: [id])
+  toUser          User              @relation("ReceivedTradeOffers", fields: [toUserId], references: [id])
+
+  @@index([fromUserId, createdAt])
+  @@index([toUserId, createdAt])
+  @@index([status, createdAt])
 }

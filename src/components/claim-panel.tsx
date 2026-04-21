@@ -11,6 +11,7 @@ type ClaimPanelProps = {
     claimRadiusM: number;
     latitude: number;
     longitude: number;
+    armor: number;
   };
   isOwner?: boolean;
 };
@@ -26,9 +27,11 @@ type AuthState = {
   authenticated: boolean;
   handle: string | null;
   teamName: string | null;
+  power: number | null;
 };
 
 export function ClaimPanel({ location, isOwner = false }: ClaimPanelProps) {
+  const claimCost = location.armor + 1;
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<string>("Připraven ověřit polohu.");
   const [auth, setAuth] = useState<AuthState>({
@@ -36,6 +39,7 @@ export function ClaimPanel({ location, isOwner = false }: ClaimPanelProps) {
     authenticated: false,
     handle: null,
     teamName: null,
+    power: null,
   });
   const [isPending, startTransition] = useTransition();
 
@@ -60,6 +64,7 @@ export function ClaimPanel({ location, isOwner = false }: ClaimPanelProps) {
             authenticated: true,
             handle: data.user.handle,
             teamName: data.user.team.name,
+            power: data.user.power,
           });
           setStatus("Přihlášen/a. Připraven/a ověřit polohu.");
           return;
@@ -70,6 +75,7 @@ export function ClaimPanel({ location, isOwner = false }: ClaimPanelProps) {
           authenticated: false,
           handle: null,
           teamName: null,
+          power: null,
         });
         setStatus("Přihlaš se, abys mohl/a obsadit tuto lokaci.");
       } catch {
@@ -79,6 +85,7 @@ export function ClaimPanel({ location, isOwner = false }: ClaimPanelProps) {
             authenticated: false,
             handle: null,
             teamName: null,
+            power: null,
           });
           setStatus("Relaci nelze ověřit. Zkus to znovu.");
         }
@@ -173,6 +180,8 @@ export function ClaimPanel({ location, isOwner = false }: ClaimPanelProps) {
           ) : auth.authenticated ? (
             <p>
               Přihlášen/a jako <span className="font-semibold">{auth.handle}</span> ({auth.teamName}).
+              {" "}Tvá síla: <span className={auth.power !== null && auth.power >= claimCost ? "font-semibold text-green-700" : "font-semibold text-red-600"}>⚡ {auth.power?.toFixed(2) ?? "?"}</span>
+              {" "}/ potřeba <span className="font-semibold">⚡ {claimCost}</span>.
             </p>
           ) : (
             <p className="text-[var(--muted)]">
@@ -195,10 +204,22 @@ export function ClaimPanel({ location, isOwner = false }: ClaimPanelProps) {
         <button
           type="button"
           onClick={submitClaim}
-          disabled={isPending || auth.loading || !auth.authenticated || isOwner}
+          disabled={
+            isPending ||
+            auth.loading ||
+            !auth.authenticated ||
+            isOwner ||
+            (auth.power !== null && auth.power < claimCost)
+          }
           className="w-full rounded-full bg-[var(--accent)] px-5 py-3 font-medium text-white transition hover:bg-[var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isPending ? "Ověřuji polohu..." : isOwner ? "Již obsazeno" : "Sdílet GPS a obsadit"}
+          {isPending
+            ? "Ověřuji polohu..."
+            : isOwner
+              ? "Již obsazeno"
+              : auth.authenticated && auth.power !== null && auth.power < claimCost
+                ? `Nedostatečná síla (potřeba ⚡ ${claimCost})`
+                : `Obsadit ⚡ ${claimCost}`}
         </button>
 
         <div className="rounded-2xl border border-dashed border-[var(--line)] bg-white/45 px-4 py-3 text-sm leading-6 text-[var(--muted)]">

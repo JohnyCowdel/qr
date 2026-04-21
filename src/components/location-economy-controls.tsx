@@ -218,6 +218,7 @@ export function LocationEconomyControls({
     label,
     workers,
     growth,
+    atMax,
     onPlus,
     onMinus,
   }: {
@@ -225,15 +226,17 @@ export function LocationEconomyControls({
     label: string;
     workers: number;
     growth: number;
+    atMax?: boolean;
     onPlus: () => void;
     onMinus: () => void;
   }) {
     return (
-      <div className="rounded-xl border border-[var(--line)] bg-white/70 p-3">
+      <div className={`rounded-xl border p-3${atMax ? " border-red-300 bg-red-50" : " border-[var(--line)] bg-white/70"}`}>
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold">{emoji} {label}</p>
+            <p className={`text-sm font-semibold${atMax ? " text-red-600" : ""}`}>{emoji} {label}</p>
             <p className="text-xs text-[var(--muted)]">⬆️ {Number.isInteger(growth) ? growth : growth.toFixed(2)} / den</p>
+            {atMax && <p className="mt-0.5 text-xs italic text-red-500">Populace na maximu</p>}
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -303,6 +306,7 @@ export function LocationEconomyControls({
           label="Populace"
           workers={populationWorkers}
           growth={populationPerDay}
+          atMax={Math.floor(currentPopulationValue) >= maxPopulation}
           onPlus={() => adjustWorkers("population", 1)}
           onMinus={() => adjustWorkers("population", -1)}
         />

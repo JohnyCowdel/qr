@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { divIcon, point } from "leaflet";
 import { Circle, MapContainer, Marker, Polygon, Polyline, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
 
@@ -209,12 +209,13 @@ function AutoFitBounds({
   bounds: [[number, number], [number, number]] | null;
 }) {
   const map = useMap();
+  const didFit = useRef(false);
 
   useEffect(() => {
-    if (!bounds) {
+    if (!bounds || didFit.current) {
       return;
     }
-
+    didFit.current = true;
     map.fitBounds(bounds, { padding: [24, 24] });
   }, [map, bounds]);
 

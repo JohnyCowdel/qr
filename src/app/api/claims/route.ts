@@ -80,6 +80,17 @@ export async function POST(request: Request) {
     return Response.json({ ok: false, message: "User account not found." }, { status: 404 });
   }
 
+  const claimCost = location.armor + 1;
+  if (user.power < claimCost) {
+    return Response.json(
+      {
+        ok: false,
+        message: `Nedostatečná síla. Potřebuješ ⚡ ${claimCost}, máš ⚡ ${user.power.toFixed(2)}.`,
+      },
+      { status: 403 },
+    );
+  }
+
   const teamId = user.teamId;
 
   const claim = await db.$transaction(async (tx) => {
@@ -99,6 +110,11 @@ export async function POST(request: Request) {
         user: true,
         location: true,
       },
+    });
+
+    await tx.user.update({
+      where: { id: user.id },
+      data: { power: { decrement: claimCost } },
     });
 
     await tx.location.update({

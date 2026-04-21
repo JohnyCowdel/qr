@@ -1,0 +1,83 @@
+{
+  "svg": "settlement8.svg",
+  "version": 1,
+  "buildingMap": {
+    "building1": {
+      "name": "Pevnost",
+      "stats": {
+        "gpop": 0,
+        "pow": 2,
+        "maxpop": 10,
+        "mny": 0,
+        "arm": 7
+      },
+      "cost": 190
+    },
+    "building2": {
+      "name": "Radnice",
+      "stats": {
+        "gpop": 1,
+        "pow": 3,
+        "maxpop": 5,
+        "mny": 1,
+        "arm": 0
+      },
+      "cost": 120
+    },
+    "building3": {
+      "name": "Dilna",
+      "stats": {
+        "gpop": 0,
+        "pow": 3,
+        "maxpop": 0,
+        "mny": 3,
+        "arm": 0
+      },
+      "cost": 60
+    },
+    "building4": {
+      "name": "Brana",
+      "stats": {
+        "gpop": 0,
+        "pow": 1,
+        "maxpop": 0,
+        "mny": 0,
+        "arm": 6
+      },
+      "cost": 70
+    },
+    "building5": {
+      "name": "Severni Hradba",
+      "stats": {
+        "gpop": 0,
+        "pow": 0,
+        "maxpop": 0,
+        "mny": 0,
+        "arm": 8
+      },
+      "cost": 60
+    },
+    "building6": {
+      "name": "Jizni Hradba",
+      "stats": {
+        "gpop": 0,
+        "pow": 0,
+        "maxpop": 0,
+        "mny": 0,
+        "arm": 11
+      },
+      "cost": 70
+    },
+    "building7": {
+      "name": "Farma",
+      "stats": {
+        "gpop": 2,
+        "pow": 1,
+        "maxpop": 10,
+        "mny": 0,
+        "arm": 0
+      },
+      "cost": 130
+    }
+  }
+}

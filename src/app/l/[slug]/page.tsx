@@ -217,6 +217,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                 latitude: location.latitude,
                 longitude: location.longitude,
                 claimRadiusM: location.claimRadiusM,
+                armor: location.armor,
               }}
               isOwner={canManageEconomy}
             />

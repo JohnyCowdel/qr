@@ -6,6 +6,7 @@ import { USER_COOKIE_NAME, verifyUserSessionToken } from "@/lib/auth";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { ClaimEventCard } from "@/components/claim-event-card";
 import { PlayerAvatarEditor } from "@/components/player-avatar-editor";
+import { TradeOffersPanel } from "@/components/trade-offers-panel";
 import { resolveAvatarSrc } from "@/lib/avatar-sprites";
 import { db } from "@/lib/db";
 import { runEconomyTick } from "@/lib/economy";
@@ -68,7 +69,7 @@ export default async function MePage() {
     redirect("/auth/login");
   }
 
-  const [teamPlayers, otherPlayers, claimedPositions] = await Promise.all([
+  const [teamPlayers, otherPlayers, claimedPositions, offerTargets, pendingOffers] = await Promise.all([
     db.user.findMany({
       where: {
         teamId: user.teamId,
@@ -130,7 +131,80 @@ export default async function MePage() {
         { name: "asc" },
       ],
     }),
+    db.user.findMany({
+      where: {
+        id: { not: user.id },
+        isApproved: true,
+        passwordHash: { not: null },
+      },
+      include: {
+        team: {
+          select: {
+            name: true,
+            colorHex: true,
+          },
+        },
+      },
+      orderBy: [
+        { teamId: "asc" },
+        { handle: "asc" },
+      ],
+    }),
+    db.tradeOffer.findMany({
+      where: {
+        status: "PENDING",
+        OR: [
+          { fromUserId: user.id },
+          { toUserId: user.id },
+        ],
+      },
+      include: {
+        fromUser: {
+          select: {
+            handle: true,
+          },
+        },
+        toUser: {
+          select: {
+            handle: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
   ]);
+
+  const incomingOffers = pendingOffers
+    .filter((offer) => offer.toUserId === user.id)
+    .map((offer) => ({
+      id: offer.id,
+      fromUserId: offer.fromUserId,
+      toUserId: offer.toUserId,
+      offerType: offer.offerType,
+      offerAmount: offer.offerAmount,
+      requestType: offer.requestType,
+      requestAmount: offer.requestAmount,
+      createdAt: offer.createdAt.toISOString(),
+      fromUserHandle: offer.fromUser.handle,
+      toUserHandle: offer.toUser.handle,
+    }));
+
+  const outgoingOffers = pendingOffers
+    .filter((offer) => offer.fromUserId === user.id)
+    .map((offer) => ({
+      id: offer.id,
+      fromUserId: offer.fromUserId,
+      toUserId: offer.toUserId,
+      offerType: offer.offerType,
+      offerAmount: offer.offerAmount,
+      requestType: offer.requestType,
+      requestAmount: offer.requestAmount,
+      createdAt: offer.createdAt.toISOString(),
+      fromUserHandle: offer.fromUser.handle,
+      toUserHandle: offer.toUser.handle,
+    }));
 
   const currentAvatarSrc = resolveAvatarSrc(user);
 
@@ -194,6 +268,18 @@ export default async function MePage() {
             </p>
           </div>
         </section>
+
+        <TradeOffersPanel
+          currentUserId={user.id}
+          targets={offerTargets.map((target) => ({
+            id: target.id,
+            handle: target.handle,
+            teamName: target.team.name,
+            teamColorHex: target.team.colorHex,
+          }))}
+          incomingOffers={incomingOffers}
+          outgoingOffers={outgoingOffers}
+        />
 
         <section className="glass-panel rounded-[30px] border border-[var(--line)] p-6 sm:p-7">
           <div className="grid gap-6 lg:grid-cols-2">
