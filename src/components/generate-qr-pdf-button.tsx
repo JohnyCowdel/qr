@@ -3,6 +3,61 @@
 import QRCode from "qrcode";
 import { useState } from "react";
 
+let fontInitPromise: Promise<boolean> | null = null;
+
+function arrayBufferToBase64(buffer: ArrayBuffer) {
+  let binary = "";
+  const bytes = new Uint8Array(buffer);
+  const chunkSize = 0x8000;
+
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, i + chunkSize);
+    binary += String.fromCharCode(...chunk);
+  }
+
+  return btoa(binary);
+}
+
+async function ensureCzechPdfFonts(doc: {
+  addFileToVFS: (name: string, data: string) => void;
+  addFont: (postScriptName: string, id: string, style: string) => void;
+}) {
+  if (!fontInitPromise) {
+    fontInitPromise = (async () => {
+      try {
+        const regularUrl = "https://github.com/notofonts/noto-fonts/raw/main/hinted/ttf/NotoSerif/NotoSerif-Regular.ttf";
+        const italicUrl = "https://github.com/notofonts/noto-fonts/raw/main/hinted/ttf/NotoSerif/NotoSerif-Italic.ttf";
+
+        const [regularRes, italicRes] = await Promise.all([
+          fetch(regularUrl),
+          fetch(italicUrl),
+        ]);
+
+        if (!regularRes.ok || !italicRes.ok) {
+          return false;
+        }
+
+        const [regularBuffer, italicBuffer] = await Promise.all([
+          regularRes.arrayBuffer(),
+          italicRes.arrayBuffer(),
+        ]);
+
+        doc.addFileToVFS("NotoSerif-Regular.ttf", arrayBufferToBase64(regularBuffer));
+        doc.addFont("NotoSerif-Regular.ttf", "NotoSerif", "normal");
+
+        doc.addFileToVFS("NotoSerif-Italic.ttf", arrayBufferToBase64(italicBuffer));
+        doc.addFont("NotoSerif-Italic.ttf", "NotoSerif", "italic");
+
+        return true;
+      } catch {
+        return false;
+      }
+    })();
+  }
+
+  return fontInitPromise;
+}
+
 type Location = {
   slug: string;
   name: string;
@@ -36,6 +91,10 @@ export function GenerateQRPdfButton({ locations }: Props) {
 
       const doc = new jsPDF({ unit: "mm", format: "a4" });
       const origin = window.location.origin;
+      const czechFontReady = await ensureCzechPdfFonts(doc as unknown as {
+        addFileToVFS: (name: string, data: string) => void;
+        addFont: (postScriptName: string, id: string, style: string) => void;
+      });
 
       for (let i = 0; i < locations.length; i++) {
         const location = locations[i];
@@ -65,14 +124,15 @@ export function GenerateQRPdfButton({ locations }: Props) {
         // Draw QR image centered in cell
         const qrX = x + (cellW - QR_SIZE) / 2;
         const qrY = y + 6;
+        const centerX = qrX + QR_SIZE / 2;
         doc.addImage(dataUrl, "PNG", qrX, qrY, QR_SIZE, QR_SIZE);
 
         // Draw title in a condensed poster-like style (Playbill spirit).
         doc.setFont("times", "bold");
-        doc.setFontSize(14);
-        doc.setCharSpace(0.35);
+        doc.setFontSize(18);
+        doc.setCharSpace(0.45);
         doc.setTextColor(26, 45, 33); // --foreground
-        doc.text(location.name.toUpperCase(), x + cellW / 2, qrY + QR_SIZE + 8, {
+        doc.text(location.name.toUpperCase(), centerX, qrY + QR_SIZE + 9, {
           align: "center",
           maxWidth: cellW - 8,
         });
@@ -81,11 +141,11 @@ export function GenerateQRPdfButton({ locations }: Props) {
         // Draw summary below name in italics.
         const summary = (location.summary ?? "").trim();
         if (summary) {
-          doc.setFont("times", "italic");
+          doc.setFont(czechFontReady ? "NotoSerif" : "times", "italic");
           doc.setFontSize(9);
           const maxSummaryWidth = cellW - 10;
-          const summaryLines = doc.splitTextToSize(summary, maxSummaryWidth).slice(0, 3);
-          doc.text(summaryLines, x + cellW / 2, qrY + QR_SIZE + 14, {
+          const summaryLines = doc.splitTextToSize(summary, maxSummaryWidth).slice(0, 4);
+          doc.text(summaryLines, centerX, qrY + QR_SIZE + 16, {
             align: "center",
             maxWidth: maxSummaryWidth,
           });
