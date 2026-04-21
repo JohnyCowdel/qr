@@ -88,12 +88,13 @@ function buildInteractiveSvgMarkup(svgText: string, items: BuildingItem[], selec
   return new XMLSerializer().serializeToString(svg);
 }
 
-function formatEffect(label: string, value: number) {
-  return `${label}: ${value.toFixed(2)}`;
+function formatEffect(icon: string, label: string, value: number) {
+  return `${icon} ${label}: +${value.toFixed(2)}`;
 }
 
 export function BuildingsPanel({ slug, canManage, locationType }: Props) {
   const [items, setItems] = useState<BuildingItem[]>([]);
+  const [userMoney, setUserMoney] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [svgText, setSvgText] = useState("");
@@ -114,13 +115,25 @@ export function BuildingsPanel({ slug, canManage, locationType }: Props) {
 
   async function load() {
     try {
-      const res = await fetch(`/api/locations/${slug}/buildings`, { cache: "no-store" });
-      if (!res.ok) {
+      const [buildingsRes, meRes] = await Promise.all([
+        fetch(`/api/locations/${slug}/buildings`, { cache: "no-store" }),
+        fetch("/api/auth/me", { cache: "no-store" }),
+      ]);
+
+      if (!buildingsRes.ok) {
         throw new Error("Nepodařilo se načíst budovy.");
       }
 
-      const data = (await res.json()) as { ok: boolean; buildings: BuildingItem[] };
+      const data = (await buildingsRes.json()) as { ok: boolean; buildings: BuildingItem[] };
       setItems(data.buildings);
+
+      if (meRes.ok) {
+        const me = (await meRes.json()) as {
+          authenticated: boolean;
+          user?: { money: number };
+        };
+        setUserMoney(me.authenticated ? (me.user?.money ?? null) : null);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Nepodařilo se načíst budovy.");
     }
@@ -174,6 +187,7 @@ export function BuildingsPanel({ slug, canManage, locationType }: Props) {
   }, [items, selectedSvgKey]);
 
   const builtCount = useMemo(() => items.filter((x) => x.isBuilt).length, [items]);
+  const canAffordSelected = selectedBuilding ? (userMoney ?? 0) >= selectedBuilding.cost : false;
 
   function build(buildingDefId: number) {
     setError(null);
@@ -254,14 +268,13 @@ export function BuildingsPanel({ slug, canManage, locationType }: Props) {
           {selectedBuilding ? (
             <>
               <div className="text-lg font-semibold">{selectedBuilding.name}</div>
-              <div className="mt-1 text-xs text-[var(--muted)]">{selectedBuilding.svgKey}</div>
 
               <div className="mt-3 space-y-1 text-sm text-[var(--muted)]">
-                <div>{formatEffect("mny", selectedBuilding.effectMny)}</div>
-                <div>{formatEffect("pow", selectedBuilding.effectPow)}</div>
-                <div>{formatEffect("gpop", selectedBuilding.effectGpop)}</div>
-                <div>{formatEffect("maxpop", selectedBuilding.effectMaxpop)}</div>
-                <div>{formatEffect("arm", selectedBuilding.effectArm)}</div>
+                <div>{formatEffect("💰", "Růst peněz", selectedBuilding.effectMny)}</div>
+                <div>{formatEffect("💪", "Růst síly", selectedBuilding.effectPow)}</div>
+                <div>{formatEffect("👨‍🌾", "Růst populace", selectedBuilding.effectGpop)}</div>
+                <div>{formatEffect("🏘️", "Max. populace", selectedBuilding.effectMaxpop)}</div>
+                <div>{formatEffect("🛡️", "Obrana", selectedBuilding.effectArm)}</div>
               </div>
 
               {selectedBuilding.isBuilt ? (
@@ -272,7 +285,7 @@ export function BuildingsPanel({ slug, canManage, locationType }: Props) {
                 <button
                   type="button"
                   onClick={() => build(selectedBuilding.id)}
-                  disabled={isPending}
+                  disabled={isPending || !canAffordSelected}
                   className="mt-4 w-full rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)] disabled:opacity-60"
                 >
                   Koupit za {selectedBuilding.cost.toFixed(0)} $
@@ -282,6 +295,12 @@ export function BuildingsPanel({ slug, canManage, locationType }: Props) {
                   Budovu může koupit jen vlastník lokace.
                 </div>
               )}
+
+              {canManage && !selectedBuilding.isBuilt ? (
+                <div className="mt-2 text-xs text-[var(--muted)]">
+                  Stav konta: {(userMoney ?? 0).toFixed(2)} $ {!canAffordSelected ? "(nedostatek peněz)" : ""}
+                </div>
+              ) : null}
             </>
           ) : (
             <div className="text-sm text-[var(--muted)]">

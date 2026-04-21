@@ -172,18 +172,45 @@ export async function POST(request: Request, { params }: PageProps) {
     return Response.json({ ok: false, message: "Tato budova zde nemůže stát." }, { status: 400 });
   }
 
-  const user = await db.user.findUnique({ where: { id: userId }, select: { money: true } });
-  if (!user || user.money < def.cost) {
+  const result = await db.$transaction(async (tx) => {
+    const updated = await tx.user.updateMany({
+      where: {
+        id: userId,
+        money: {
+          gte: def.cost,
+        },
+      },
+      data: {
+        money: {
+          decrement: def.cost,
+        },
+      },
+    });
+
+    if (updated.count === 0) {
+      return { ok: false as const };
+    }
+
+    await tx.builtBuilding.create({ data: { locationId: location.id, buildingDefId } });
+
+    const refreshedUser = await tx.user.findUnique({
+      where: { id: userId },
+      select: { money: true },
+    });
+
+    return { ok: true as const, money: refreshedUser?.money ?? 0 };
+  });
+
+  if (!result.ok) {
+    const refreshed = await db.user.findUnique({ where: { id: userId }, select: { money: true } });
     return Response.json(
-      { ok: false, message: `Nedostatek zlatých. Potřebuješ ${def.cost.toFixed(0)}, máš ${(user?.money ?? 0).toFixed(2)}.` },
+      {
+        ok: false,
+        message: `Nedostatek zlatých. Potřebuješ ${def.cost.toFixed(0)}, máš ${(refreshed?.money ?? 0).toFixed(2)}.`,
+      },
       { status: 403 },
     );
   }
 
-  await db.$transaction(async (tx) => {
-    await tx.user.update({ where: { id: userId }, data: { money: { decrement: def.cost } } });
-    await tx.builtBuilding.create({ data: { locationId: location.id, buildingDefId } });
-  });
-
-  return Response.json({ ok: true, message: `${def.name} postavena.` });
+  return Response.json({ ok: true, message: `${def.name} postavena.`, remainingMoney: result.money });
 }

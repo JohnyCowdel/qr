@@ -184,15 +184,18 @@ export async function runEconomyTick(now = new Date()) {
     const buildingGpop = locationEffects.gpop;
     const buildingMaxpop = locationEffects.maxpop;
 
-    const moneyDelta = workers.money * rates.moneyRate * elapsedDays + buildingMny * elapsedDays;
-    const powerDelta = workers.power * rates.powerRate * elapsedDays + buildingPow * elapsedDays;
+    const effectiveMoneyRate = rates.moneyRate + buildingMny;
+    const effectivePowerRate = rates.powerRate + buildingPow;
+    const effectivePopulationRate = rates.populationRate + buildingGpop;
+
+    const moneyDelta = workers.money * effectiveMoneyRate * elapsedDays;
+    const powerDelta = workers.power * effectivePowerRate * elapsedDays;
 
     const effectiveMaxPopulation = maxPopulation + buildingMaxpop;
     const currentPopulation = Math.max(minPopulation, Math.min(effectiveMaxPopulation, location.currentPopulation));
     const growthFactor = workers.population / POPULATION_BASE_ASSIGNMENT;
     const dPopulation =
-      rates.populationRate * growthFactor * currentPopulation * (1 - currentPopulation / effectiveMaxPopulation) * elapsedDays +
-      buildingGpop * elapsedDays;
+      effectivePopulationRate * growthFactor * currentPopulation * (1 - currentPopulation / effectiveMaxPopulation) * elapsedDays;
     const nextPopulation = Math.max(
       minPopulation,
       Math.min(effectiveMaxPopulation, roundDownPopulation(currentPopulation + dPopulation)),

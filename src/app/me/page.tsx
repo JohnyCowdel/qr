@@ -272,12 +272,12 @@ export default async function MePage() {
         population: location.popToPopulation,
       });
       const locationEffects = effectsByLocation.get(location.id) ?? { mny: 0, pow: 0 };
-      const buildingMny = locationEffects.mny;
-      const buildingPow = locationEffects.pow;
+      const effectiveMoneyRate = economyRates.moneyRate + locationEffects.mny;
+      const effectivePowerRate = economyRates.powerRate + locationEffects.pow;
 
       return {
-        money: acc.money + workers.money * economyRates.moneyRate + buildingMny,
-        power: acc.power + workers.power * economyRates.powerRate + buildingPow,
+        money: acc.money + workers.money * effectiveMoneyRate,
+        power: acc.power + workers.power * effectivePowerRate,
       };
     },
     { money: 0, power: 0 },

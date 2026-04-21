@@ -112,6 +112,17 @@ export default function AdminBuildingsPage() {
             <section key={locationType} className="rounded-2xl border border-[var(--line)] bg-white/70 p-4">
               <h2 className="mb-3 text-lg font-semibold uppercase tracking-wide text-[var(--muted)]">{locationType}</h2>
 
+              <div className="mb-2 hidden gap-2 px-1 text-xs font-semibold uppercase tracking-wide text-[var(--muted)] lg:grid lg:grid-cols-[1.3fr_repeat(6,minmax(0,1fr))_auto]">
+                <div>Budova</div>
+                <div>Cena ($)</div>
+                <div>👨‍🌾 Růst populace</div>
+                <div>💪 Růst síly</div>
+                <div>🏘️ Max. populace</div>
+                <div>💰 Růst peněz</div>
+                <div>🛡️ Obrana</div>
+                <div>Akce</div>
+              </div>
+
               <div className="space-y-3">
                 {items.map((row) => (
                   <div key={row.id} className="grid gap-2 rounded-xl border border-[var(--line)] bg-white p-3 lg:grid-cols-[1.3fr_repeat(6,minmax(0,1fr))_auto]">
