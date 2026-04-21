@@ -1,4 +1,7 @@
 import { randomBytes, scryptSync } from "crypto";
+import { fileURLToPath } from "url";
+import path from "path";
+import { readFile } from "fs/promises";
 import { PrismaClient } from "@prisma/client";
 
 function hashPassword(password) {
@@ -8,6 +11,9 @@ function hashPassword(password) {
 }
 
 const prisma = new PrismaClient();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const teams = [
   { slug: "crimson-foxes", name: "🦊 Rudé lišky", colorHex: "#c84c3c", power: 32 },
@@ -160,6 +166,51 @@ async function main() {
     create: { id: 1, passwordHash: hashPassword("admin") },
     update: {},
   });
+
+  // Seed building definitions from sprite metadata.
+  // Cost default = 10 × sum of all effect values (can be overridden by admin later).
+  const metadataFiles = [
+    { file: "camp1.metadata.json", locationType: "camp" },
+    { file: "mine1.metadata.json", locationType: "mine" },
+    { file: "settlement8.metadata.json", locationType: "town" },
+  ];
+
+  const buildingDefs = [];
+  for (const source of metadataFiles) {
+    const fullPath = path.join(__dirname, "..", "sprites", source.file);
+    const parsed = JSON.parse(await readFile(fullPath, "utf8"));
+    const buildingMap = parsed.buildingMap ?? {};
+
+    for (const [svgKey, building] of Object.entries(buildingMap)) {
+      const stats = building.stats ?? {};
+      const effectGpop = Number(stats.gpop ?? 0);
+      const effectPow = Number(stats.pow ?? 0);
+      const effectMaxpop = Number(stats.maxpop ?? 0);
+      const effectMny = Number(stats.mny ?? 0);
+      const effectArm = Number(stats.arm ?? 0);
+
+      buildingDefs.push({
+        name: String(building.name),
+        svgKey: String(svgKey),
+        locationType: source.locationType,
+        effectGpop,
+        effectPow,
+        effectMaxpop,
+        effectMny,
+        effectArm,
+        cost: 10 * (effectGpop + effectPow + effectMaxpop + effectMny + effectArm),
+      });
+    }
+  }
+
+  for (const def of buildingDefs) {
+    await prisma.buildingDef.upsert({
+      where: { name: def.name },
+      create: def,
+      update: { svgKey: def.svgKey, locationType: def.locationType },
+      // Note: cost and effects are NOT overwritten on update so admin changes are preserved.
+    });
+  }
 }
 
 main()

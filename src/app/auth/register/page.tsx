@@ -1,6 +1,8 @@
 import { db } from "@/lib/db";
 import { RegisterForm } from "@/components/register-form";
 
+export const dynamic = "force-dynamic";
+
 export default async function RegisterPage() {
   const teams = await db.team.findMany({
     orderBy: { name: "asc" },

@@ -1,10 +1,22 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "noreply@qr-game.vercel.app";
 
+function getResendClient() {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    return null;
+  }
+
+  return new Resend(apiKey);
+}
+
 export async function sendApprovalEmail(userEmail: string, userHandle: string) {
+  const resend = getResendClient();
+  if (!resend) {
+    return { ok: false, error: "Missing RESEND_API_KEY" };
+  }
+
   try {
     const result = await resend.emails.send({
       from: FROM_EMAIL,
@@ -94,6 +106,10 @@ export async function sendApprovalEmail(userEmail: string, userHandle: string) {
 
 export async function sendLoginEmail(userEmail: string, loginToken: string, userHandle: string) {
   const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://qr-game.vercel.app"}/auth/verify?token=${loginToken}`;
+  const resend = getResendClient();
+  if (!resend) {
+    return { ok: false, error: "Missing RESEND_API_KEY" };
+  }
 
   try {
     const result = await resend.emails.send({

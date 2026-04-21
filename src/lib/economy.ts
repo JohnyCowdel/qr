@@ -110,6 +110,36 @@ export async function runEconomyTick(now = new Date()) {
     },
   });
 
+  const locationIds = locations.map((location) => location.id);
+  const builtEffects = locationIds.length
+    ? await db.builtBuilding.findMany({
+        where: {
+          locationId: { in: locationIds },
+        },
+        select: {
+          locationId: true,
+          buildingDef: {
+            select: {
+              effectMny: true,
+              effectPow: true,
+              effectGpop: true,
+              effectMaxpop: true,
+            },
+          },
+        },
+      })
+    : [];
+
+  const effectsByLocation = new Map<number, { mny: number; pow: number; gpop: number; maxpop: number }>();
+  for (const row of builtEffects) {
+    const current = effectsByLocation.get(row.locationId) ?? { mny: 0, pow: 0, gpop: 0, maxpop: 0 };
+    current.mny += row.buildingDef.effectMny;
+    current.pow += row.buildingDef.effectPow;
+    current.gpop += row.buildingDef.effectGpop;
+    current.maxpop += row.buildingDef.effectMaxpop;
+    effectsByLocation.set(row.locationId, current);
+  }
+
   for (const location of locations) {
     const ownerUserId = location.claims[0]?.userId;
     if (!ownerUserId) {
@@ -148,15 +178,24 @@ export async function runEconomyTick(now = new Date()) {
       population: location.popToPopulation,
     });
 
-    const moneyDelta = workers.money * rates.moneyRate * elapsedDays;
-    const powerDelta = workers.power * rates.powerRate * elapsedDays;
+    const locationEffects = effectsByLocation.get(location.id) ?? { mny: 0, pow: 0, gpop: 0, maxpop: 0 };
+    const buildingMny = locationEffects.mny;
+    const buildingPow = locationEffects.pow;
+    const buildingGpop = locationEffects.gpop;
+    const buildingMaxpop = locationEffects.maxpop;
 
-    const currentPopulation = Math.max(minPopulation, Math.min(maxPopulation, location.currentPopulation));
+    const moneyDelta = workers.money * rates.moneyRate * elapsedDays + buildingMny * elapsedDays;
+    const powerDelta = workers.power * rates.powerRate * elapsedDays + buildingPow * elapsedDays;
+
+    const effectiveMaxPopulation = maxPopulation + buildingMaxpop;
+    const currentPopulation = Math.max(minPopulation, Math.min(effectiveMaxPopulation, location.currentPopulation));
     const growthFactor = workers.population / POPULATION_BASE_ASSIGNMENT;
-    const dPopulation = rates.populationRate * growthFactor * currentPopulation * (1 - currentPopulation / maxPopulation) * elapsedDays;
+    const dPopulation =
+      rates.populationRate * growthFactor * currentPopulation * (1 - currentPopulation / effectiveMaxPopulation) * elapsedDays +
+      buildingGpop * elapsedDays;
     const nextPopulation = Math.max(
       minPopulation,
-      Math.min(maxPopulation, roundDownPopulation(currentPopulation + dPopulation)),
+      Math.min(effectiveMaxPopulation, roundDownPopulation(currentPopulation + dPopulation)),
     );
     const populationDelta = Math.max(0, nextPopulation - currentPopulation);
 

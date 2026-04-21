@@ -80,7 +80,19 @@ export async function POST(request: Request) {
     return Response.json({ ok: false, message: "User account not found." }, { status: 404 });
   }
 
-  const claimCost = location.armor + 1;
+  const builtRows = await db.builtBuilding.findMany({
+    where: { locationId: location.id },
+    select: {
+      buildingDef: {
+        select: {
+          effectArm: true,
+        },
+      },
+    },
+  });
+  const builtArmBonus = builtRows.reduce((sum, row) => sum + row.buildingDef.effectArm, 0);
+  const effectiveArmor = location.armor + Math.floor(builtArmBonus);
+  const claimCost = effectiveArmor + 1;
   if (user.power < claimCost) {
     return Response.json(
       {

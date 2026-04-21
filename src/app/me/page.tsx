@@ -237,6 +237,33 @@ export default async function MePage() {
 
   const currentAvatarSrc = resolveAvatarSrc(user);
   const activeLocationsForUser = activeOwnedLocations.filter((location) => location.claims[0]?.userId === user.id);
+
+  const activeLocationIds = activeLocationsForUser.map((location) => location.id);
+  const builtEffects = activeLocationIds.length
+    ? await db.builtBuilding.findMany({
+        where: {
+          locationId: { in: activeLocationIds },
+        },
+        select: {
+          locationId: true,
+          buildingDef: {
+            select: {
+              effectMny: true,
+              effectPow: true,
+            },
+          },
+        },
+      })
+    : [];
+
+  const effectsByLocation = new Map<number, { mny: number; pow: number }>();
+  for (const row of builtEffects) {
+    const current = effectsByLocation.get(row.locationId) ?? { mny: 0, pow: 0 };
+    current.mny += row.buildingDef.effectMny;
+    current.pow += row.buildingDef.effectPow;
+    effectsByLocation.set(row.locationId, current);
+  }
+
   const growthPerDay = activeLocationsForUser.reduce(
     (acc, location) => {
       const workers = normalizeWorkerSplit(location.currentPopulation, {
@@ -244,10 +271,13 @@ export default async function MePage() {
         power: location.popToPower,
         population: location.popToPopulation,
       });
+      const locationEffects = effectsByLocation.get(location.id) ?? { mny: 0, pow: 0 };
+      const buildingMny = locationEffects.mny;
+      const buildingPow = locationEffects.pow;
 
       return {
-        money: acc.money + workers.money * economyRates.moneyRate,
-        power: acc.power + workers.power * economyRates.powerRate,
+        money: acc.money + workers.money * economyRates.moneyRate + buildingMny,
+        power: acc.power + workers.power * economyRates.powerRate + buildingPow,
       };
     },
     { money: 0, power: 0 },
@@ -398,7 +428,7 @@ export default async function MePage() {
 
         <section className="glass-panel rounded-[30px] border border-[var(--line)] p-6 sm:p-7">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-2xl font-semibold tracking-[-0.03em]">Your recent claims</h2>
+            <h2 className="text-2xl font-semibold tracking-[-0.03em]">Nedávné zábory</h2>
           </div>
           <div className="mt-4 space-y-3">
             {user.claims.length ? user.claims.map((claim) => (
@@ -409,13 +439,13 @@ export default async function MePage() {
                 actionHref={`/l/${claim.location.slug}`}
                 summary={(
                   <>
-                    claimed <span className="font-medium">{claim.location.name}</span> for <span className="font-medium">{claim.team.name}</span> on {formatDate(claim.createdAt.toISOString())}.
+                    obsadil/a <span className="font-medium">{claim.location.name}</span> pro <span className="font-medium">{claim.team.name}</span> dne {formatDate(claim.createdAt.toISOString())}.
                   </>
                 )}
               />
             )) : (
               <p className="rounded-[20px] border border-dashed border-[var(--line)] bg-white/55 p-4 text-sm text-[var(--muted)]">
-                No claims yet. Scan a QR and claim your first location.
+                Zatím jsi neobsadil/a žádnou pozici. Naskenuj QR kód a obsad svou první lokaci.
               </p>
             )}
           </div>

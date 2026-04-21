@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { ClaimPanel } from "@/components/claim-panel";
 import { ClaimEventCard } from "@/components/claim-event-card";
 import { AutoRefresh } from "@/components/auto-refresh";
+import { BuildingsPanel } from "@/components/buildings-panel";
 import { LocationEconomyControls } from "@/components/location-economy-controls";
 import { USER_COOKIE_NAME, verifyUserSessionToken } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -46,6 +47,18 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
   }
 
   const { location, mapLocations } = data;
+  const builtArmorRows = await db.builtBuilding.findMany({
+    where: { locationId: location.id },
+    select: {
+      buildingDef: {
+        select: {
+          effectArm: true,
+        },
+      },
+    },
+  });
+  const armorBonus = builtArmorRows.reduce((sum, row) => sum + row.buildingDef.effectArm, 0);
+  const effectiveArmor = location.armor + Math.floor(armorBonus);
   const locationEconomy = location as typeof location & {
     popToMoney?: number;
     popToPower?: number;
@@ -141,7 +154,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                     🛡️ Obrana
                   </div>
                   <div className="mt-2 text-base font-medium">
-                    {location.armor}
+                    {effectiveArmor}
                   </div>
                 </div>
                 <div className="rounded-[22px] border border-[var(--line)] bg-white/70 p-4">
@@ -198,6 +211,8 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                   popToPopulation={locationEconomy.popToPopulation ?? 30}
                 />
               ) : null}
+
+              <BuildingsPanel slug={location.slug} canManage={canManageEconomy} />
             </div>
           </div>
         </section>
@@ -211,7 +226,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                 latitude: location.latitude,
                 longitude: location.longitude,
                 claimRadiusM: location.claimRadiusM,
-                armor: location.armor,
+                armor: effectiveArmor,
               }}
               isOwner={canManageEconomy}
             />

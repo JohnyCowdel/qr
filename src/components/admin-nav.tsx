@@ -24,6 +24,12 @@ export function AdminNav() {
         >
           Ekonomika
         </Link>
+        <Link
+          href="/admin/buildings"
+          className="px-3 py-1.5 text-xs font-semibold border border-[var(--line)] rounded-lg hover:bg-[var(--background-strong)] transition-colors"
+        >
+          Budovy
+        </Link>
       </div>
       <div className="flex items-center gap-2">
         <Link

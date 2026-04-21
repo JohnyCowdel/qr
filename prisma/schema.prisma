@@ -78,6 +78,7 @@ model Location {
   lastClaimedAt    DateTime?
   ownerTeam        Team?     @relation("OwnedLocations", fields: [ownerTeamId], references: [id])
   claims           Claim[]
+  builtBuildings   BuiltBuilding[]
 }
 
 model Claim {
@@ -109,6 +110,31 @@ model AdminSettings {
   claimPopulationLossPercent Float @default(25)
   claimPopulationMin Int @default(3)
   productionTimeoutHours Float @default(24)
+}
+
+model BuildingDef {
+  id           Int             @id @default(autoincrement())
+  name         String          @unique
+  svgKey       String
+  locationType String
+  cost         Float
+  effectGpop   Float           @default(0)
+  effectPow    Float           @default(0)
+  effectMaxpop Float           @default(0)
+  effectMny    Float           @default(0)
+  effectArm    Float           @default(0)
+  instances    BuiltBuilding[]
+}
+
+model BuiltBuilding {
+  id            Int         @id @default(autoincrement())
+  locationId    Int
+  buildingDefId Int
+  createdAt     DateTime    @default(now())
+  location      Location    @relation(fields: [locationId], references: [id])
+  buildingDef   BuildingDef @relation(fields: [buildingDefId], references: [id])
+
+  @@unique([locationId, buildingDefId])
 }
 
 enum TradeResourceType {
