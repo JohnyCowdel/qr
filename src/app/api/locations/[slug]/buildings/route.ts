@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { readUserIdFromCookieHeader } from "@/lib/auth";
+import { ensureBuildingDefinitionsSeeded } from "@/lib/building-definitions";
 import { db } from "@/lib/db";
 import { runEconomyTick } from "@/lib/economy";
 
@@ -46,6 +47,8 @@ function isBuildingDefCompatible(defLocationType: string, catalogType: "camp" | 
  *  Returns all building defs for this location's type, annotated with isBuilt / builtAt.
  */
 export async function GET(request: Request, { params }: PageProps) {
+  await ensureBuildingDefinitionsSeeded();
+
   const { slug } = await params;
 
   const location = await db.location.findUnique({
@@ -110,6 +113,8 @@ const buySchema = z.object({ buildingDefId: z.number().int().positive() });
  *  Requires auth. User must be current owner. Deducts cost from money. Creates BuiltBuilding.
  */
 export async function POST(request: Request, { params }: PageProps) {
+  await ensureBuildingDefinitionsSeeded();
+
   await runEconomyTick();
 
   const userId = readUserIdFromCookieHeader(request.headers.get("cookie"));
