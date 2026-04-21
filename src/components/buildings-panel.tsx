@@ -23,6 +23,15 @@ type Props = {
   locationType: string;
 };
 
+function parseSvgDimensions(svg: Element) {
+  const rawWidth = Number.parseFloat(svg.getAttribute("width") ?? "");
+  const rawHeight = Number.parseFloat(svg.getAttribute("height") ?? "");
+  const width = Number.isFinite(rawWidth) && rawWidth > 0 ? rawWidth : 1;
+  const height = Number.isFinite(rawHeight) && rawHeight > 0 ? rawHeight : 1;
+
+  return { width, height };
+}
+
 function resolveSpriteFile(locationType: string): string | null {
   const normalized = String(locationType || "").trim().toLowerCase();
 
@@ -47,6 +56,16 @@ function buildInteractiveSvgMarkup(svgText: string, items: BuildingItem[], selec
   const parser = new DOMParser();
   const doc = parser.parseFromString(svgText, "image/svg+xml");
   const svg = doc.documentElement;
+  const { width, height } = parseSvgDimensions(svg);
+
+  // Normalize the root sizing so the scene always scales into its container.
+  if (!svg.getAttribute("viewBox")) {
+    svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  }
+  svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+  svg.setAttribute("width", "100%");
+  svg.setAttribute("height", "100%");
+
   const useNodes = Array.from(svg.querySelectorAll("use"));
   const interactiveNodes = useNodes.slice(1, 1 + items.length);
 
@@ -78,6 +97,7 @@ export function BuildingsPanel({ slug, canManage, locationType }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [svgText, setSvgText] = useState("");
+  const [sceneAspectRatio, setSceneAspectRatio] = useState(16 / 10);
   const [selectedSvgKey, setSelectedSvgKey] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -126,7 +146,11 @@ export function BuildingsPanel({ slug, canManage, locationType }: Props) {
         }
 
         const text = await res.text();
+        const parsed = new DOMParser().parseFromString(text, "image/svg+xml");
+        const svgRoot = parsed.documentElement;
+        const { width, height } = parseSvgDimensions(svgRoot);
         if (!cancelled) {
+          setSceneAspectRatio(width / height);
           setSvgText(text);
         }
       } catch (e) {
@@ -212,6 +236,7 @@ export function BuildingsPanel({ slug, canManage, locationType }: Props) {
         <div
           onClick={handleSvgClick}
           className="overflow-hidden rounded-2xl border border-[var(--line)] bg-white/70 p-2"
+          style={{ aspectRatio: sceneAspectRatio }}
         >
           {interactiveSvg ? (
             <div
@@ -275,7 +300,7 @@ export function BuildingsPanel({ slug, canManage, locationType }: Props) {
       <style jsx global>{`
         .qb-scene svg {
           width: 100%;
-          height: auto;
+          height: 100%;
           display: block;
         }
 
