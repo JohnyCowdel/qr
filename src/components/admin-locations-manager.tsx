@@ -326,7 +326,7 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
             <GenerateQRPdfButton
               locations={locations
                 .filter((l) => l.slug !== null)
-                .map((l) => ({ slug: l.slug!, name: l.name }))}
+                .map((l) => ({ slug: l.slug!, name: l.name, summary: l.summary }))}
             />
             <p className="max-w-sm text-right text-xs text-[var(--muted)]">
               Vyberte lokaci ze seznamu nebo mapy. Když je řádek otevřen, kliknutím na mapu ji přemístíte.

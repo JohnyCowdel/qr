@@ -6,6 +6,7 @@ import { useState } from "react";
 type Location = {
   slug: string;
   name: string;
+  summary?: string | null;
 };
 
 type Props = {
@@ -24,31 +25,32 @@ export function GenerateQRPdfButton({ locations }: Props) {
       const PAGE_W = 210;
       const PAGE_H = 297;
       const MARGIN = 12;
-      const COLS = 3;
-      const GAP = 6;
+      const COLS = 2;
+      const ROWS = 2;
+      const GAP_X = 10;
+      const GAP_Y = 10;
 
-      const cellW = (PAGE_W - MARGIN * 2 - GAP * (COLS - 1)) / COLS;
-      const QR_SIZE = cellW - 4; // QR image square, leave a little side padding
-      const NAME_H = 10; // space reserved for name text below QR
-      const cellH = QR_SIZE + NAME_H + 6;
+      const cellW = (PAGE_W - MARGIN * 2 - GAP_X * (COLS - 1)) / COLS;
+      const cellH = (PAGE_H - MARGIN * 2 - GAP_Y * (ROWS - 1)) / ROWS;
+      const QR_SIZE = Math.min(cellW - 14, cellH - 46);
 
       const doc = new jsPDF({ unit: "mm", format: "a4" });
       const origin = window.location.origin;
 
-      let col = 0;
-      let row = 0;
-      let pageNum = 0;
-
       for (let i = 0; i < locations.length; i++) {
         const location = locations[i];
 
-        if (i > 0 && col === 0 && row === 0) {
+        // Exactly 4 QR codes per page (2x2 grid).
+        if (i > 0 && i % (COLS * ROWS) === 0) {
           doc.addPage();
-          pageNum++;
         }
 
-        const x = MARGIN + col * (cellW + GAP);
-        const y = MARGIN + row * (cellH + GAP);
+        const pageIndex = i % (COLS * ROWS);
+        const col = pageIndex % COLS;
+        const row = Math.floor(pageIndex / COLS);
+
+        const x = MARGIN + col * (cellW + GAP_X);
+        const y = MARGIN + row * (cellH + GAP_Y);
 
         // Generate QR code as PNG data URL
         const dataUrl = await QRCode.toDataURL(
@@ -62,24 +64,31 @@ export function GenerateQRPdfButton({ locations }: Props) {
 
         // Draw QR image centered in cell
         const qrX = x + (cellW - QR_SIZE) / 2;
-        doc.addImage(dataUrl, "PNG", qrX, y, QR_SIZE, QR_SIZE);
+        const qrY = y + 6;
+        doc.addImage(dataUrl, "PNG", qrX, qrY, QR_SIZE, QR_SIZE);
 
-        // Draw name below
-        doc.setFontSize(9);
+        // Draw title in a condensed poster-like style (Playbill spirit).
+        doc.setFont("times", "bold");
+        doc.setFontSize(14);
+        doc.setCharSpace(0.35);
         doc.setTextColor(26, 45, 33); // --foreground
-        doc.text(location.name, x + cellW / 2, y + QR_SIZE + 5, {
+        doc.text(location.name.toUpperCase(), x + cellW / 2, qrY + QR_SIZE + 8, {
           align: "center",
-          maxWidth: cellW,
+          maxWidth: cellW - 8,
         });
+        doc.setCharSpace(0);
 
-        col++;
-        if (col >= COLS) {
-          col = 0;
-          row++;
-          const maxRows = Math.floor((PAGE_H - MARGIN * 2 + GAP) / (cellH + GAP));
-          if (row >= maxRows) {
-            row = 0;
-          }
+        // Draw summary below name in italics.
+        const summary = (location.summary ?? "").trim();
+        if (summary) {
+          doc.setFont("times", "italic");
+          doc.setFontSize(9);
+          const maxSummaryWidth = cellW - 10;
+          const summaryLines = doc.splitTextToSize(summary, maxSummaryWidth).slice(0, 3);
+          doc.text(summaryLines, x + cellW / 2, qrY + QR_SIZE + 14, {
+            align: "center",
+            maxWidth: maxSummaryWidth,
+          });
         }
       }
 
