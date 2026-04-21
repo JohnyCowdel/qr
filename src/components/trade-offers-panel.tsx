@@ -152,7 +152,7 @@ export function TradeOffersPanel({
   return (
     <section className="glass-panel rounded-[30px] border border-[var(--line)] p-6 sm:p-7">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-2xl font-semibold tracking-[-0.03em]">Nabídky</h2>
+        <h2 className="text-2xl font-semibold tracking-[-0.03em]">Nabídky ⚖️</h2>
         <button
           type="button"
           onClick={() => setIsCreating((prev) => !prev)}

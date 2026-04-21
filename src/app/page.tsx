@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { TerritoryMap } from "@/components/territory-map";
 import { ClaimEventCard } from "@/components/claim-event-card";
+import { LeaderboardPanel } from "@/components/leaderboard-panel";
 import { USER_COOKIE_NAME, verifyUserSessionToken } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getHomePageData } from "@/lib/game";
@@ -48,17 +49,17 @@ export default async function Home() {
 
             <div className="flex flex-wrap items-center justify-end gap-2">
               <Link
+                href="/jak-na-to"
+                className="rounded-full border border-[var(--line)] bg-white/70 px-4 py-2 text-sm font-semibold hover:bg-white"
+              >
+                Jak na to? 📖
+              </Link>
+              <Link
                 href="/me"
                 className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]"
               >
-                {currentUser.handle}
+                 {currentUser.handle} · 💪 {formatPower(currentUser.power)} · {currentUser.team.name}
               </Link>
-              <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 text-sm">
-                Síla hráče: 💪 {formatPower(currentUser.power)}
-              </span>
-              <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 text-sm">
-                Tým: <span style={{ color: currentUser.team.colorHex }}>{currentUser.team.name}</span>
-              </span>
             </div>
           </div>
         ) : (
@@ -91,7 +92,7 @@ export default async function Home() {
             <div className="space-y-4">
               <div className="space-y-3">
                 <h1 className="max-w-2xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
-                  Prozkoumej, naskenuj, obsazuj pro svůj tým.
+                  Prozkoumej, naskenuj, obsazuj !
                 </h1>
               </div>
               <div className="grid gap-2 sm:grid-cols-3">
@@ -129,25 +130,7 @@ export default async function Home() {
                   Live data
                 </span>
               </div>
-              <div className="space-y-3">
-                {teamSummary.map((team) => (
-                  <div
-                    key={team.slug}
-                    className="flex items-center justify-between rounded-[20px] border border-[var(--line)] bg-white/70 px-4 py-3"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span
-                        className="h-3.5 w-3.5 rounded-full"
-                        style={{ backgroundColor: team.colorHex }}
-                      />
-                      <span className="font-medium">{team.name}</span>
-                    </div>
-                    <span className="font-mono text-sm text-[var(--muted)]">
-                      {team.claimedCount} obsazeno · 💪 {formatPower(team.playerPower)}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <LeaderboardPanel teams={teamSummary} />
             
         </section>
 
@@ -182,7 +165,7 @@ export default async function Home() {
                 message={claim.message}
                 summary={(
                   <>
-                    claimed <span className="font-medium">{claim.location.name}</span>{" "}
+                    obsadil <span className="font-medium">{claim.location.name}</span>{" "}
                     pro <span className="font-medium">{claim.team.name}</span> dne {formatDate(claim.createdAt)}.
                   </>
                 )}

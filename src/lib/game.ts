@@ -37,7 +37,7 @@ function computeLocationAreas(locations: Array<{ id: string | number; latitude: 
 export async function getHomePageData() {
   await runEconomyTick();
 
-  const [locations, recentClaims, teams] = await Promise.all([
+  const [locations, recentClaims, teams, claimCounts] = await Promise.all([
     db.location.findMany({
       include: {
         ownerTeam: true,
@@ -69,11 +69,17 @@ export async function getHomePageData() {
     db.team.findMany({
       include: {
         ownedLocations: true,
-        users: true,
+        users: {
+          where: { isApproved: true },
+        },
       },
       orderBy: {
         name: "asc",
       },
+    }),
+    db.claim.groupBy({
+      by: ["userId"],
+      _count: true,
     }),
   ]);
 
@@ -86,6 +92,10 @@ export async function getHomePageData() {
       location.currentPopulation,
     ),
   }));
+
+  const claimCountByUserId = Object.fromEntries(
+    claimCounts.map((row) => [row.userId, row._count]),
+  );
 
   return {
     locations: locationsWithComputedAreas,
@@ -100,6 +110,15 @@ export async function getHomePageData() {
         colorHex: team.colorHex,
         playerPower: team.users.reduce((sum, user) => sum + user.power, 0),
         claimedCount: team.ownedLocations.length,
+        users: team.users
+          .map((user) => ({
+            id: user.id,
+            handle: user.handle,
+            power: user.power,
+            money: user.money,
+            claimCount: claimCountByUserId[user.id] ?? 0,
+          }))
+          .sort((a, b) => b.power - a.power),
       }))
       .sort((a, b) => b.playerPower - a.playerPower),
     totalTeamPower: teams.reduce((sum, team) => sum + team.power, 0),

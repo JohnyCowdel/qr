@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { sendApprovalEmail } from "@/lib/email";
 
 export async function POST(
   request: Request,
@@ -16,10 +17,26 @@ export async function POST(
     return Response.json({ error: "User not found." }, { status: 404 });
   }
 
-  await db.user.update({
-    where: { id: userId },
-    data: { isApproved: true },
+  if (user.isApproved) {
+    return Response.json({ error: "User is already approved." }, { status: 400 });
+  }
+
+  // Aktualizace a odeslání emailu v transakci
+  const result = await db.$transaction(async (tx) => {
+    const updatedUser = await tx.user.update({
+      where: { id: userId },
+      data: { isApproved: true },
+      select: { email: true, handle: true },
+    });
+
+    // Odeslání emailu
+    return sendApprovalEmail(updatedUser.email, updatedUser.handle);
   });
+
+  if (!result.ok) {
+    console.error("Email send error:", result.error);
+    // Stále vrátíme 200, protože schválení proběhlo - email je pouze notifikace
+  }
 
   const accept = request.headers.get("accept") ?? "";
   if (accept.includes("text/html")) {
