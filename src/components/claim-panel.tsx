@@ -51,7 +51,7 @@ export function ClaimPanel({ location, isOwner = false }: ClaimPanelProps) {
         const res = await fetch("/api/auth/me", { cache: "no-store" });
         const data = (await res.json()) as {
           authenticated: boolean;
-          user?: { handle: string; team: { name: string } };
+          user?: { handle: string; power: number; team: { name: string } };
         };
 
         if (cancelled) {
