@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 import { ClaimPanel } from "@/components/claim-panel";
 import { ClaimEventCard } from "@/components/claim-event-card";
 import { AutoRefresh } from "@/components/auto-refresh";
+import { BuildingsPanel } from "@/components/buildings-panel";
+import { LocationEconomyControls } from "@/components/location-economy-controls";
 import { USER_COOKIE_NAME, verifyUserSessionToken } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { TerritoryMap } from "@/components/territory-map";
@@ -57,6 +59,11 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
   });
   const armorBonus = builtArmorRows.reduce((sum, row) => sum + row.buildingDef.effectArm, 0);
   const effectiveArmor = location.armor + Math.floor(armorBonus);
+  const locationEconomy = location as typeof location & {
+    popToMoney?: number;
+    popToPower?: number;
+    popToPopulation?: number;
+  };
   const canManageEconomy = Boolean(currentUser && location.ownerUser && currentUser.id === location.ownerUser.id);
 
   return (
@@ -210,30 +217,18 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
           </div>
         </section>
 
-        <section className="glass-panel rounded-[24px] border border-[var(--line)] p-4 sm:rounded-[28px] sm:p-5">
-          <div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
-            <h2 className="text-xl font-semibold tracking-[-0.03em] sm:text-2xl">Rozvoj lokace</h2>
-            <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
-              Budovy a dělníci
-            </span>
-          </div>
-          <p className="text-sm text-[var(--muted)] sm:text-base">
-            Otevři samostatnou stránku rozvoje pro pohodlnější práci se SVG mapou budov a přiřazením dělníků.
-          </p>
-          <div className="mt-3 sm:mt-4">
-            <Link
-              href={`/l/${location.slug}/rozvoj`}
-              className="inline-flex items-center rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]"
-            >
-              Otevřít rozvoj lokace
-            </Link>
-          </div>
-          {!canManageEconomy ? (
-            <p className="mt-2 text-xs text-[var(--muted)]">
-              Budovy může nakupovat pouze vlastník lokace.
-            </p>
-          ) : null}
-        </section>
+        {canManageEconomy ? (
+          <LocationEconomyControls
+            slug={location.slug}
+            currentPopulation={location.currentPopulation}
+            maxPopulation={location.maxPopulation}
+            popToMoney={locationEconomy.popToMoney ?? 0}
+            popToPower={locationEconomy.popToPower ?? 0}
+            popToPopulation={locationEconomy.popToPopulation ?? 30}
+          />
+        ) : null}
+
+        <BuildingsPanel slug={location.slug} canManage={canManageEconomy} locationType={location.type} />
 
         <section className="grid gap-4 sm:gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="space-y-4 sm:space-y-6">

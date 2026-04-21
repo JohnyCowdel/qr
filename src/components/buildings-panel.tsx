@@ -321,7 +321,7 @@ export function BuildingsPanel({ slug, canManage, locationType }: Props) {
             </>
           ) : (
             <div className="text-sm text-[var(--muted)]">
-              Klikni na budovu v SVG mapě a zobrazí se detaily i možnost nákupu.
+              Klikni doobrázku pro nákup budov
             </div>
           )}
         </div>
