@@ -12,6 +12,7 @@ type EconomyRates = {
   populationRate: number;
   claimPopulationLossPercent: number;
   claimPopulationMin: number;
+  productionTimeoutHours: number;
 };
 
 function sanitizeWorkers(totalPopulation: number, workers: { money: number; power: number; population: number }) {
@@ -67,6 +68,7 @@ export async function getEconomyRates(): Promise<EconomyRates> {
       populationRate: 1,
       claimPopulationLossPercent: 25,
       claimPopulationMin: 3,
+      productionTimeoutHours: 24,
     },
     select: {
       moneyRate: true,
@@ -74,6 +76,7 @@ export async function getEconomyRates(): Promise<EconomyRates> {
       populationRate: true,
       claimPopulationLossPercent: true,
       claimPopulationMin: true,
+      productionTimeoutHours: true,
     },
   });
 }
@@ -92,6 +95,7 @@ export async function runEconomyTick(now = new Date()) {
       popToMoney: true,
       popToPower: true,
       popToPopulation: true,
+      workersUpdatedAt: true,
       economyUpdatedAt: true,
       claims: {
         select: {
@@ -110,6 +114,25 @@ export async function runEconomyTick(now = new Date()) {
     const ownerUserId = location.claims[0]?.userId;
     if (!ownerUserId) {
       continue;
+    }
+
+    const assignedWorkers = location.popToMoney + location.popToPower + location.popToPopulation;
+    const timeoutMs = Math.max(0, rates.productionTimeoutHours) * 60 * 60 * 1000;
+    if (assignedWorkers > 0 && timeoutMs > 0) {
+      const inactiveMs = now.getTime() - location.workersUpdatedAt.getTime();
+      if (inactiveMs >= timeoutMs) {
+        await db.location.update({
+          where: { id: location.id },
+          data: {
+            popToMoney: 0,
+            popToPower: 0,
+            popToPopulation: 0,
+            workersAutoStoppedAt: now,
+            economyUpdatedAt: now,
+          },
+        });
+        continue;
+      }
     }
 
     const elapsedSeconds = (now.getTime() - location.economyUpdatedAt.getTime()) / 1000;

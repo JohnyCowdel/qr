@@ -197,7 +197,7 @@ export function ClaimPanel({ location, isOwner = false }: ClaimPanelProps) {
             value={message}
             onChange={(event) => setMessage(event.target.value)}
             className="min-h-28 w-full rounded-2xl border border-[var(--line)] bg-white/80 px-4 py-3 outline-none transition focus:border-[var(--accent)]"
-            placeholder="Teď je naše. Postupujte ze severního hřebene."
+            placeholder="Teď je naše."
           />
         </label>
 

@@ -9,6 +9,7 @@ const schema = z.object({
   populationRate: z.coerce.number().min(0).max(10000),
   claimPopulationLossPercent: z.coerce.number().min(0).max(100),
   claimPopulationMin: z.coerce.number().int().min(0).max(100000),
+  productionTimeoutHours: z.coerce.number().min(0).max(10000),
 });
 
 export async function GET() {
@@ -23,6 +24,7 @@ export async function GET() {
       populationRate: 1,
       claimPopulationLossPercent: 25,
       claimPopulationMin: 3,
+      productionTimeoutHours: 24,
     },
     select: {
       moneyRate: true,
@@ -30,6 +32,7 @@ export async function GET() {
       populationRate: true,
       claimPopulationLossPercent: true,
       claimPopulationMin: true,
+      productionTimeoutHours: true,
     },
   });
 
@@ -56,6 +59,7 @@ export async function PUT(request: Request) {
       populationRate: true,
       claimPopulationLossPercent: true,
       claimPopulationMin: true,
+      productionTimeoutHours: true,
     },
   });
 

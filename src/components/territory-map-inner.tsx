@@ -244,11 +244,11 @@ function buildLocationPopupContent({
       <div>
         👑: {location.ownerTeam ? location.ownerTeam.name : "Neutral"}
       </div>
-      {location.slug ? (
+      {/* {location.slug ? (
         <Link href={`/l/${location.slug}`} className="font-medium text-[#9e4323]">
           Open location page
         </Link>
-      ) : null}
+      ) : null} */}
     </div>
   );
 }

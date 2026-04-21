@@ -66,12 +66,15 @@ export async function POST(
       popToMoney: workers.money,
       popToPower: workers.power,
       popToPopulation: workers.population,
+      workersUpdatedAt: new Date(),
+      workersAutoStoppedAt: null,
     },
     select: {
       popToMoney: true,
       popToPower: true,
       popToPopulation: true,
       currentPopulation: true,
+      workersAutoStoppedAt: true,
     },
   });
 

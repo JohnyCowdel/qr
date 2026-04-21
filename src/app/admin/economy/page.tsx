@@ -10,6 +10,7 @@ export default function AdminEconomyPage() {
   const [populationRate, setPopulationRate] = useState("1");
   const [claimPopulationLossPercent, setClaimPopulationLossPercent] = useState("25");
   const [claimPopulationMin, setClaimPopulationMin] = useState("3");
+  const [productionTimeoutHours, setProductionTimeoutHours] = useState("24");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -30,6 +31,7 @@ export default function AdminEconomyPage() {
           populationRate: number;
           claimPopulationLossPercent: number;
           claimPopulationMin: number;
+          productionTimeoutHours: number;
         };
 
         if (canceled) {
@@ -41,6 +43,7 @@ export default function AdminEconomyPage() {
         setPopulationRate(String(data.populationRate));
         setClaimPopulationLossPercent(String(data.claimPopulationLossPercent));
         setClaimPopulationMin(String(data.claimPopulationMin));
+        setProductionTimeoutHours(String(data.productionTimeoutHours));
       } catch {
         // keep defaults on fetch failure
       }
@@ -68,6 +71,7 @@ export default function AdminEconomyPage() {
             populationRate: Number(populationRate),
             claimPopulationLossPercent: Number(claimPopulationLossPercent),
             claimPopulationMin: Number(claimPopulationMin),
+            productionTimeoutHours: Number(productionTimeoutHours),
           }),
         });
 
@@ -170,6 +174,22 @@ export default function AdminEconomyPage() {
                   step="1"
                   value={claimPopulationMin}
                   onChange={(e) => setClaimPopulationMin(e.target.value)}
+                  className="w-full rounded-lg border border-[var(--line)] bg-white/60 px-3 py-2 text-sm focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                />
+              </label>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-1">
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                  Timeout neaktivity výroby (hodiny)
+                </span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={productionTimeoutHours}
+                  onChange={(e) => setProductionTimeoutHours(e.target.value)}
                   className="w-full rounded-lg border border-[var(--line)] bg-white/60 px-3 py-2 text-sm focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
                 />
               </label>

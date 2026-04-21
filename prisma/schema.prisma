@@ -61,6 +61,8 @@ model Location {
   popToMoney       Int       @default(0)
   popToPower       Int       @default(0)
   popToPopulation  Int       @default(30)
+  workersUpdatedAt DateTime  @default(now())
+  workersAutoStoppedAt DateTime?
   economyUpdatedAt DateTime  @default(now())
   image            String    @default("⛺")
   summary          String
@@ -106,6 +108,7 @@ model AdminSettings {
   populationRate Float @default(1)
   claimPopulationLossPercent Float @default(25)
   claimPopulationMin Int @default(3)
+  productionTimeoutHours Float @default(24)
 }
 
 enum TradeResourceType {

@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     return Response.json(
       {
         ok: false,
-        message: `Too far away from ${location.name}.`,
+        message: `Příliš daleko od ${location.name}.`,
         distanceM,
       },
       { status: 400 },
@@ -132,6 +132,8 @@ export async function POST(request: Request) {
         popToMoney: 0,
         popToPower: 0,
         popToPopulation: 30,
+        workersUpdatedAt: createdClaim.createdAt,
+        workersAutoStoppedAt: null,
         economyUpdatedAt: createdClaim.createdAt,
       },
     });

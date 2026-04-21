@@ -73,14 +73,8 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                 href="/me"
                 className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]"
               >
-                {currentUser.handle}
+                {currentUser.team.name} {currentUser.handle} · 💪 {formatPower(currentUser.power)}
               </Link>
-              <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 text-sm">
-                  Síla hráče: 💪 {formatPower(currentUser.power)}
-              </span>
-              <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 text-sm">
-                  Tým: <span style={{ color: currentUser.team.colorHex }}>{currentUser.team.name}</span>
-              </span>
             </div>
           </div>
         ) : (

@@ -73,7 +73,7 @@ export default async function MePage() {
     redirect("/auth/login");
   }
 
-  const [teamPlayers, otherPlayers, claimedPositions, offerTargets, pendingOffers, economyRates, activeOwnedLocations] = await Promise.all([
+  const [teamPlayers, otherPlayers, offerTargets, pendingOffers, economyRates, activeOwnedLocations] = await Promise.all([
     db.user.findMany({
       where: {
         teamId: user.teamId,
@@ -117,33 +117,6 @@ export default async function MePage() {
         { power: "desc" },
         { handle: "asc" },
       ],
-    }),
-    db.claim.findMany({
-      where: {
-        userId: user.id,
-      },
-      include: {
-        team: {
-          select: {
-            name: true,
-            colorHex: true,
-          },
-        },
-        location: {
-          include: {
-            ownerTeam: {
-              select: {
-                name: true,
-                colorHex: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      distinct: ["locationId"],
     }),
     db.user.findMany({
       where: {
@@ -193,15 +166,35 @@ export default async function MePage() {
       where: {
         ownerTeamId: { not: null },
       },
+      orderBy: {
+        lastClaimedAt: "desc",
+      },
       select: {
         id: true,
+        slug: true,
+        name: true,
+        image: true,
         currentPopulation: true,
         popToMoney: true,
         popToPower: true,
         popToPopulation: true,
+        workersAutoStoppedAt: true,
+        ownerTeam: {
+          select: {
+            name: true,
+            colorHex: true,
+          },
+        },
         claims: {
           select: {
             userId: true,
+            createdAt: true,
+            team: {
+              select: {
+                name: true,
+                colorHex: true,
+              },
+            },
           },
           orderBy: {
             createdAt: "desc",
@@ -259,14 +252,16 @@ export default async function MePage() {
     },
     { money: 0, power: 0 },
   );
-  const myClaimedPositions = claimedPositions.map((claim) => ({
-    id: claim.location.id,
-    slug: claim.location.slug,
-    name: claim.location.name,
-    image: claim.location.image,
-    ownerTeam: claim.location.ownerTeam,
-    claimedAt: claim.createdAt,
-    claimedForTeam: claim.team,
+  const myClaimedPositions = activeLocationsForUser.map((location) => ({
+    id: location.id,
+    slug: location.slug,
+    name: location.name,
+    image: location.image,
+    ownerTeam: location.ownerTeam,
+    claimedAt: location.claims[0].createdAt,
+    claimedForTeam: location.claims[0].team,
+    noWorkers: (location.popToMoney + location.popToPower + location.popToPopulation) === 0,
+    workersAutoStoppedAt: location.workersAutoStoppedAt,
   }));
 
   return (
@@ -327,7 +322,7 @@ export default async function MePage() {
           <div className="mt-3 rounded-[20px] border border-[var(--line)] bg-white/70 p-4 text-sm">
             <p className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Detaily profilu</p>
             <p className="mt-2">
-              {user.firstName ?? "-"} {user.lastName ?? "-"} · {user.email ?? "-"} · age {user.age ?? "-"} · resource pop {Math.round(user.population)}
+              {user.firstName ?? "-"} {user.lastName ?? "-"} · {user.email ?? "-"} · age {user.age ?? "-"}
             </p>
           </div>
         </section>
@@ -354,10 +349,16 @@ export default async function MePage() {
 
           <div className="mt-4 space-y-3">
             {myClaimedPositions.length ? myClaimedPositions.map((position) => (
-              <div key={position.id} className="rounded-[20px] border border-[var(--line)] bg-white/70 p-4">
+              <div
+                key={position.id}
+                className={`rounded-[20px] border p-4 ${position.noWorkers ? "border-amber-300 bg-amber-50" : "border-[var(--line)] bg-white/70"}`}
+              >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="font-medium">{position.image} {position.name}</p>
+                    {position.noWorkers ? (
+                      <p className="mt-1 text-sm font-semibold text-amber-800">Nikdo tu nepracuje!</p>
+                    ) : null}
                     <p className="text-sm text-[var(--muted)]">
                       Obsazeno pro tým: <span style={{ color: position.claimedForTeam.colorHex }}>{position.claimedForTeam.name}</span>
                     </p>
