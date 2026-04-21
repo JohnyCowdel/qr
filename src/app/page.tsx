@@ -157,7 +157,7 @@ export default async function Home() {
               Aktivity
             </span>
           </div>
-          <div className="mt-4 space-y-3">
+          <div className="mt-4 max-h-[520px] space-y-3 overflow-y-auto pr-1">
             {recentClaims.map((claim) => (
               <ClaimEventCard
                 key={claim.id}

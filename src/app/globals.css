@@ -81,3 +81,37 @@ a {
   font-family: var(--font-mono), monospace;
   font-size: 11px;
 }
+
+.nav-feedback {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  height: 3px;
+  width: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, #f0a14f 0%, #d56c32 45%, #7a8f45 100%);
+  box-shadow: 0 0 12px rgba(213, 108, 50, 0.45);
+  transition: opacity 120ms ease;
+}
+
+.nav-feedback--active {
+  width: 72%;
+  opacity: 1;
+  animation: nav-progress-pulse 1.2s ease-in-out infinite alternate;
+}
+
+body.is-navigating,
+body.is-navigating * {
+  cursor: progress !important;
+}
+
+@keyframes nav-progress-pulse {
+  0% {
+    width: 28%;
+  }
+  100% {
+    width: 78%;
+  }
+}

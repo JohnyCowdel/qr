@@ -298,10 +298,18 @@ export default async function MePage() {
     <main className="terrain-grid min-h-screen px-4 py-8 sm:px-6 lg:px-8">
       <AutoRefresh intervalMs={5000} />
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-        <div className="flex justify-end">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           <Link href="/" className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]">
             Zpět na mapu
           </Link>
+          <form action="/api/auth/logout" method="post">
+            <button
+              type="submit"
+              className="rounded-full border border-[var(--line)] bg-white/70 px-4 py-2 text-sm font-semibold hover:bg-white"
+            >
+              Odhlásit se
+            </button>
+          </form>
         </div>
 
         <section className="glass-panel rounded-[30px] border border-[var(--line)] p-6 sm:p-7">
@@ -430,7 +438,7 @@ export default async function MePage() {
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-2xl font-semibold tracking-[-0.03em]">Nedávné zábory</h2>
           </div>
-          <div className="mt-4 space-y-3">
+          <div className="mt-4 max-h-[520px] space-y-3 overflow-y-auto pr-1">
             {user.claims.length ? user.claims.map((claim) => (
               <ClaimEventCard
                 key={claim.id}

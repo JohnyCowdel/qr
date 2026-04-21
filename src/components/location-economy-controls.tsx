@@ -274,28 +274,28 @@ export function LocationEconomyControls({
     onMinus: () => void;
   }) {
     return (
-      <div className={`rounded-xl border p-3${atMax ? " border-red-300 bg-red-50" : " border-[var(--line)] bg-white/70"}`}>
-        <div className="flex items-center justify-between gap-3">
+      <div className={`rounded-xl border p-2.5 sm:p-3${atMax ? " border-red-300 bg-red-50" : " border-[var(--line)] bg-white/70"}`}>
+        <div className="flex items-center justify-between gap-2 sm:gap-3">
           <div>
-            <p className={`text-sm font-semibold${atMax ? " text-red-600" : ""}`}>{emoji} {label}</p>
+            <p className={`text-sm font-semibold leading-tight${atMax ? " text-red-600" : ""}`}>{emoji} {label}</p>
             <p className="text-xs text-[var(--muted)]">⬆️ {Number.isInteger(growth) ? growth : growth.toFixed(2)} / den</p>
             {atMax && <p className="mt-0.5 text-xs italic text-red-500">Populace na maximu</p>}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <button
               type="button"
               onClick={onMinus}
               disabled={workers <= 0}
-              className="h-8 w-8 rounded-full border border-[var(--line)] bg-white text-base font-bold hover:bg-[var(--background-strong)] disabled:opacity-50"
+              className="h-7 w-7 rounded-full border border-[var(--line)] bg-white text-base font-bold hover:bg-[var(--background-strong)] disabled:opacity-50 sm:h-8 sm:w-8"
             >
               -
             </button>
-            <div className="w-10 text-center text-sm font-semibold">{workers}</div>
+            <div className="w-8 text-center text-sm font-semibold sm:w-10">{workers}</div>
             <button
               type="button"
               onClick={onPlus}
               disabled={false}
-              className="h-8 w-8 rounded-full border border-[var(--line)] bg-white text-base font-bold hover:bg-[var(--background-strong)] disabled:opacity-50"
+              className="h-7 w-7 rounded-full border border-[var(--line)] bg-white text-base font-bold hover:bg-[var(--background-strong)] disabled:opacity-50 sm:h-8 sm:w-8"
             >
               +
             </button>
@@ -306,28 +306,21 @@ export function LocationEconomyControls({
   }
 
   return (
-    <section className="glass-panel rounded-[28px] border border-[var(--line)] p-5">
-      <h2 className="text-2xl font-semibold tracking-[-0.03em]">Přiřazení zdrojů</h2>
-      <p className="mt-1 text-sm text-[var(--muted)]">
-        Použij +/- pro přiřazení pracovníků. Změny se ukládají okamžitě.
-      </p>
+    <section className="glass-panel rounded-[24px] border border-[var(--line)] p-4 sm:rounded-[28px] sm:p-5">
+      <h2 className="text-xl font-semibold tracking-[-0.03em] sm:text-2xl">Přiřazení zdrojů</h2>
 
-      <div className="mt-3 grid gap-2 sm:grid-cols-3">
+      <div className="mt-2.5 grid gap-2 sm:mt-3 sm:grid-cols-3">
         <div className={`rounded-xl border px-3 py-2 text-sm${Math.floor(currentPopulationValue) >= maxPopulation ? " border-red-300 bg-red-50" : " border-[var(--line)] bg-white/70"}`}>
-          Aktuální pracovníci: <span className={`font-semibold${Math.floor(currentPopulationValue) >= maxPopulation ? " text-red-600" : ""}`}>{totalWorkers}</span>
+          👷 celkem: <span className={`font-semibold${Math.floor(currentPopulationValue) >= maxPopulation ? " text-red-600" : ""}`}>{totalWorkers}</span>
           {Math.floor(currentPopulationValue) >= maxPopulation && (
             <p className="mt-0.5 text-xs italic text-red-500">Populace na maximu</p>
           )}
-        </div>
-        <div className="rounded-xl border border-[var(--line)] bg-white/70 px-3 py-2 text-sm">
-          Přiřazeno: <span className="font-semibold">{assigned}</span>
-        </div>
-        <div className="rounded-xl border border-[var(--line)] bg-white/70 px-3 py-2 text-sm">
-          Volní pracovníci: <span className="font-semibold">{freeWorkers}</span>
+          🪏 pracují: <span className="font-semibold">{assigned}</span>
+          😴 nepracují: <span className="font-semibold">{freeWorkers}</span>
         </div>
       </div>
 
-      <div className="mt-4 space-y-3">
+      <div className="mt-3 space-y-2.5 sm:mt-4 sm:space-y-3">
         <ResourceRow
           emoji="💰"
           label="Peníze"

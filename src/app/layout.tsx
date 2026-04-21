@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
+import { NavigationFeedback } from "@/components/navigation-feedback";
 import "./globals.css";
 
 const displayFont = Space_Grotesk({
@@ -30,7 +31,10 @@ export default function RootLayout({
       lang="cs"
       className={`${displayFont.variable} ${monoFont.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <NavigationFeedback />
+        {children}
+      </body>
     </html>
   );
 }

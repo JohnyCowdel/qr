@@ -67,19 +67,27 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
   const canManageEconomy = Boolean(currentUser && location.ownerUser && currentUser.id === location.ownerUser.id);
 
   return (
-    <main className="terrain-grid min-h-screen px-4 py-6 sm:px-6 lg:px-8">
+    <main className="terrain-grid min-h-screen px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
       <AutoRefresh intervalMs={5000} />
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 sm:gap-6">
         {currentUser ? (
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <form action="/api/auth/logout" method="post">
-              <button
-                type="submit"
+            <div className="flex items-center gap-2">
+              <Link
+                href="/"
                 className="rounded-full border border-[var(--line)] bg-white/70 px-4 py-2 text-sm font-semibold hover:bg-white"
               >
-                Odhlásit se
-              </button>
-            </form>
+                Zpět na mapu
+              </Link>
+              <form action="/api/auth/logout" method="post">
+                <button
+                  type="submit"
+                  className="rounded-full border border-[var(--line)] bg-white/70 px-4 py-2 text-sm font-semibold hover:bg-white"
+                >
+                  Odhlásit se
+                </button>
+              </form>
+            </div>
 
             <div className="flex flex-wrap items-center justify-end gap-2">
               <Link
@@ -92,12 +100,20 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
           </div>
         ) : (
           <div className="flex items-center justify-between">
-            <Link
-              href="/auth/login"
-              className="rounded-full border border-[var(--line)] bg-white/70 px-4 py-2 text-sm font-semibold hover:bg-white"
-            >
-              Přihlásit se
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/"
+                className="rounded-full border border-[var(--line)] bg-white/70 px-4 py-2 text-sm font-semibold hover:bg-white"
+              >
+                Zpět na mapu
+              </Link>
+              <Link
+                href="/auth/login"
+                className="rounded-full border border-[var(--line)] bg-white/70 px-4 py-2 text-sm font-semibold hover:bg-white"
+              >
+                Přihlásit se
+              </Link>
+            </div>
             <Link
               href="/auth/register"
               className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]"
@@ -107,30 +123,27 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
           </div>
         )}
 
-        <section className="glass-panel rounded-[32px] border border-[var(--line)] p-6 sm:p-8">
-          <div className="grid gap-8 lg:grid-cols-[1fr_0.9fr]">
-            <div className="space-y-5">
+        <section className="glass-panel rounded-[28px] border border-[var(--line)] p-4 sm:rounded-[32px] sm:p-8">
+          <div className="grid gap-5 sm:gap-8 lg:grid-cols-[1fr_0.9fr]">
+            <div className="space-y-4 sm:space-y-5">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 font-mono text-xs uppercase tracking-[0.18em] text-[var(--muted)]">
-                  QR code {location.qrCode}
-                </span>
                 <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 text-sm">
                   {location.ownerTeam ? `${location.ownerTeam.name} ovládá tento bod` : "Neutrální bod"}
                 </span>
               </div>
 
               <div>
-                <h1 className="text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">
+                <h1 className="text-3xl font-semibold tracking-[-0.04em] sm:text-5xl">
                   {location.name}
                 </h1>
-                <p className="mt-3 max-w-2xl text-lg leading-8 text-[var(--muted)]">
+                <p className="mt-2 max-w-2xl text-base leading-7 text-[var(--muted)] sm:mt-3 sm:text-lg sm:leading-8">
                   {location.summary}
                 </p>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-4">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
                 
-                <div className="rounded-[22px] border border-[var(--line)] bg-white/70 p-4">
+                <div className="rounded-[18px] border border-[var(--line)] bg-white/70 p-3 sm:rounded-[22px] sm:p-4">
                   <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
                     Typ lokace
                   </div>
@@ -138,7 +151,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                     {location.image} {czechNameForType(normalizeLocationType(location.type))}
                   </div>
                 </div>
-                <div className="rounded-[22px] border border-[var(--line)] bg-white/70 p-4">
+                <div className="rounded-[18px] border border-[var(--line)] bg-white/70 p-3 sm:rounded-[22px] sm:p-4">
                   <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
                     👨‍🌾 Populace
                   </div>
@@ -149,7 +162,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                     <p className="mt-1 text-xs italic text-red-500">Populace na maximu</p>
                   )}
                 </div>
-                <div className="rounded-[22px] border border-[var(--line)] bg-white/70 p-4">
+                <div className="rounded-[18px] border border-[var(--line)] bg-white/70 p-3 sm:rounded-[22px] sm:p-4">
                   <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
                     🛡️ Obrana
                   </div>
@@ -157,7 +170,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                     {effectiveArmor}
                   </div>
                 </div>
-                <div className="rounded-[22px] border border-[var(--line)] bg-white/70 p-4">
+                <div className="rounded-[18px] border border-[var(--line)] bg-white/70 p-3 sm:rounded-[22px] sm:p-4">
                   <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
                     👑 Vlastní
                   </div>
@@ -167,8 +180,8 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                 </div>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-[22px] border border-[var(--line)] bg-white/70 p-4">
+              <div className="grid gap-2 sm:grid-cols-2 sm:gap-3">
+                <div className="rounded-[18px] border border-[var(--line)] bg-white/70 p-3 sm:rounded-[22px] sm:p-4">
                   <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
                     Poslední zábor
                   </div>
@@ -176,7 +189,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                     {location.lastClaimedAt ? formatDate(location.lastClaimedAt) : "Ještě nezabráno"}
                   </div>
                 </div>
-                <div className="rounded-[22px] border border-[var(--line)] bg-white/70 p-4">
+                <div className="rounded-[18px] border border-[var(--line)] bg-white/70 p-3 sm:rounded-[22px] sm:p-4">
                   <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
                     Hráč-vlastník
                   </div>
@@ -186,13 +199,13 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                 </div>
               </div>
 
-              <div className="rounded-[24px] border border-[var(--line)] bg-[rgba(255,255,255,0.68)] p-5 text-base leading-8 text-[var(--muted)]">
+              <div className="rounded-[20px] border border-[var(--line)] bg-[rgba(255,255,255,0.68)] p-4 text-sm leading-7 text-[var(--muted)] sm:rounded-[24px] sm:p-5 sm:text-base sm:leading-8">
                 {location.content}
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="h-[260px] overflow-hidden rounded-[28px] border border-[var(--line)]">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="h-[220px] overflow-hidden rounded-[22px] border border-[var(--line)] sm:h-[260px] sm:rounded-[28px]">
                 <TerritoryMap
                   locations={mapLocations}
                   center={[location.latitude, location.longitude]}
@@ -200,25 +213,41 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                   autoFitBounds={false}
                 />
               </div>
-
-              {canManageEconomy ? (
-                <LocationEconomyControls
-                  slug={location.slug}
-                  currentPopulation={location.currentPopulation}
-                  maxPopulation={location.maxPopulation}
-                  popToMoney={locationEconomy.popToMoney ?? 0}
-                  popToPower={locationEconomy.popToPower ?? 0}
-                  popToPopulation={locationEconomy.popToPopulation ?? 30}
-                />
-              ) : null}
-
-              <BuildingsPanel slug={location.slug} canManage={canManageEconomy} locationType={location.type} />
             </div>
           </div>
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="space-y-6">
+        {canManageEconomy ? (
+          <section className="glass-panel rounded-[24px] border border-[var(--line)] p-4 sm:rounded-[28px] sm:p-5">
+            <div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
+              <h2 className="text-xl font-semibold tracking-[-0.03em] sm:text-2xl">Přiřazení zdrojů</h2>
+              <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
+                Správa dělníků
+              </span>
+            </div>
+            <LocationEconomyControls
+              slug={location.slug}
+              currentPopulation={location.currentPopulation}
+              maxPopulation={location.maxPopulation}
+              popToMoney={locationEconomy.popToMoney ?? 0}
+              popToPower={locationEconomy.popToPower ?? 0}
+              popToPopulation={locationEconomy.popToPopulation ?? 30}
+            />
+          </section>
+        ) : null}
+
+        <section className="glass-panel rounded-[24px] border border-[var(--line)] p-4 sm:rounded-[28px] sm:p-5">
+          <div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
+            <h2 className="text-xl font-semibold tracking-[-0.03em] sm:text-2xl">Budovy</h2>
+            <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
+              Rozvoj lokace
+            </span>
+          </div>
+          <BuildingsPanel slug={location.slug} canManage={canManageEconomy} locationType={location.type} />
+        </section>
+
+        <section className="grid gap-4 sm:gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="space-y-4 sm:space-y-6">
             <ClaimPanel
               location={{
                 id: location.id,
@@ -232,10 +261,10 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
             />
           </div>
 
-          <section className="glass-panel rounded-[28px] border border-[var(--line)] p-5">
+          <section className="glass-panel rounded-[24px] border border-[var(--line)] p-4 sm:rounded-[28px] sm:p-5">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <h2 className="text-2xl font-semibold tracking-[-0.03em]">Historie záborů</h2>
+                <h2 className="text-xl font-semibold tracking-[-0.03em] sm:text-2xl">Historie záborů</h2>
                 <p className="mt-1 text-sm text-[var(--muted)]">
                   Každý úspěšný zábor a zpráva je uložena jako neměnná událost.
                 </p>
@@ -245,7 +274,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
               </div>
             </div>
 
-            <div className="mt-4 space-y-3">
+            <div className="mt-3 max-h-[360px] space-y-2 overflow-y-auto pr-1 sm:mt-4 sm:max-h-[520px] sm:space-y-3">
               {location.claims.length ? (
                 location.claims.map((claim) => (
                   <ClaimEventCard
