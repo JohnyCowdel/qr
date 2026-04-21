@@ -188,6 +188,23 @@ export function BuildingsPanel({ slug, canManage, locationType }: Props) {
 
   const builtCount = useMemo(() => items.filter((x) => x.isBuilt).length, [items]);
   const canAffordSelected = selectedBuilding ? (userMoney ?? 0) >= selectedBuilding.cost : false;
+  const selectedEffects = useMemo(() => {
+    if (!selectedBuilding) {
+      return [] as string[];
+    }
+
+    const rows = [
+      { value: selectedBuilding.effectMny, text: formatEffect("💰", "Růst peněz", selectedBuilding.effectMny) },
+      { value: selectedBuilding.effectPow, text: formatEffect("💪", "Růst síly", selectedBuilding.effectPow) },
+      { value: selectedBuilding.effectGpop, text: formatEffect("👨‍🌾", "Růst populace", selectedBuilding.effectGpop) },
+      { value: selectedBuilding.effectMaxpop, text: formatEffect("🏘️", "Max. populace", selectedBuilding.effectMaxpop) },
+      { value: selectedBuilding.effectArm, text: formatEffect("🛡️", "Obrana", selectedBuilding.effectArm) },
+    ];
+
+    return rows
+      .filter((row) => Math.abs(row.value) > 1e-9)
+      .map((row) => row.text);
+  }, [selectedBuilding]);
 
   function build(buildingDefId: number) {
     setError(null);
@@ -270,11 +287,11 @@ export function BuildingsPanel({ slug, canManage, locationType }: Props) {
               <div className="text-lg font-semibold">{selectedBuilding.name}</div>
 
               <div className="mt-3 space-y-1 text-sm text-[var(--muted)]">
-                <div>{formatEffect("💰", "Růst peněz", selectedBuilding.effectMny)}</div>
-                <div>{formatEffect("💪", "Růst síly", selectedBuilding.effectPow)}</div>
-                <div>{formatEffect("👨‍🌾", "Růst populace", selectedBuilding.effectGpop)}</div>
-                <div>{formatEffect("🏘️", "Max. populace", selectedBuilding.effectMaxpop)}</div>
-                <div>{formatEffect("🛡️", "Obrana", selectedBuilding.effectArm)}</div>
+                {selectedEffects.length ? (
+                  selectedEffects.map((line) => <div key={line}>{line}</div>)
+                ) : (
+                  <div>Tato budova nemá aktivní bonusy.</div>
+                )}
               </div>
 
               {selectedBuilding.isBuilt ? (

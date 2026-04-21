@@ -29,6 +29,8 @@ export function LocationEconomyControls({
   const [powerRate, setPowerRate] = useState(0.5);
   const [populationRate, setPopulationRate] = useState(1);
 
+  const [buildingEffects, setBuildingEffects] = useState({ gpop: 0, pow: 0, maxpop: 0, mny: 0, arm: 0 });
+
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const requestIdRef = useRef(0);
@@ -78,6 +80,43 @@ export function LocationEconomyControls({
     };
   }, []);
 
+  useEffect(() => {
+    let canceled = false;
+
+    async function loadBuildingEffects() {
+      try {
+        const response = await fetch(`/api/locations/${slug}/buildings`, { cache: "no-store" });
+        if (!response.ok) return;
+        const data = (await response.json()) as {
+          ok: boolean;
+          buildings?: Array<unknown>;
+          currentEffects?: { gpop: number; pow: number; maxpop: number; mny: number; arm: number };
+        };
+        if (canceled) return;
+        if (data.currentEffects) {
+          setBuildingEffects(data.currentEffects);
+        }
+      } catch {
+        // Keep defaults if fetch fails.
+      }
+    }
+
+    loadBuildingEffects();
+
+    // Re-fetch when the user returns to the tab so building changes propagate.
+    function onFocus() { void loadBuildingEffects(); }
+    window.addEventListener("focus", onFocus);
+
+    // Also re-fetch periodically (every 5 seconds) to catch building purchases immediately
+    const interval = setInterval(() => { void loadBuildingEffects(); }, 5000);
+
+    return () => {
+      canceled = true;
+      window.removeEventListener("focus", onFocus);
+      clearInterval(interval);
+    };
+  }, [slug]);
+
   const assigned = useMemo(() => {
     return moneyWorkers + powerWorkers + populationWorkers;
   }, [moneyWorkers, populationWorkers, powerWorkers]);
@@ -85,12 +124,16 @@ export function LocationEconomyControls({
   const totalWorkers = calculateWorkerCap(currentPopulationValue);
   const freeWorkers = Math.max(0, totalWorkers - assigned);
 
-  const moneyPerDay = moneyWorkers * moneyRate;
-  const powerPerDay = powerWorkers * powerRate;
+  const effectiveMoneyRate = moneyRate + buildingEffects.mny;
+  const effectivePowerRate = powerRate + buildingEffects.pow;
+  const effectivePopulationRate = populationRate + buildingEffects.gpop;
+
+  const moneyPerDay = moneyWorkers * effectiveMoneyRate;
+  const powerPerDay = powerWorkers * effectivePowerRate;
   const growthFactor = populationWorkers / 30;
   const populationPerDay = Math.max(
     0,
-    populationRate * growthFactor * currentPopulationValue * (1 - currentPopulationValue / Math.max(1, maxPopulation)),
+    effectivePopulationRate * growthFactor * currentPopulationValue * (1 - currentPopulationValue / Math.max(1, maxPopulation)),
   );
 
   async function persist(next: { money: number; power: number; population: number }) {

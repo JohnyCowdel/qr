@@ -60,6 +60,15 @@ export async function GET(request: Request, { params }: PageProps) {
         select: {
           buildingDefId: true,
           createdAt: true,
+          buildingDef: {
+            select: {
+              effectGpop: true,
+              effectPow: true,
+              effectMaxpop: true,
+              effectMny: true,
+              effectArm: true,
+            },
+          },
         },
       },
     },
@@ -88,6 +97,18 @@ export async function GET(request: Request, { params }: PageProps) {
 
   const builtMap = new Map(location.builtBuildings.map((b) => [b.buildingDefId, b.createdAt]));
 
+  // Calculate current building bonuses
+  const currentEffects = location.builtBuildings.reduce(
+    (acc, built) => ({
+      gpop: acc.gpop + built.buildingDef.effectGpop,
+      pow: acc.pow + built.buildingDef.effectPow,
+      maxpop: acc.maxpop + built.buildingDef.effectMaxpop,
+      mny: acc.mny + built.buildingDef.effectMny,
+      arm: acc.arm + built.buildingDef.effectArm,
+    }),
+    { gpop: 0, pow: 0, maxpop: 0, mny: 0, arm: 0 }
+  );
+
   return Response.json({
     ok: true,
     buildings: defs.map((def) => ({
@@ -104,6 +125,7 @@ export async function GET(request: Request, { params }: PageProps) {
       isBuilt: builtMap.has(def.id),
       builtAt: builtMap.get(def.id)?.toISOString() ?? null,
     })),
+    currentEffects,
   });
 }
 
