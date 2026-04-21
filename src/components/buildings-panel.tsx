@@ -20,17 +20,77 @@ type BuildingItem = {
 type Props = {
   slug: string;
   canManage: boolean;
+  locationType: string;
 };
+
+function resolveSpriteFile(locationType: string): string | null {
+  const normalized = String(locationType || "").trim().toLowerCase();
+
+  if (normalized === "camp" || normalized === "camp1") {
+    return "camp1.svg";
+  }
+  if (normalized === "mine" || normalized === "mine1") {
+    return "mine1.svg";
+  }
+  if (normalized === "town" || normalized === "fortress" || normalized === "settlement") {
+    return "settlement8.svg";
+  }
+
+  return null;
+}
+
+function buildInteractiveSvgMarkup(svgText: string, items: BuildingItem[], selectedSvgKey: string | null) {
+  if (!svgText.trim()) {
+    return "";
+  }
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(svgText, "image/svg+xml");
+  const svg = doc.documentElement;
+  const useNodes = Array.from(svg.querySelectorAll("use"));
+  const interactiveNodes = useNodes.slice(1, 1 + items.length);
+
+  const bySvgKey = new Map(items.map((item) => [item.svgKey, item]));
+
+  interactiveNodes.forEach((node, idx) => {
+    const svgKey = `building${idx + 1}`;
+    const item = bySvgKey.get(svgKey);
+    if (!item) {
+      return;
+    }
+
+    node.setAttribute("data-building-key", svgKey);
+    node.classList.add("qb-building");
+    node.classList.toggle("qb-building-built", item.isBuilt);
+    node.classList.toggle("qb-building-unbuilt", !item.isBuilt);
+    node.classList.toggle("qb-building-selected", selectedSvgKey === svgKey);
+  });
+
+  return new XMLSerializer().serializeToString(svg);
+}
 
 function formatEffect(label: string, value: number) {
   return `${label}: ${value.toFixed(2)}`;
 }
 
-export function BuildingsPanel({ slug, canManage }: Props) {
+export function BuildingsPanel({ slug, canManage, locationType }: Props) {
   const [items, setItems] = useState<BuildingItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const [svgText, setSvgText] = useState("");
+  const [selectedSvgKey, setSelectedSvgKey] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const spriteFile = useMemo(() => resolveSpriteFile(locationType), [locationType]);
+
+  const selectedBuilding = useMemo(() => {
+    if (!selectedSvgKey) {
+      return null;
+    }
+    return items.find((item) => item.svgKey === selectedSvgKey) ?? null;
+  }, [items, selectedSvgKey]);
+
+  const interactiveSvg = useMemo(() => buildInteractiveSvgMarkup(svgText, items, selectedSvgKey), [items, selectedSvgKey, svgText]);
 
   async function load() {
     try {
@@ -49,6 +109,45 @@ export function BuildingsPanel({ slug, canManage }: Props) {
   useEffect(() => {
     void load();
   }, [slug]);
+
+  useEffect(() => {
+    if (!spriteFile) {
+      setSvgText("");
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadSprite() {
+      try {
+        const res = await fetch(`/api/sprites/${spriteFile}`, { cache: "no-store" });
+        if (!res.ok) {
+          throw new Error("Nepodařilo se načíst SVG scénu.");
+        }
+
+        const text = await res.text();
+        if (!cancelled) {
+          setSvgText(text);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : "Nepodařilo se načíst SVG scénu.");
+        }
+      }
+    }
+
+    void loadSprite();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [spriteFile]);
+
+  useEffect(() => {
+    if (selectedSvgKey && !items.some((item) => item.svgKey === selectedSvgKey)) {
+      setSelectedSvgKey(null);
+    }
+  }, [items, selectedSvgKey]);
 
   const builtCount = useMemo(() => items.filter((x) => x.isBuilt).length, [items]);
 
@@ -77,6 +176,26 @@ export function BuildingsPanel({ slug, canManage }: Props) {
     });
   }
 
+  function handleSvgClick(event: React.MouseEvent<HTMLDivElement>) {
+    const target = event.target as Element | null;
+    if (!target) {
+      return;
+    }
+
+    const node = target.closest("[data-building-key]") as Element | null;
+    if (!node) {
+      return;
+    }
+
+    const key = node.getAttribute("data-building-key");
+    if (!key) {
+      return;
+    }
+
+    setSelectedSvgKey(key);
+    setStatus(null);
+  }
+
   return (
     <section className="glass-panel rounded-[28px] border border-[var(--line)] p-5">
       <div className="flex items-center justify-between gap-3">
@@ -89,44 +208,95 @@ export function BuildingsPanel({ slug, canManage }: Props) {
       {status ? <p className="mt-3 rounded-xl bg-emerald-100 px-3 py-2 text-sm text-emerald-800">{status}</p> : null}
       {error ? <p className="mt-3 rounded-xl bg-red-100 px-3 py-2 text-sm text-red-800">{error}</p> : null}
 
-      <div className="mt-4 space-y-3">
-        {items.map((item) => (
-          <div key={item.id} className="rounded-2xl border border-[var(--line)] bg-white/70 p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <div className="text-base font-semibold">{item.name}</div>
-                <div className="text-xs text-[var(--muted)]">{item.svgKey}</div>
+      <div className="mt-4 grid gap-4 lg:grid-cols-[1.4fr_0.9fr]">
+        <div
+          onClick={handleSvgClick}
+          className="overflow-hidden rounded-2xl border border-[var(--line)] bg-white/70 p-2"
+        >
+          {interactiveSvg ? (
+            <div
+              className="qb-scene h-full w-full"
+              dangerouslySetInnerHTML={{ __html: interactiveSvg }}
+            />
+          ) : (
+            <div className="flex min-h-[260px] items-center justify-center rounded-xl border border-dashed border-[var(--line)] text-sm text-[var(--muted)]">
+              {spriteFile ? "Načítám scénu..." : "Tento typ lokace nemá dostupné SVG budovy."}
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-2xl border border-[var(--line)] bg-white/70 p-4">
+          {selectedBuilding ? (
+            <>
+              <div className="text-lg font-semibold">{selectedBuilding.name}</div>
+              <div className="mt-1 text-xs text-[var(--muted)]">{selectedBuilding.svgKey}</div>
+
+              <div className="mt-3 space-y-1 text-sm text-[var(--muted)]">
+                <div>{formatEffect("mny", selectedBuilding.effectMny)}</div>
+                <div>{formatEffect("pow", selectedBuilding.effectPow)}</div>
+                <div>{formatEffect("gpop", selectedBuilding.effectGpop)}</div>
+                <div>{formatEffect("maxpop", selectedBuilding.effectMaxpop)}</div>
+                <div>{formatEffect("arm", selectedBuilding.effectArm)}</div>
               </div>
-              <div className="text-sm font-medium">{item.isBuilt ? "Postaveno" : `${item.cost.toFixed(0)} $`}</div>
+
+              {selectedBuilding.isBuilt ? (
+                <div className="mt-4 rounded-lg bg-emerald-100 px-3 py-2 text-sm font-semibold text-emerald-800">
+                  Budova je postavená
+                </div>
+              ) : canManage ? (
+                <button
+                  type="button"
+                  onClick={() => build(selectedBuilding.id)}
+                  disabled={isPending}
+                  className="mt-4 w-full rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)] disabled:opacity-60"
+                >
+                  Koupit za {selectedBuilding.cost.toFixed(0)} $
+                </button>
+              ) : (
+                <div className="mt-4 rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-600">
+                  Budovu může koupit jen vlastník lokace.
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-sm text-[var(--muted)]">
+              Klikni na budovu v SVG mapě a zobrazí se detaily i možnost nákupu.
             </div>
-
-            <div className="mt-2 flex flex-wrap gap-2 text-xs text-[var(--muted)]">
-              <span>{formatEffect("mny", item.effectMny)}</span>
-              <span>{formatEffect("pow", item.effectPow)}</span>
-              <span>{formatEffect("gpop", item.effectGpop)}</span>
-              <span>{formatEffect("maxpop", item.effectMaxpop)}</span>
-              <span>{formatEffect("arm", item.effectArm)}</span>
-            </div>
-
-            {canManage && !item.isBuilt ? (
-              <button
-                type="button"
-                onClick={() => build(item.id)}
-                disabled={isPending}
-                className="mt-3 rounded-lg bg-[var(--accent)] px-3 py-1.5 text-sm font-semibold text-white hover:bg-[var(--accent-strong)] disabled:opacity-60"
-              >
-                Postavit
-              </button>
-            ) : null}
-          </div>
-        ))}
-
-        {!items.length ? (
-          <div className="rounded-xl border border-dashed border-[var(--line)] bg-white/60 p-3 text-sm text-[var(--muted)]">
-            Pro tento typ lokace nejsou dostupné žádné budovy.
-          </div>
-        ) : null}
+          )}
+        </div>
       </div>
+
+      {!items.length ? (
+        <div className="mt-4 rounded-xl border border-dashed border-[var(--line)] bg-white/60 p-3 text-sm text-[var(--muted)]">
+          Pro tento typ lokace nejsou dostupné žádné budovy.
+        </div>
+      ) : null}
+
+      <style jsx global>{`
+        .qb-scene svg {
+          width: 100%;
+          height: auto;
+          display: block;
+        }
+
+        .qb-scene .qb-building {
+          cursor: pointer;
+          transition: opacity 0.15s ease, filter 0.15s ease;
+        }
+
+        .qb-scene .qb-building-unbuilt {
+          opacity: 0.08;
+        }
+
+        .qb-scene .qb-building-built {
+          opacity: 1;
+        }
+
+        .qb-scene .qb-building-selected {
+          opacity: 1;
+          filter: brightness(1.06) drop-shadow(0 0 6px rgba(18, 55, 39, 0.35));
+        }
+      `}</style>
     </section>
   );
 }

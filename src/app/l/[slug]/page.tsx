@@ -212,7 +212,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                 />
               ) : null}
 
-              <BuildingsPanel slug={location.slug} canManage={canManageEconomy} />
+              <BuildingsPanel slug={location.slug} canManage={canManageEconomy} locationType={location.type} />
             </div>
           </div>
         </section>
