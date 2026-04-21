@@ -315,8 +315,7 @@ export function LocationEconomyControls({
           {Math.floor(currentPopulationValue) >= maxPopulation && (
             <p className="mt-0.5 text-xs italic text-red-500">Populace na maximu</p>
           )}
-          🪏 pracují: <span className="font-semibold">{assigned}</span>
-          😴 nepracují: <span className="font-semibold">{freeWorkers}</span>
+           / 🪏 pracují: <span className="font-semibold">{assigned}</span>
         </div>
       </div>
 
