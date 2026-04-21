@@ -21,21 +21,18 @@ export async function POST(
     return Response.json({ error: "User is already approved." }, { status: 400 });
   }
 
-  // Aktualizace a odeslání emailu v transakci
-  const result = await db.$transaction(async (tx) => {
-    const updatedUser = await tx.user.update({
-      where: { id: userId },
-      data: { isApproved: true },
-      select: { email: true, handle: true },
-    });
-
-    // Odeslání emailu
-    return sendApprovalEmail(updatedUser.email, updatedUser.handle);
+  const updatedUser = await db.user.update({
+    where: { id: userId },
+    data: { isApproved: true },
+    select: { email: true, handle: true },
   });
 
-  if (!result.ok) {
-    console.error("Email send error:", result.error);
-    // Stále vrátíme 200, protože schválení proběhlo - email je pouze notifikace
+  if (updatedUser.email) {
+    const result = await sendApprovalEmail(updatedUser.email, updatedUser.handle);
+    if (!result.ok) {
+      console.error("Email send error:", result.error);
+      // Stale vratime 200, protoze schvaleni probehlo - email je pouze notifikace.
+    }
   }
 
   const accept = request.headers.get("accept") ?? "";
