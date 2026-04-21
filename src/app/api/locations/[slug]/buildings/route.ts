@@ -7,20 +7,39 @@ import { runEconomyTick } from "@/lib/economy";
 type PageProps = { params: Promise<{ slug: string }> };
 
 function resolveBuildingCatalogType(locationType: string): "camp" | "mine" | "town" | null {
-  if (locationType === "camp") {
+  const type = String(locationType || "").trim().toLowerCase();
+
+  if (type === "camp" || type === "camp1") {
     return "camp";
   }
 
-  if (locationType === "mine") {
+  if (type === "mine" || type === "mine1") {
     return "mine";
   }
 
-  if (locationType === "town" || locationType === "fortress") {
+  if (type === "town" || type === "fortress" || type === "settlement") {
     return "town";
   }
 
   // tower currently has no building catalog
   return null;
+}
+
+function acceptedDefLocationTypes(catalogType: "camp" | "mine" | "town") {
+  if (catalogType === "camp") {
+    return ["camp", "camp1"];
+  }
+
+  if (catalogType === "mine") {
+    return ["mine", "mine1"];
+  }
+
+  return ["town", "settlement", "fortress"];
+}
+
+function isBuildingDefCompatible(defLocationType: string, catalogType: "camp" | "mine" | "town") {
+  const normalized = String(defLocationType || "").trim().toLowerCase();
+  return acceptedDefLocationTypes(catalogType).includes(normalized);
 }
 
 /** GET /api/locations/[slug]/buildings
@@ -53,7 +72,14 @@ export async function GET(request: Request, { params }: PageProps) {
   }
 
   const defs = await db.buildingDef.findMany({
-    where: { locationType: catalogType },
+    where: {
+      OR: acceptedDefLocationTypes(catalogType).map((typeValue) => ({
+        locationType: {
+          equals: typeValue,
+          mode: "insensitive",
+        },
+      })),
+    },
     orderBy: { svgKey: "asc" },
   });
 
@@ -137,7 +163,7 @@ export async function POST(request: Request, { params }: PageProps) {
   }
 
   const def = await db.buildingDef.findUnique({ where: { id: buildingDefId } });
-  if (!def || def.locationType !== catalogType) {
+  if (!def || !isBuildingDefCompatible(def.locationType, catalogType)) {
     return Response.json({ ok: false, message: "Tato budova zde nemůže stát." }, { status: 400 });
   }
 
