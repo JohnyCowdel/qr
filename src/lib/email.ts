@@ -77,15 +77,15 @@ export async function sendApprovalEmail(userEmail: string, userHandle: string) {
                 
                 <h3>Jak začít?</h3>
                 <ol>
-                  <li>Přihlaste se na <a href="https://qr-game.vercel.app/auth/login">QR Území</a></li>
+                  <li>Přihlaste se na <a href="https://qrempire.space/auth/login">QR Území</a></li>
                   <li>Vyberte si svůj tým</li>
                   <li>Naskenujte QR kód na místě a obsaďte lokaci</li>
                   <li>Užívejte si hru! 🎮</li>
                 </ol>
                 
-                <p>Máte otázky? Podívejte se na <a href="https://qr-game.vercel.app/jak-na-to">Jak na to?</a></p>
+                <p>Máte otázky? Podívejte se na <a href="https://qrempire.space/jak-na-to">Jak na to?</a></p>
                 
-                <a href="https://qr-game.vercel.app/auth/login" class="button">Přihlásit se →</a>
+                <a href="https://qrempire.space/auth/login" class="button">Přihlásit se →</a>
               </div>
               
               <div class="footer">
