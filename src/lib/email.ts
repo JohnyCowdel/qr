@@ -67,7 +67,7 @@ export async function sendApprovalEmail(userEmail: string, userHandle: string) {
           <body>
             <div class="container">
               <div class="header">
-                <h1>🎉 Vítej v QR Teritoriu!</h1>
+                <h1>🎉 Vítej v QR Impériu!</h1>
               </div>
               
               <div class="content">
