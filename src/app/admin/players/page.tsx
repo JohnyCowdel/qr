@@ -119,6 +119,20 @@ function EditPlayerDropdown({
           Hráč schválen
         </label>
 
+        <label className="block">
+          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Nové heslo</span>
+          <input
+            name="newPassword"
+            type="password"
+            minLength={6}
+            placeholder="Nechat prázdné beze změny"
+            className="w-full rounded-lg border border-[var(--line)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
+          />
+          <span className="mt-1 block text-xs text-[var(--muted)]">
+            Pokud pole vyplníš, hráči se nastaví nové heslo.
+          </span>
+        </label>
+
         <div className="flex justify-end">
           <button type="submit" className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]">
             Uložit změny
@@ -133,6 +147,7 @@ export default async function AdminPlayersPage(props: PageProps<"/admin/players"
   const searchParams = await props.searchParams;
   const search = typeof searchParams.q === "string" ? searchParams.q.trim() : "";
   const teamFilter = typeof searchParams.team === "string" && searchParams.team ? searchParams.team : "all";
+  const status = typeof searchParams.status === "string" ? searchParams.status : "";
   const baseWhere = buildUserWhere(search, teamFilter);
 
   const [teams, pendingUsers, approvedUsers] = await Promise.all([
@@ -211,6 +226,18 @@ export default async function AdminPlayersPage(props: PageProps<"/admin/players"
           </p>
           <h1 className="text-3xl font-bold">Hráči</h1>
         </div>
+
+        {status === "password-reset" ? (
+          <p className="mb-6 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+            Heslo hráče bylo úspěšně změněno.
+          </p>
+        ) : null}
+
+        {status === "user-saved" ? (
+          <p className="mb-6 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+            Změny hráče byly uloženy.
+          </p>
+        ) : null}
 
         <section className="mb-8 rounded-3xl border border-[var(--line)] bg-white/70 p-5">
           <form method="get" className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px_auto] md:items-end">

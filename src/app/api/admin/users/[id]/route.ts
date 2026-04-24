@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { hashPassword } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 const updateUserSchema = z.object({
@@ -12,6 +13,7 @@ const updateUserSchema = z.object({
   money: z.coerce.number().min(0).max(1000000),
   teamId: z.coerce.number().int().positive(),
   isApproved: z.boolean(),
+  newPassword: z.string().trim().min(6).max(128).optional(),
 });
 
 async function updateUser(userId: number, payload: unknown) {
@@ -25,7 +27,7 @@ async function updateUser(userId: number, payload: unknown) {
     return { ok: false as const, status: 404, body: { error: "User not found." } };
   }
 
-  const { handle, firstName, lastName, email, age, power, money, teamId, isApproved } = parsed.data;
+  const { handle, firstName, lastName, email, age, power, money, teamId, isApproved, newPassword } = parsed.data;
 
   const [otherHandleUser, otherEmailUser, team] = await Promise.all([
     db.user.findFirst({ where: { handle, id: { not: userId } }, select: { id: true } }),
@@ -57,6 +59,7 @@ async function updateUser(userId: number, payload: unknown) {
       money,
       teamId,
       isApproved,
+      ...(newPassword ? { passwordHash: hashPassword(newPassword) } : {}),
     },
   });
 
@@ -129,7 +132,9 @@ export async function POST(
     money: formData.get("money"),
     teamId: formData.get("teamId"),
     isApproved: formData.get("isApproved") === "on",
+    newPassword: String(formData.get("newPassword") ?? "").trim() || undefined,
   };
+  const passwordWasReset = Boolean(payload.newPassword);
 
   const result = await updateUser(userId, payload);
   if (!result.ok) {
@@ -142,7 +147,7 @@ export async function POST(
   return new Response(null, {
     status: 303,
     headers: {
-      Location: "/admin/players",
+      Location: passwordWasReset ? "/admin/players?status=password-reset" : "/admin/players?status=user-saved",
     },
   });
 }
