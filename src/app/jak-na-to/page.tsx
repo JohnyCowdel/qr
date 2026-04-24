@@ -5,6 +5,8 @@ export const metadata = {
 };
 
 export default function HowToPage() {
+  const dailyLoginReward = Number(process.env.NEXT_PUBLIC_DAILY_LOGIN_REWARD ?? "8");
+
   return (
     <main className="terrain-grid min-h-screen px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
@@ -19,6 +21,17 @@ export default function HowToPage() {
         </div>
 
         <section className="glass-panel space-y-6 rounded-[28px] border border-[var(--line)] p-6">
+
+          <div className="space-y-2">
+            <h2 className="text-lg font-semibold">📱 Co potřebuješ ke hře</h2>
+            <ul className="space-y-2 text-sm leading-7 text-[var(--muted)]">
+              <li>📍 Telefon se zapnutou GPS (poloha je nutná pro ověření obsazení lokace).</li>
+              <li>🌐 Aktivní mobilní data nebo Wi-Fi pro přístup na herní stránky.</li>
+              <li>🛰️ Při obsazování musíš povolit sdílení GPS polohy v prohlížeči.</li>
+            </ul>
+          </div>
+
+          <hr className="border-[var(--line)]" />
 
           <div className="space-y-2">
             <h2 className="text-lg font-semibold">🗺️ Co je cílem hry?</h2>
@@ -48,6 +61,11 @@ export default function HowToPage() {
             <p className="text-sm leading-7 text-[var(--muted)]">
               Každá obsazená lokace má obyvatele. Ty obyvatele můžeš přiřadit ke třem
               různým činnostem – a záleží jen na tobě, do čeho investuješ:
+            </p>
+            <p className="text-sm leading-7 text-[var(--muted)]">
+              Každý den si navíc po přihlášení můžeš vyzvednout denní odměnu +{dailyLoginReward} síly.
+              Odměna se načítá jednou za 24 hodin a nekumuluje se, takže když ji nestihneš vyzvednout,
+              další den je pořád stejná.
             </p>
             <ul className="space-y-2 text-sm leading-7 text-[var(--muted)]">
               <li>

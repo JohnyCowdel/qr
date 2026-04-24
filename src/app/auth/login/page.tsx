@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 
 export default function UserLoginPage() {
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "admin@qrempire.space";
   const [pendingNotice, setPendingNotice] = useState(false);
   const [handle, setHandle] = useState("");
   const [password, setPassword] = useState("");
@@ -97,6 +98,14 @@ export default function UserLoginPage() {
 
           <p className="mt-4 text-sm text-[var(--muted)]">
             Nový hráč? <Link href="/auth/register" className="font-semibold text-[var(--accent-strong)]">Vytvořit účet</Link>
+          </p>
+
+          <p className="mt-2 text-sm text-[var(--muted)]">
+            Zapomněl/a jsi heslo? Kontaktuj správce na{" "}
+            <a href={`mailto:${adminEmail}`} className="font-semibold text-[var(--accent-strong)] hover:underline">
+              {adminEmail}
+            </a>
+            .
           </p>
         </section>
       </div>
