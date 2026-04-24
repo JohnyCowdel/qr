@@ -1,11 +1,18 @@
 import Link from "next/link";
+import { db } from "@/lib/db";
 
 export const metadata = {
   title: "Jak na to? – Pravidla hry",
 };
 
-export default function HowToPage() {
-  const dailyLoginReward = Number(process.env.NEXT_PUBLIC_DAILY_LOGIN_REWARD ?? "8");
+export const dynamic = "force-dynamic";
+
+export default async function HowToPage() {
+  const settings = await db.adminSettings.findUnique({
+    where: { id: 1 },
+    select: { dailyLoginReward: true },
+  });
+  const dailyLoginReward = settings?.dailyLoginReward ?? 8;
 
   return (
     <main className="terrain-grid min-h-screen px-4 py-8 sm:px-6 lg:px-8">
