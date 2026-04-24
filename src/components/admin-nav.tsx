@@ -30,6 +30,12 @@ export function AdminNav() {
         >
           Budovy
         </Link>
+        <Link
+          href="/admin/qr"
+          className="px-3 py-1.5 text-xs font-semibold border border-[var(--line)] rounded-lg hover:bg-[var(--background-strong)] transition-colors"
+        >
+          QR editor
+        </Link>
       </div>
       <div className="flex items-center gap-2">
         <Link

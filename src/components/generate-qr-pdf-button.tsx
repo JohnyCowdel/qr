@@ -25,29 +25,22 @@ async function ensureCzechPdfFonts(doc: {
   if (!fontInitPromise) {
     fontInitPromise = (async () => {
       try {
-        const regularUrl = "https://github.com/notofonts/noto-fonts/raw/main/hinted/ttf/NotoSerif/NotoSerif-Regular.ttf";
-        const italicUrl = "https://github.com/notofonts/noto-fonts/raw/main/hinted/ttf/NotoSerif/NotoSerif-Italic.ttf";
+        const base = "/fonts/";
+        const files = [
+          { file: "NotoSerif-Regular.ttf", id: "NotoSerif", style: "normal" },
+          { file: "NotoSerif-Italic.ttf", id: "NotoSerif", style: "italic" },
+          { file: "NotoSerif-Bold.ttf", id: "NotoSerif", style: "bold" },
+          { file: "NotoSerif-BoldItalic.ttf", id: "NotoSerif", style: "bolditalic" },
+        ];
 
-        const [regularRes, italicRes] = await Promise.all([
-          fetch(regularUrl),
-          fetch(italicUrl),
-        ]);
+        const responses = await Promise.all(files.map((f) => fetch(base + f.file)));
+        if (responses.some((r) => !r.ok)) return false;
 
-        if (!regularRes.ok || !italicRes.ok) {
-          return false;
-        }
-
-        const [regularBuffer, italicBuffer] = await Promise.all([
-          regularRes.arrayBuffer(),
-          italicRes.arrayBuffer(),
-        ]);
-
-        doc.addFileToVFS("NotoSerif-Regular.ttf", arrayBufferToBase64(regularBuffer));
-        doc.addFont("NotoSerif-Regular.ttf", "NotoSerif", "normal");
-
-        doc.addFileToVFS("NotoSerif-Italic.ttf", arrayBufferToBase64(italicBuffer));
-        doc.addFont("NotoSerif-Italic.ttf", "NotoSerif", "italic");
-
+        const buffers = await Promise.all(responses.map((r) => r.arrayBuffer()));
+        files.forEach((f, i) => {
+          doc.addFileToVFS(f.file, arrayBufferToBase64(buffers[i]));
+          doc.addFont(f.file, f.id, f.style);
+        });
         return true;
       } catch {
         return false;
@@ -128,7 +121,7 @@ export function GenerateQRPdfButton({ locations }: Props) {
         doc.addImage(dataUrl, "PNG", qrX, qrY, QR_SIZE, QR_SIZE);
 
         // Draw title in a condensed poster-like style (Playbill spirit).
-        doc.setFont("times", "bold");
+        doc.setFont(czechFontReady ? "NotoSerif" : "times", "bold");
         doc.setFontSize(18);
         doc.setCharSpace(0.45);
         doc.setTextColor(26, 45, 33); // --foreground
