@@ -9,6 +9,7 @@ const updateSchema = z.object({
   type: z.enum(LOCATION_TYPES).optional(),
   ownerTeamId: z.coerce.number().int().positive().nullable().optional(),
   area: z.coerce.number().int().positive().optional(),
+  armor: z.coerce.number().int().min(0).optional(),
   image: z.string().trim().min(1).max(32).optional(),
   summary: z.string().trim().min(1).optional(),
   content: z.string().trim().min(1).optional(),
@@ -47,11 +48,14 @@ export async function PUT(
 
   const nextArea = parsed.data.area ?? existingLocation.area;
 
-  const updateData = {
+  const updateData: Record<string, unknown> = {
     ...parsed.data,
     currentPopulation: clampCurrentPopulation(nextArea, existingLocation.currentPopulation),
-    ...(parsed.data.type ? { armor: baseArmorForType(parsed.data.type) } : {}),
   };
+  // If type changed but admin did not explicitly provide an armor value, reset to type default.
+  if (parsed.data.type && parsed.data.armor === undefined) {
+    updateData.armor = baseArmorForType(parsed.data.type);
+  }
 
   try {
     const location = await db.location.update({ where: { slug }, data: updateData });

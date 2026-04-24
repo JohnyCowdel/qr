@@ -80,6 +80,7 @@ function buildLocationPayload(draft: AdminLocationDraft, computedArea: number) {
     type: draft.type,
     ownerTeamId: draft.ownerTeam?.id ?? null,
     area: Math.max(1, Math.round(safeNumber(computedArea, draft.area))),
+    armor: Math.max(0, Math.round(safeNumber(draft.armor, baseArmorForType(draft.type)))),
     image: draft.image.trim() || defaultImageForType(draft.type),
     summary: draft.summary.trim() || "<summary>",
     content: draft.content.trim() || "<content>",
@@ -540,10 +541,17 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
                       value={String(draft.claimRadiusM)}
                       onChange={(value) => updateDraft(location.id, { claimRadiusM: Math.max(1, Number(value) || 1) })}
                     />
-                    <ReadonlyField
-                      label="Armor"
-                      value={String(draft.armor)}
-                    />
+                    <div>
+                      <EditorField
+                        label="Armor (základní)"
+                        type="number"
+                        value={String(draft.armor)}
+                        onChange={(value) => updateDraft(location.id, { armor: Math.max(0, Number(value) || 0) })}
+                      />
+                      <p className="mt-0.5 text-xs text-[var(--muted)]">
+                        výchozí pro typ: {baseArmorForType(draft.type)}
+                      </p>
+                    </div>
                     <ReadonlyField
                       label="Area"
                       value={`${computedArea} m²`}
