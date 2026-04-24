@@ -5,8 +5,9 @@ export const dynamic = "force-dynamic";
 
 export default async function RegisterPage() {
   const teams = await db.team.findMany({
+    where: { isHidden: false },
     orderBy: { name: "asc" },
-    select: { id: true, name: true, colorHex: true },
+    select: { id: true, name: true, colorHex: true, emoji: true },
   });
 
   return (

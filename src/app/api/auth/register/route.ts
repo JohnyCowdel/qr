@@ -22,7 +22,7 @@ export async function POST(request: Request) {
   const { handle, password, teamId, firstName, lastName, email, age } = parsed.data;
 
   const team = await db.team.findUnique({ where: { id: teamId } });
-  if (!team) {
+  if (!team || team.isHidden) {
     return Response.json({ error: "Selected team was not found." }, { status: 400 });
   }
 

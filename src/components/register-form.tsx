@@ -7,6 +7,7 @@ type TeamOption = {
   id: number;
   name: string;
   colorHex: string;
+  emoji: string;
 };
 
 type RegisterFormProps = {
@@ -133,7 +134,7 @@ export function RegisterForm({ teams }: RegisterFormProps) {
         >
           {teams.map((team) => (
             <option key={team.id} value={team.id}>
-              {team.name}
+              {team.emoji} {team.name}
             </option>
           ))}
         </select>
@@ -146,7 +147,7 @@ export function RegisterForm({ teams }: RegisterFormProps) {
             className="inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 text-xs"
           >
             <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: team.colorHex }} />
-            {team.name}
+            {team.emoji} {team.name}
           </span>
         ))}
       </div>

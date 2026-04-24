@@ -17,6 +17,8 @@ model Team {
   slug           String     @unique
   name           String
   colorHex       String
+  emoji          String     @default("🏴")
+  isHidden       Boolean    @default(false)
   power          Int        @default(10)
   createdAt      DateTime   @default(now())
   users          User[]

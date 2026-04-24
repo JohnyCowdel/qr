@@ -13,7 +13,7 @@ const DEFAULT_IMAGES: Record<LocationType, string> = {
 const BASE_ARMOR: Record<LocationType, number> = {
   fortress: 25,
   tower: 15,
-  town: 10,
+  town: 18,
   camp: 8,
   mine: 8,
 };

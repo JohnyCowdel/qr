@@ -31,6 +31,12 @@ export function AdminNav() {
           Budovy
         </Link>
         <Link
+          href="/admin/teams"
+          className="px-3 py-1.5 text-xs font-semibold border border-[var(--line)] rounded-lg hover:bg-[var(--background-strong)] transition-colors"
+        >
+          Týmy
+        </Link>
+        <Link
           href="/admin/qr"
           className="px-3 py-1.5 text-xs font-semibold border border-[var(--line)] rounded-lg hover:bg-[var(--background-strong)] transition-colors"
         >
