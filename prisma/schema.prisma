@@ -31,7 +31,7 @@ model User {
   handle    String   @unique
   firstName String?
   lastName  String?
-  email     String?  @unique
+  email     String?
   age       Int?
   isApproved Boolean @default(false)
   avatarType String  @default("sprite")

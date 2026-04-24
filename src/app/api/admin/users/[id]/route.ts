@@ -29,18 +29,13 @@ async function updateUser(userId: number, payload: unknown) {
 
   const { handle, firstName, lastName, email, age, power, money, teamId, isApproved, newPassword } = parsed.data;
 
-  const [otherHandleUser, otherEmailUser, team] = await Promise.all([
+  const [otherHandleUser, team] = await Promise.all([
     db.user.findFirst({ where: { handle, id: { not: userId } }, select: { id: true } }),
-    db.user.findFirst({ where: { email, id: { not: userId } }, select: { id: true } }),
     db.team.findUnique({ where: { id: teamId }, select: { id: true } }),
   ]);
 
   if (otherHandleUser) {
     return { ok: false as const, status: 409, body: { error: "Handle already in use." } };
-  }
-
-  if (otherEmailUser) {
-    return { ok: false as const, status: 409, body: { error: "Email already in use." } };
   }
 
   if (!team) {

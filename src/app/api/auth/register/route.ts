@@ -26,17 +26,10 @@ export async function POST(request: Request) {
     return Response.json({ error: "Selected team was not found." }, { status: 400 });
   }
 
-  const [existingByHandle, existingByEmail] = await Promise.all([
-    db.user.findUnique({ where: { handle } }),
-    db.user.findUnique({ where: { email } }),
-  ]);
+  const existingByHandle = await db.user.findUnique({ where: { handle } });
 
   if (existingByHandle) {
     return Response.json({ error: "Handle already registered." }, { status: 409 });
-  }
-
-  if (existingByEmail) {
-    return Response.json({ error: "Email already registered." }, { status: 409 });
   }
 
   const passwordHash = hashPassword(password);
