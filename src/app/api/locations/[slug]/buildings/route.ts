@@ -160,7 +160,7 @@ export async function POST(request: Request, { params }: PageProps) {
       type: true,
       ownerTeamId: true,
       claims: {
-        select: { userId: true },
+        select: { userId: true, teamId: true },
         orderBy: { createdAt: "desc" },
         take: 1,
       },
@@ -180,7 +180,11 @@ export async function POST(request: Request, { params }: PageProps) {
     return Response.json({ ok: false, message: "Tento typ lokace nepodporuje budovy." }, { status: 400 });
   }
 
-  const ownerUserId = location.claims[0]?.userId;
+  const latestClaim = location.claims[0];
+  const ownerUserId =
+    latestClaim && location.ownerTeamId !== null && latestClaim.teamId === location.ownerTeamId
+      ? latestClaim.userId
+      : null;
   if (ownerUserId !== userId) {
     return Response.json({ ok: false, message: "Tuto lokaci nevlastníš." }, { status: 403 });
   }

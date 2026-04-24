@@ -176,6 +176,7 @@ export default async function MePage() {
         slug: true,
         name: true,
         image: true,
+        ownerTeamId: true,
         currentPopulation: true,
         popToMoney: true,
         popToPower: true,
@@ -191,6 +192,7 @@ export default async function MePage() {
         claims: {
           select: {
             userId: true,
+            teamId: true,
             createdAt: true,
             team: {
               select: {
@@ -240,7 +242,13 @@ export default async function MePage() {
     }));
 
   const currentAvatarSrc = resolveAvatarSrc(user);
-  const activeLocationsForUser = activeOwnedLocations.filter((location) => location.claims[0]?.userId === user.id);
+  const activeLocationsForUser = activeOwnedLocations.filter((location) => {
+    const latestClaim = location.claims[0];
+    if (!latestClaim || location.ownerTeamId === null) {
+      return false;
+    }
+    return latestClaim.userId === user.id && latestClaim.teamId === location.ownerTeamId;
+  });
 
   const activeLocationIds = activeLocationsForUser.map((location) => location.id);
   const builtEffects = activeLocationIds.length

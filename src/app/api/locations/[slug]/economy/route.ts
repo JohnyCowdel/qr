@@ -31,10 +31,12 @@ export async function POST(
     where: { slug },
     select: {
       id: true,
+      ownerTeamId: true,
       currentPopulation: true,
       claims: {
         select: {
           userId: true,
+          teamId: true,
           createdAt: true,
         },
         orderBy: {
@@ -49,7 +51,11 @@ export async function POST(
     return Response.json({ error: "Location not found." }, { status: 404 });
   }
 
-  const ownerUserId = location.claims[0]?.userId ?? null;
+  const latestClaim = location.claims[0];
+  const ownerUserId =
+    latestClaim && location.ownerTeamId !== null && latestClaim.teamId === location.ownerTeamId
+      ? latestClaim.userId
+      : null;
   if (!ownerUserId || ownerUserId !== userId) {
     return Response.json({ error: "Only the owning player can assign workers." }, { status: 403 });
   }

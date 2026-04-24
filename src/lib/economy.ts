@@ -90,6 +90,7 @@ export async function runEconomyTick(now = new Date()) {
     },
     select: {
       id: true,
+      ownerTeamId: true,
       area: true,
       currentPopulation: true,
       popToMoney: true,
@@ -100,6 +101,7 @@ export async function runEconomyTick(now = new Date()) {
       claims: {
         select: {
           userId: true,
+          teamId: true,
           createdAt: true,
         },
         orderBy: {
@@ -141,7 +143,11 @@ export async function runEconomyTick(now = new Date()) {
   }
 
   for (const location of locations) {
-    const ownerUserId = location.claims[0]?.userId;
+    const latestClaim = location.claims[0];
+    const ownerUserId =
+      latestClaim && location.ownerTeamId !== null && latestClaim.teamId === location.ownerTeamId
+        ? latestClaim.userId
+        : null;
     if (!ownerUserId) {
       continue;
     }

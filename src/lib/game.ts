@@ -191,11 +191,16 @@ export async function getLocationPageData(slug: string) {
     ownerTeam: mapLocation.ownerTeam,
   }));
 
+  const locationOwnerClaim =
+    location.ownerTeamId !== null && location.claims[0]?.teamId === location.ownerTeamId
+      ? location.claims[0]
+      : null;
+
   return {
     location: {
       ...location,
       area: computedArea,
-      ownerUser: location.claims[0]?.user ?? null,
+      ownerUser: locationOwnerClaim?.user ?? null,
       ...deriveLocationPopulation(computedArea, location.currentPopulation),
       lastClaimedAt: location.lastClaimedAt?.toISOString() ?? null,
       claims: location.claims.map((claim) => ({

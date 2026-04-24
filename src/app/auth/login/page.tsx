@@ -44,6 +44,11 @@ export default function UserLoginPage() {
   return (
     <main className="terrain-grid min-h-screen px-4 py-10">
       <div className="mx-auto w-full max-w-md">
+        <div className="mb-3 flex justify-end">
+          <Link href="/" className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]">
+            Zpět na mapu
+          </Link>
+        </div>
         <section className="glass-panel rounded-[28px] border border-[var(--line)] p-6 sm:p-7">
           <p className="text-xs font-mono uppercase tracking-widest text-[var(--muted)]">Territory QR</p>
           <h1 className="mt-1 text-3xl font-semibold tracking-[-0.03em]">Přihlásit se</h1>
@@ -108,9 +113,6 @@ export default function UserLoginPage() {
             .
           </p>
         </section>
-        <p className="mt-4 text-center text-sm">
-          <Link href="/" className="text-[var(--muted)] hover:text-foreground">← Zpět na hlavní stránku</Link>
-        </p>
       </div>
     </main>
   );
