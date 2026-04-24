@@ -69,14 +69,7 @@ export default async function HowToPage() {
               Každá obsazená lokace má obyvatele. Ty obyvatele můžeš přiřadit ke třem
               různým činnostem – a záleží jen na tobě, do čeho investuješ:
             </p>
-            <p className="text-sm leading-7 text-[var(--muted)]">
-              Došla ti síla a nevíš co dál? Nezoufej. Pokud máš aktuální sílu nižší než {dailyLoginReward},
-              můžeš si po přihlášení vyzvednout denní odměnu +{dailyLoginReward} síly a znovu nastartovat
-              svoje dobrodružství.
-            </p>
-            <p className="text-sm leading-7 text-[var(--muted)]">
-              Denní odměnu lze vyzvednout jednou za 24 hodin. Nevyzvednuté odměny se nesčítají.
-            </p>
+            
             <ul className="space-y-2 text-sm leading-7 text-[var(--muted)]">
               <li>
                 ⚡ <span className="font-medium text-foreground">Síla</span> – potřebuješ ji k obsazování dalších
@@ -95,6 +88,14 @@ export default async function HowToPage() {
                 ⏱️ Dělníci v lokaci po 24 hodinách bez změny rozdělení automaticky přestanou pracovat.
                 Musíš je znovu poslat do práce v detailu lokace.
               </li>
+              <p className="text-sm leading-7 text-[var(--muted)]">
+                Došla ti síla a nevíš co dál? Nezoufej. Pokud máš aktuální sílu nižší než {dailyLoginReward},
+                můžeš si po přihlášení vyzvednout denní odměnu +{dailyLoginReward} síly a znovu nastartovat
+                svoje dobrodružství.
+              </p>
+              <p className="text-sm leading-7 text-[var(--muted)]">
+                Denní odměnu lze vyzvednout jednou za 24 hodin. Nevyzvednuté odměny se nesčítají.
+              </p>
             </ul>
           </div>
 
