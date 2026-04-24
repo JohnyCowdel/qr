@@ -39,9 +39,10 @@ model User {
   avatarSeed String?
   avatarPhotoDataUrl String?
   passwordHash String?
-  power     Float    @default(5)
-  money     Float    @default(10)
+  power     Float    @default(30)
+  money     Float    @default(30)
   population Float   @default(0)
+  lastDailyClaimAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   teamId    Int
@@ -112,6 +113,7 @@ model AdminSettings {
   claimPopulationLossPercent Float @default(25)
   claimPopulationMin Int @default(3)
   productionTimeoutHours Float @default(24)
+  dailyLoginReward Float @default(8)
 }
 
 model BuildingDef {

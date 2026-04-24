@@ -11,6 +11,7 @@ export default function AdminEconomyPage() {
   const [claimPopulationLossPercent, setClaimPopulationLossPercent] = useState("25");
   const [claimPopulationMin, setClaimPopulationMin] = useState("3");
   const [productionTimeoutHours, setProductionTimeoutHours] = useState("24");
+  const [dailyLoginReward, setDailyLoginReward] = useState("8");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -32,6 +33,7 @@ export default function AdminEconomyPage() {
           claimPopulationLossPercent: number;
           claimPopulationMin: number;
           productionTimeoutHours: number;
+          dailyLoginReward: number;
         };
 
         if (canceled) {
@@ -44,6 +46,7 @@ export default function AdminEconomyPage() {
         setClaimPopulationLossPercent(String(data.claimPopulationLossPercent));
         setClaimPopulationMin(String(data.claimPopulationMin));
         setProductionTimeoutHours(String(data.productionTimeoutHours));
+        setDailyLoginReward(String(data.dailyLoginReward));
       } catch {
         // keep defaults on fetch failure
       }
@@ -72,6 +75,7 @@ export default function AdminEconomyPage() {
             claimPopulationLossPercent: Number(claimPopulationLossPercent),
             claimPopulationMin: Number(claimPopulationMin),
             productionTimeoutHours: Number(productionTimeoutHours),
+            dailyLoginReward: Number(dailyLoginReward),
           }),
         });
 
@@ -190,6 +194,22 @@ export default function AdminEconomyPage() {
                   step="0.5"
                   value={productionTimeoutHours}
                   onChange={(e) => setProductionTimeoutHours(e.target.value)}
+                  className="w-full rounded-lg border border-[var(--line)] bg-white/60 px-3 py-2 text-sm focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                />
+              </label>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-1">
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                  Denní odměna za přihlášení (síla)
+                </span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={dailyLoginReward}
+                  onChange={(e) => setDailyLoginReward(e.target.value)}
                   className="w-full rounded-lg border border-[var(--line)] bg-white/60 px-3 py-2 text-sm focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
                 />
               </label>

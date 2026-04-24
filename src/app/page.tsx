@@ -7,6 +7,7 @@ import { LeaderboardPanel } from "@/components/leaderboard-panel";
 import { USER_COOKIE_NAME, verifyUserSessionToken } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getHomePageData } from "@/lib/game";
+import { DailyRewardButton } from "@/components/daily-reward-button";
 
 function formatPower(power: number) {
   return power.toFixed(2);
@@ -28,7 +29,13 @@ export default async function Home() {
   const currentUser = userId
     ? await db.user.findUnique({
         where: { id: userId },
-        include: { team: true },
+        select: {
+          id: true,
+          handle: true,
+          power: true,
+          lastDailyClaimAt: true,
+          team: { select: { id: true, name: true, emoji: true, colorHex: true } },
+        },
       })
     : null;
 
@@ -48,6 +55,9 @@ export default async function Home() {
             </form>
 
             <div className="flex flex-wrap items-center justify-end gap-2">
+              <DailyRewardButton
+                lastDailyClaimAt={currentUser.lastDailyClaimAt?.toISOString() ?? null}
+              />
               <Link
                 href="/jak-na-to"
                 className="rounded-full border border-[var(--line)] bg-white/70 px-4 py-2 text-sm font-semibold hover:bg-white"
