@@ -107,6 +107,7 @@ export async function getHomePageData() {
       .map((team) => ({
         slug: team.slug,
         name: team.name,
+        emoji: team.emoji,
         colorHex: team.colorHex,
         playerPower: team.users.reduce((sum, user) => sum + user.power, 0),
         claimedCount: team.ownedLocations.length,

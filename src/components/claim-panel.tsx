@@ -26,7 +26,7 @@ type AuthState = {
   loading: boolean;
   authenticated: boolean;
   handle: string | null;
-  teamName: string | null;
+  teamLabel: string | null;
   power: number | null;
 };
 
@@ -38,7 +38,7 @@ export function ClaimPanel({ location, isOwner = false }: ClaimPanelProps) {
     loading: true,
     authenticated: false,
     handle: null,
-    teamName: null,
+    teamLabel: null,
     power: null,
   });
   const [isPending, startTransition] = useTransition();
@@ -51,7 +51,7 @@ export function ClaimPanel({ location, isOwner = false }: ClaimPanelProps) {
         const res = await fetch("/api/auth/me", { cache: "no-store" });
         const data = (await res.json()) as {
           authenticated: boolean;
-          user?: { handle: string; power: number; team: { name: string } };
+          user?: { handle: string; power: number; team: { name: string; emoji?: string | null } };
         };
 
         if (cancelled) {
@@ -63,7 +63,7 @@ export function ClaimPanel({ location, isOwner = false }: ClaimPanelProps) {
             loading: false,
             authenticated: true,
             handle: data.user.handle,
-            teamName: data.user.team.name,
+            teamLabel: `${data.user.team.emoji ?? ""} ${data.user.team.name}`.trim(),
             power: data.user.power,
           });
           setStatus("Přihlášen/a. Připraven/a ověřit polohu.");
@@ -74,7 +74,7 @@ export function ClaimPanel({ location, isOwner = false }: ClaimPanelProps) {
           loading: false,
           authenticated: false,
           handle: null,
-          teamName: null,
+          teamLabel: null,
           power: null,
         });
         setStatus("Přihlaš se, abys mohl/a obsadit tuto lokaci.");
@@ -84,7 +84,7 @@ export function ClaimPanel({ location, isOwner = false }: ClaimPanelProps) {
             loading: false,
             authenticated: false,
             handle: null,
-            teamName: null,
+            teamLabel: null,
             power: null,
           });
           setStatus("Relaci nelze ověřit. Zkus to znovu.");
@@ -179,7 +179,7 @@ export function ClaimPanel({ location, isOwner = false }: ClaimPanelProps) {
             <p className="text-[var(--muted)]">Ověřuji relaci...</p>
           ) : auth.authenticated ? (
             <p>
-              Přihlášen/a jako <span className="font-semibold">{auth.handle}</span> ({auth.teamName}).
+              Přihlášen/a jako <span className="font-semibold">{auth.handle}</span> ({auth.teamLabel}).
               {" "}Tvá síla: <span className={auth.power !== null && auth.power >= claimCost ? "font-semibold text-green-700" : "font-semibold text-red-600"}>⚡ {auth.power?.toFixed(2) ?? "?"}</span>
               {" "}/ potřeba <span className="font-semibold">⚡ {claimCost}</span>.
             </p>

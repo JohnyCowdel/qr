@@ -61,7 +61,7 @@ function EditPlayerDropdown({
     teamId: number;
     isApproved: boolean;
   };
-  teams: Array<{ id: number; name: string; colorHex?: string }>;
+  teams: Array<{ id: number; name: string; emoji: string; colorHex?: string }>;
 }) {
   return (
     <details className="w-full rounded-2xl border border-[var(--line)] bg-[rgba(255,255,255,0.55)] px-4 py-3">
@@ -108,7 +108,7 @@ function EditPlayerDropdown({
             <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Tým</span>
             <select name="teamId" defaultValue={String(user.teamId)} className="w-full rounded-lg border border-[var(--line)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--accent)]">
               {teams.map((team) => (
-                <option key={team.id} value={team.id}>{team.name}</option>
+                <option key={team.id} value={team.id}>{team.emoji} {team.name}</option>
               ))}
             </select>
           </label>
@@ -141,6 +141,7 @@ export default async function AdminPlayersPage(props: PageProps<"/admin/players"
         id: true,
         slug: true,
         name: true,
+        emoji: true,
       },
       orderBy: { name: "asc" },
     }),
@@ -156,6 +157,7 @@ export default async function AdminPlayersPage(props: PageProps<"/admin/players"
             id: true,
             name: true,
             colorHex: true,
+            emoji: true,
           },
         },
       },
@@ -174,6 +176,7 @@ export default async function AdminPlayersPage(props: PageProps<"/admin/players"
             name: true,
             colorHex: true,
             power: true,
+            emoji: true,
           },
         },
         claims: {
@@ -236,7 +239,7 @@ export default async function AdminPlayersPage(props: PageProps<"/admin/players"
                 <option value="all">Všechny týmy</option>
                 {teams.map((team) => (
                   <option key={team.slug} value={team.slug}>
-                    {team.name}
+                    {team.emoji} {team.name}
                   </option>
                 ))}
               </select>
@@ -280,7 +283,7 @@ export default async function AdminPlayersPage(props: PageProps<"/admin/players"
                     </p>
                     <p className="text-sm text-[var(--muted)]">
                       {user.email ?? "Bez e-mailu"} · věk {user.age ?? "?"} · tým{" "}
-                      <span style={{ color: user.team.colorHex }}>{user.team.name}</span>
+                      <span style={{ color: user.team.colorHex }}>{user.team.emoji} {user.team.name}</span>
                     </p>
                     <p className="text-xs text-[var(--muted)]">
                       Registrován/a {formatDate(user.createdAt)}
@@ -352,7 +355,7 @@ export default async function AdminPlayersPage(props: PageProps<"/admin/players"
                       </div>
                       <p className="text-sm text-[var(--muted)]">
                         {user.email ?? "No email"} · age {user.age ?? "?"} · team{" "}
-                        <span style={{ color: user.team.colorHex }}>{user.team.name}</span> · player 💪 {formatPower(user.power)} · {formatMoney(user.money)}
+                        <span style={{ color: user.team.colorHex }}>{user.team.emoji} {user.team.name}</span> · player 💪 {formatPower(user.power)} · {formatMoney(user.money)}
                       </p>
                       <p className="text-xs text-[var(--muted)]">
                         Claims: {user._count.claims} · Last activity: {formatDate(lastClaimAt)}

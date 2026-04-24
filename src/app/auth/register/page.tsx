@@ -7,7 +7,27 @@ export default async function RegisterPage() {
   const teams = await db.team.findMany({
     where: { isHidden: false },
     orderBy: { name: "asc" },
-    select: { id: true, name: true, colorHex: true, emoji: true },
+    select: {
+      id: true,
+      name: true,
+      colorHex: true,
+      emoji: true,
+      users: {
+        where: {
+          isApproved: true,
+          passwordHash: { not: null },
+        },
+        orderBy: [
+          { power: "desc" },
+          { handle: "asc" },
+        ],
+        select: {
+          id: true,
+          handle: true,
+          power: true,
+        },
+      },
+    },
   });
 
   return (

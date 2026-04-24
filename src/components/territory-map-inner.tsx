@@ -21,6 +21,7 @@ type TeamRef = {
   id?: number;
   name: string;
   colorHex: string;
+  emoji?: string;
 } | null;
 
 export type UnifiedMapLocation = {
@@ -242,7 +243,7 @@ function buildLocationPopupContent({
         {type} · 🛡️{armor} · 👨‍🌾{formatPopulation(currentPopulation)}
       </div>
       <div>
-        👑: {location.ownerTeam ? location.ownerTeam.name : "Neutral"}
+        👑: {location.ownerTeam ? `${location.ownerTeam.emoji ?? ""} ${location.ownerTeam.name}`.trim() : "Neutral"}
       </div>
       {/* {location.slug ? (
         <Link href={`/l/${location.slug}`} className="font-medium text-[#9e4323]">

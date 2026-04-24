@@ -72,7 +72,7 @@ function TeamRow({
   }
 
   function handleDelete() {
-    if (!confirm(`Smazat tým "${team.name}"? Tato akce je nevratná.`)) return;
+    if (!confirm(`Smazat tým "${team.emoji} ${team.name}"? Tato akce je nevratná.`)) return;
     startTransition(async () => {
       try {
         await onDelete(team.id);
@@ -87,7 +87,7 @@ function TeamRow({
       <div className="flex items-center gap-3 rounded-xl border border-[var(--line)] bg-white/60 px-4 py-3">
         <span className="text-xl w-7 text-center">{team.emoji}</span>
         <ColorDot color={team.colorHex} />
-        <span className="flex-1 font-medium">{team.name}</span>
+        <span className="flex-1 font-medium">{team.emoji} {team.name}</span>
         <span className="text-xs text-[var(--muted)] font-mono">{team._count.users} hráčů</span>
         {team.isHidden && (
           <span className="rounded-full bg-yellow-100 border border-yellow-300 px-2 py-0.5 text-xs text-yellow-700 font-medium">

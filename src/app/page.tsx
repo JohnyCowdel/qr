@@ -58,7 +58,7 @@ export default async function Home() {
                 href="/me"
                 className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]"
               >
-                 {currentUser.handle} · 💪 {formatPower(currentUser.power)} · {currentUser.team.name}
+                  {currentUser.handle} · 💪 {formatPower(currentUser.power)} · {currentUser.team.emoji}
               </Link>
             </div>
           </div>
@@ -166,7 +166,7 @@ export default async function Home() {
                 summary={(
                   <>
                     obsadil <span className="font-medium">{claim.location.name}</span>{" "}
-                    pro <span className="font-medium">{claim.team.name}</span> dne {formatDate(claim.createdAt)}.
+                    pro <span className="font-medium">{claim.team.emoji} {claim.team.name}</span> dne {formatDate(claim.createdAt)}.
                   </>
                 )}
               />

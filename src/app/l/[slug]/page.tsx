@@ -94,7 +94,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                 href="/me"
                 className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]"
               >
-                {currentUser.team.name} {currentUser.handle} · 💪 {formatPower(currentUser.power)}
+                {currentUser.team.emoji} {currentUser.handle} · 💪 {formatPower(currentUser.power)}
               </Link>
             </div>
           </div>
@@ -128,7 +128,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
             <div className="space-y-4 sm:space-y-5">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 text-sm">
-                  {location.ownerTeam ? `${location.ownerTeam.name} ovládá tento bod` : "Neutrální bod"}
+                  {location.ownerTeam ? `${location.ownerTeam.emoji} ${location.ownerTeam.name} ovládá tento bod` : "Neutrální bod"}
                 </span>
               </div>
 
@@ -175,7 +175,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                     👑 Vlastní
                   </div>
                   <div className="mt-2 text-base font-medium">
-                    {location.ownerTeam ? location.ownerTeam.name : "Neutrální"}
+                    {location.ownerTeam ? `${location.ownerTeam.emoji} ${location.ownerTeam.name}` : "Neutrální"}
                   </div>
                 </div>
               </div>
@@ -268,7 +268,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                     messageClassName="bg-[rgba(47,125,93,0.08)] text-[#255943]"
                     summary={(
                       <>
-                        zabrán pro <span className="font-medium">{claim.team.name}</span>{" "}
+                        zabrán pro <span className="font-medium">{claim.team.emoji} {claim.team.name}</span>{" "}
                         dne {formatDate(claim.createdAt)} ve vzdálenosti {formatMeters(claim.distanceM)}.
                       </>
                     )}

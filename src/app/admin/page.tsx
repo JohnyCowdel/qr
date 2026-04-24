@@ -16,6 +16,7 @@ export default async function AdminPage() {
         slug: true,
         name: true,
         colorHex: true,
+        emoji: true,
       },
       orderBy: { name: "asc" },
     }),

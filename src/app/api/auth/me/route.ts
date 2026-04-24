@@ -37,6 +37,7 @@ export async function GET(request: Request) {
       team: {
         id: user.team.id,
         name: user.team.name,
+        emoji: user.team.emoji,
         slug: user.team.slug,
         colorHex: user.team.colorHex,
         power: user.team.power,

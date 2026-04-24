@@ -155,7 +155,7 @@ export async function POST(request: Request) {
 
   return Response.json({
     ok: true,
-    message: `${user.handle} claimed ${claim.location.name} for ${claim.team.name}.`,
+    message: `${user.handle} claimed ${claim.location.name} for ${claim.team.emoji} ${claim.team.name}.`,
     distanceM,
   });
 }

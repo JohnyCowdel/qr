@@ -8,11 +8,20 @@ type TeamOption = {
   name: string;
   colorHex: string;
   emoji: string;
+  users: Array<{
+    id: number;
+    handle: string;
+    power: number;
+  }>;
 };
 
 type RegisterFormProps = {
   teams: TeamOption[];
 };
+
+function formatPower(power: number) {
+  return power.toFixed(2);
+}
 
 export function RegisterForm({ teams }: RegisterFormProps) {
   const [handle, setHandle] = useState("");
@@ -140,16 +149,41 @@ export function RegisterForm({ teams }: RegisterFormProps) {
         </select>
       </label>
 
-      <div className="flex flex-wrap gap-2">
-        {teams.map((team) => (
-          <span
-            key={team.id}
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 text-xs"
-          >
-            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: team.colorHex }} />
-            {team.emoji} {team.name}
-          </span>
-        ))}
+      <div className="space-y-2 rounded-xl border border-[var(--line)] bg-white/55 p-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+          Členové týmů
+        </p>
+        {teams.map((team) => {
+          const isSelected = team.id === teamId;
+
+          return (
+            <details
+              key={team.id}
+              className={`rounded-lg border px-3 py-2 ${isSelected ? "border-[var(--accent)] bg-[var(--accent)]/5" : "border-[var(--line)] bg-white/70"}`}
+            >
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-sm font-medium">
+                <span className="inline-flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: team.colorHex }} />
+                  {team.emoji} {team.name}
+                </span>
+                <span className="text-xs text-[var(--muted)]">{team.users.length} hráčů</span>
+              </summary>
+
+              <div className="mt-2 space-y-1 border-t border-[var(--line)] pt-2">
+                {team.users.length ? (
+                  team.users.map((member) => (
+                    <div key={member.id} className="flex items-center justify-between text-xs">
+                      <span className="font-medium">@{member.handle}</span>
+                      <span className="font-mono text-[var(--muted)]">⚡ {formatPower(member.power)}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-[var(--muted)]">Tým zatím nemá schválené hráče.</p>
+                )}
+              </div>
+            </details>
+          );
+        })}
       </div>
 
       {error && (

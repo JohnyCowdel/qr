@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 type TeamRef = {
   name: string;
   colorHex: string;
+  emoji?: string;
 } | null;
 
 export type MapLocation = {

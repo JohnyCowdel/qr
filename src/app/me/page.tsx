@@ -109,6 +109,7 @@ export default async function MePage() {
           select: {
             name: true,
             colorHex: true,
+            emoji: true,
           },
         },
       },
@@ -129,6 +130,7 @@ export default async function MePage() {
           select: {
             name: true,
             colorHex: true,
+            emoji: true,
           },
         },
       },
@@ -183,6 +185,7 @@ export default async function MePage() {
           select: {
             name: true,
             colorHex: true,
+            emoji: true,
           },
         },
         claims: {
@@ -193,6 +196,7 @@ export default async function MePage() {
               select: {
                 name: true,
                 colorHex: true,
+                emoji: true,
               },
             },
           },
@@ -326,7 +330,7 @@ export default async function MePage() {
                 <p className="font-mono text-xs uppercase tracking-[0.16em] text-[var(--muted)]">Profil hráče</p>
                 <h1 className="mt-1 text-3xl font-semibold tracking-[-0.03em]">{user.handle}</h1>
                 <p className="mt-2 text-sm text-[var(--muted)]">
-                  Tým: <span className="font-medium" style={{ color: user.team.colorHex }}>{user.team.name}</span>
+                  Tým: <span className="font-medium" style={{ color: user.team.colorHex }}>{user.team.emoji} {user.team.name}</span>
                 </p>
               </div>
             </div>
@@ -370,7 +374,7 @@ export default async function MePage() {
           targets={offerTargets.map((target) => ({
             id: target.id,
             handle: target.handle,
-            teamName: target.team.name,
+            teamName: `${target.team.emoji} ${target.team.name}`,
             teamColorHex: target.team.colorHex,
           }))}
           incomingOffers={incomingOffers}
@@ -398,12 +402,12 @@ export default async function MePage() {
                       <p className="mt-1 text-sm font-semibold text-amber-800">Nikdo tu nepracuje!</p>
                     ) : null}
                     <p className="text-sm text-[var(--muted)]">
-                      Obsazeno pro tým: <span style={{ color: position.claimedForTeam.colorHex }}>{position.claimedForTeam.name}</span>
+                      Obsazeno pro tým: <span style={{ color: position.claimedForTeam.colorHex }}>{position.claimedForTeam.emoji} {position.claimedForTeam.name}</span>
                     </p>
                     <p className="text-sm text-[var(--muted)]">
                       {position.ownerTeam ? (
                         <>
-                          Aktuální vlastník: <span style={{ color: position.ownerTeam.colorHex }}>{position.ownerTeam.name}</span>
+                          Aktuální vlastník: <span style={{ color: position.ownerTeam.colorHex }}>{position.ownerTeam.emoji} {position.ownerTeam.name}</span>
                         </>
                       ) : (
                         "Aktuální vlastník: Neutrální"
@@ -447,7 +451,7 @@ export default async function MePage() {
                 actionHref={`/l/${claim.location.slug}`}
                 summary={(
                   <>
-                    obsadil/a <span className="font-medium">{claim.location.name}</span> pro <span className="font-medium">{claim.team.name}</span> dne {formatDate(claim.createdAt.toISOString())}.
+                    obsadil/a <span className="font-medium">{claim.location.name}</span> pro <span className="font-medium">{claim.team.emoji} {claim.team.name}</span> dne {formatDate(claim.createdAt.toISOString())}.
                   </>
                 )}
               />
@@ -515,7 +519,7 @@ export default async function MePage() {
                         <div>
                           <p className="font-medium">{formatPlayerName(player)}</p>
                           <p className="text-sm text-[var(--muted)]">
-                            @{player.handle} · <span style={{ color: player.team.colorHex }}>{player.team.name}</span>
+                            @{player.handle} · <span style={{ color: player.team.colorHex }}>{player.team.emoji} {player.team.name}</span>
                           </p>
                         </div>
                       </div>

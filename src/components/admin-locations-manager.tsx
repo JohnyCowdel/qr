@@ -26,6 +26,7 @@ type TeamRef = {
   id: number;
   name: string;
   colorHex: string;
+  emoji: string;
 } | null;
 
 type TeamOption = {
@@ -33,6 +34,7 @@ type TeamOption = {
   slug: string;
   name: string;
   colorHex: string;
+  emoji: string;
 };
 
 export type AdminLocationDraft = {
@@ -100,6 +102,7 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
               id: location.ownerTeam.id,
               name: location.ownerTeam.name,
               colorHex: location.ownerTeam.colorHex,
+              emoji: location.ownerTeam.emoji,
             }
           : null,
         name: location.name || "<unnamed>",
@@ -403,7 +406,7 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
                     <p className="truncate font-semibold">{draft.name}</p>
                     <p className="truncate text-xs font-mono text-[var(--muted)]">
                       {draft.slug ?? "<unsaved>"} · {draft.latitude.toFixed(4)}, {draft.longitude.toFixed(4)} · r=
-                      {draft.claimRadiusM}m · area={computedArea}m² · armor={draft.armor} · {draft.type} {draft.image} · {location.ownerTeam ? location.ownerTeam.name : draft.isNew ? "new draft" : "unclaimed"}
+                      {draft.claimRadiusM}m · area={computedArea}m² · armor={draft.armor} · {draft.type} {draft.image} · {location.ownerTeam ? `${location.ownerTeam.emoji} ${location.ownerTeam.name}` : draft.isNew ? "new draft" : "unclaimed"}
                     </p>
                   </div>
                 </button>
@@ -485,6 +488,7 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
                                   id: selectedTeam.id,
                                   name: selectedTeam.name,
                                   colorHex: selectedTeam.colorHex,
+                                  emoji: selectedTeam.emoji,
                                 }
                               : null,
                           });
@@ -494,7 +498,7 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
                         <option value="">Neutral</option>
                         {initialTeams.map((team) => (
                           <option key={team.id} value={team.id}>
-                            {team.name}
+                            {team.emoji} {team.name}
                           </option>
                         ))}
                       </select>

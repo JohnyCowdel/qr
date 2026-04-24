@@ -5,6 +5,7 @@ import { useState } from "react";
 type TeamData = {
   slug: string;
   name: string;
+  emoji: string;
   colorHex: string;
   playerPower: number;
   claimedCount: number;
@@ -59,7 +60,7 @@ export function LeaderboardPanel({ teams }: LeaderboardPanelProps) {
                   className="h-3.5 w-3.5 rounded-full"
                   style={{ backgroundColor: team.colorHex }}
                 />
-                <span className="font-medium">{team.name}</span>
+                <span className="font-medium">{team.emoji} {team.name}</span>
               </div>
               <div className="flex items-center gap-4">
                 <span className="font-mono text-sm text-[var(--muted)]">
