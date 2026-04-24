@@ -92,7 +92,8 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
             <div className="flex flex-wrap items-center justify-end gap-2">
               <Link
                 href="/me"
-                className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]"
+                className="rounded-full px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                style={{ backgroundColor: currentUser.team.colorHex }}
               >
                 {currentUser.team.emoji} {currentUser.handle} · 💪 {formatPower(currentUser.power)}
               </Link>
