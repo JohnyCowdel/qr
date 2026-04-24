@@ -13,7 +13,7 @@ export async function POST() {
 
   const user = await db.user.findUnique({
     where: { id: userId },
-    select: { id: true, lastDailyClaimAt: true },
+    select: { id: true, power: true, lastDailyClaimAt: true },
   });
 
   if (!user) {
@@ -38,6 +38,13 @@ export async function POST() {
     select: { dailyLoginReward: true },
   });
   const reward = settings?.dailyLoginReward ?? 8;
+
+  if (user.power >= reward) {
+    return Response.json(
+      { error: `Odměnu dostaneš jen pokud máš méně než ${reward} síly. Teď máš ${user.power.toFixed(2)}.` },
+      { status: 403 },
+    );
+  }
 
   await db.user.update({
     where: { id: userId },

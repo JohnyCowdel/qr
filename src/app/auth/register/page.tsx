@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { db } from "@/lib/db";
 import { RegisterForm } from "@/components/register-form";
 
@@ -41,6 +42,9 @@ export default async function RegisterPage() {
           </p>
           <RegisterForm teams={teams} />
         </section>
+        <p className="mt-4 text-center text-sm">
+          <Link href="/" className="text-[var(--muted)] hover:text-foreground">← Zpět na hlavní stránku</Link>
+        </p>
       </div>
     </main>
   );

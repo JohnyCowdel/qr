@@ -26,18 +26,22 @@ export default async function Home() {
   const cookieStore = await cookies();
   const token = cookieStore.get(USER_COOKIE_NAME)?.value;
   const userId = token ? verifyUserSessionToken(token) : null;
-  const currentUser = userId
-    ? await db.user.findUnique({
-        where: { id: userId },
-        select: {
-          id: true,
-          handle: true,
-          power: true,
-          lastDailyClaimAt: true,
-          team: { select: { id: true, name: true, emoji: true, colorHex: true } },
-        },
-      })
-    : null;
+  const [currentUser, adminSettings] = await Promise.all([
+    userId
+      ? db.user.findUnique({
+          where: { id: userId },
+          select: {
+            id: true,
+            handle: true,
+            power: true,
+            lastDailyClaimAt: true,
+            team: { select: { id: true, name: true, emoji: true, colorHex: true } },
+          },
+        })
+      : Promise.resolve(null),
+    db.adminSettings.findUnique({ where: { id: 1 }, select: { dailyLoginReward: true } }),
+  ]);
+  const dailyReward = adminSettings?.dailyLoginReward ?? 8;
 
   return (
     <main className="terrain-grid min-h-screen px-4 py-6 text-foreground sm:px-6 lg:px-8">
@@ -57,6 +61,8 @@ export default async function Home() {
             <div className="flex flex-wrap items-center justify-end gap-2">
               <DailyRewardButton
                 lastDailyClaimAt={currentUser.lastDailyClaimAt ? String(currentUser.lastDailyClaimAt) : null}
+                power={currentUser.power}
+                dailyReward={dailyReward}
               />
               <Link
                 href="/jak-na-to"

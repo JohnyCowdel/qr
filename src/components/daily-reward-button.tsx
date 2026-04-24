@@ -4,12 +4,18 @@ import { useState, useTransition } from "react";
 
 export function DailyRewardButton({
   lastDailyClaimAt,
+  power,
+  dailyReward,
 }: {
   lastDailyClaimAt: string | null;
+  power: number;
+  dailyReward: number;
 }) {
   const alreadyClaimed =
     !!lastDailyClaimAt &&
     Date.now() - new Date(lastDailyClaimAt).getTime() < 24 * 60 * 60 * 1000;
+
+  const powerTooHigh = power >= dailyReward;
 
   const [claimed, setClaimed] = useState(false);
   const [reward, setReward] = useState<number | null>(null);
@@ -23,6 +29,18 @@ export function DailyRewardButton({
         className="rounded-full border border-[var(--line)] bg-white/40 px-4 py-2 text-sm font-semibold text-[var(--muted)] cursor-not-allowed"
       >
         Odměna vyzvednuta ✓
+      </button>
+    );
+  }
+
+  if (powerTooHigh && !claimed) {
+    return (
+      <button
+        disabled
+        className="rounded-full border border-[var(--line)] bg-white/40 px-4 py-2 text-sm font-semibold text-[var(--muted)] cursor-not-allowed"
+        title={`Odměna je jen pro hráče s méně než ${dailyReward} síly`}
+      >
+        Odměna nedostupná 🔒
       </button>
     );
   }

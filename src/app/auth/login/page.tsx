@@ -108,6 +108,9 @@ export default function UserLoginPage() {
             .
           </p>
         </section>
+        <p className="mt-4 text-center text-sm">
+          <Link href="/" className="text-[var(--muted)] hover:text-foreground">← Zpět na hlavní stránku</Link>
+        </p>
       </div>
     </main>
   );
