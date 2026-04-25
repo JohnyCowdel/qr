@@ -10,9 +10,10 @@ export const dynamic = "force-dynamic";
 export default async function HowToPage() {
   const settings = await db.adminSettings.findUnique({
     where: { id: 1 },
-    select: { dailyLoginReward: true },
+    select: { dailyLoginReward: true, revengeDiscountHours: true },
   });
   const dailyLoginReward = settings?.dailyLoginReward ?? 8;
+  const revengeDiscountHours = settings?.revengeDiscountHours ?? 8;
 
   return (
     <main className="terrain-grid min-h-screen px-4 py-8 sm:px-6 lg:px-8">
@@ -58,6 +59,32 @@ export default async function HowToPage() {
               <li>⚡ Obsazení stojí sílu. Cena za obsazení je obrana lokace 🛡️ + 1. Pokud nemáš dost síly, lokaci obsadit nemůžeš.</li>
               <li>🔄 Obsazenou lokaci může kdykoliv přebít jiný hráč s dostatečnou silou.</li>
               <li>🏗️ Když lokaci převezme jiný hráč, přebírá ji se vším, co v ní už bylo vybudováno.</li>
+            </ul>
+          </div>
+
+          <hr className="border-[var(--line)]" />
+
+          <div className="space-y-2">
+            <h2 className="text-lg font-semibold">⚔️ Oplata</h2>
+            <ul className="space-y-2 text-sm leading-7 text-[var(--muted)]">
+              <li>🥷 Když ti někdo ukradne lokaci, získáš automaticky slevu oplaty na její znovuzískání.</li>
+              <li>🆓 Po dobu {revengeDiscountHours} hodin můžeš tuto konkrétní lokaci obsadit zpět zdarma, tedy za ⚡ 0.</li>
+              <li>⏳ Sleva platí jen pro tým, kterému byla lokace ukradena, a jen do vypršení časového limitu.</li>
+              <li>🎯 Jakmile oplatu využiješ, sleva se spotřebuje.</li>
+              <li>📣 Aktivní oplata se ukazuje přímo v detailu lokace i v profilu v sekci Nedávné události.</li>
+            </ul>
+          </div>
+
+          <hr className="border-[var(--line)]" />
+
+          <div className="space-y-2">
+            <h2 className="text-lg font-semibold">👋 Pozdrav a 📣 Povzbuzení</h2>
+            <ul className="space-y-2 text-sm leading-7 text-[var(--muted)]">
+              <li>👋 Tlačítko Pozdravit pouze ověří, že jsi opravdu na místě podle GPS, a zapíše událost do feedu lokace i do tvého profilu.</li>
+              <li>🗺️ Pozdrav nic nestojí a nemění vlastnictví ani ekonomiku lokace. Slouží jako nepřímé potvrzení návštěvy.</li>
+              <li>📣 Tlačítko Povzbudit mohou použít jen spoluhráči vlastníka lokace, ale ne přímo samotný vlastník.</li>
+              <li>⚡ Povzbuzení stojí 10 síly, vyžaduje GPS ověření a přidá lokaci +5 obrany 🛡️.</li>
+              <li>🏳️ Neutrální lokaci povzbudit nejde, protože nemá týmového vlastníka, kterému by šlo pomáhat.</li>
             </ul>
           </div>
 
