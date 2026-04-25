@@ -22,7 +22,7 @@ async function updateUser(userId: number, payload: unknown) {
     return { ok: false as const, status: 400, body: { error: "Invalid payload", issues: parsed.error.flatten() } };
   }
 
-  const existingUser = await db.user.findUnique({ where: { id: userId } });
+  const existingUser = await db.user.findUnique({ where: { id: userId }, select: { id: true } });
   if (!existingUser) {
     return { ok: false as const, status: 404, body: { error: "User not found." } };
   }
@@ -56,6 +56,10 @@ async function updateUser(userId: number, payload: unknown) {
       isApproved,
       ...(newPassword ? { passwordHash: hashPassword(newPassword) } : {}),
     },
+    select: {
+      id: true, handle: true, firstName: true, lastName: true, email: true,
+      age: true, power: true, money: true, teamId: true, isApproved: true,
+    },
   });
 
   return { ok: true as const, status: 200, body: user };
@@ -74,8 +78,10 @@ export async function GET(
 
   const user = await db.user.findUnique({
     where: { id: userId },
-    include: {
-      team: true,
+    select: {
+      id: true, handle: true, firstName: true, lastName: true, email: true,
+      age: true, power: true, money: true, teamId: true, isApproved: true,
+      team: { select: { id: true, name: true, emoji: true, colorHex: true } },
     },
   });
 

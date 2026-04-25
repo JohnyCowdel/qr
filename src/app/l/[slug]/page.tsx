@@ -38,7 +38,10 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
   const currentUser = userId
     ? await db.user.findUnique({
         where: { id: userId },
-        include: { team: true },
+        select: {
+          id: true, handle: true, power: true,
+          team: { select: { id: true, name: true, emoji: true, colorHex: true } },
+        },
       })
     : null;
 

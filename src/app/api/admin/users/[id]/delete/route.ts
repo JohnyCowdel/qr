@@ -13,12 +13,9 @@ export async function POST(
 
   const user = await db.user.findUnique({
     where: { id: userId },
-    include: {
-      claims: {
-        select: {
-          locationId: true,
-        },
-      },
+    select: {
+      id: true,
+      claims: { select: { locationId: true } },
     },
   });
 

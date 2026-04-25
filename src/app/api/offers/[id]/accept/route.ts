@@ -46,8 +46,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     }
 
     const [fromUser, toUser] = await Promise.all([
-      tx.user.findUnique({ where: { id: offer.fromUserId } }),
-      tx.user.findUnique({ where: { id: offer.toUserId } }),
+      tx.user.findUnique({ where: { id: offer.fromUserId }, select: { id: true, money: true, power: true } }),
+      tx.user.findUnique({ where: { id: offer.toUserId }, select: { id: true, money: true, power: true } }),
     ]);
 
     if (!fromUser || !toUser) {

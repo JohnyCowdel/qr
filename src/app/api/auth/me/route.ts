@@ -9,8 +9,11 @@ export async function GET(request: Request) {
 
   const user = await db.user.findUnique({
     where: { id: userId },
-    include: {
-      team: true,
+    select: {
+      id: true, handle: true, firstName: true, lastName: true, email: true,
+      age: true, avatarType: true, avatarSprite: true, avatarSeed: true,
+      avatarPhotoDataUrl: true, power: true, money: true, population: true,
+      team: { select: { id: true, name: true, emoji: true, slug: true, colorHex: true, power: true } },
     },
   });
 

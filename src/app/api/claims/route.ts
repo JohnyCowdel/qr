@@ -37,6 +37,10 @@ export async function POST(request: Request) {
 
   const location = await db.location.findUnique({
     where: { id: locationId },
+    select: {
+      id: true, name: true, claimRadiusM: true, latitude: true, longitude: true,
+      armor: true, currentPopulation: true, ownerTeamId: true,
+    },
   });
 
   if (!location) {
@@ -73,7 +77,7 @@ export async function POST(request: Request) {
 
   const user = await db.user.findUnique({
     where: { id: userId },
-    include: { team: true },
+    select: { id: true, handle: true, power: true, teamId: true },
   });
 
   if (!user) {
@@ -123,10 +127,10 @@ export async function POST(request: Request) {
         accuracyM: accuracyM ?? null,
         distanceM,
       },
-      include: {
-        team: true,
-        user: true,
-        location: true,
+      select: {
+        createdAt: true,
+        location: { select: { name: true } },
+        team: { select: { name: true, emoji: true } },
       },
     });
 

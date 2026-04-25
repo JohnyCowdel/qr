@@ -52,16 +52,18 @@ export default async function MePage() {
 
   const user = await db.user.findUnique({
     where: { id: userId },
-    include: {
-      team: true,
+    select: {
+      id: true, handle: true, firstName: true, lastName: true, email: true,
+      age: true, power: true, money: true, population: true, teamId: true,
+      avatarType: true, avatarSprite: true, avatarSeed: true, avatarPhotoDataUrl: true,
+      team: { select: { id: true, slug: true, name: true, emoji: true, colorHex: true, power: true } },
       claims: {
-        include: {
-          location: true,
-          team: true,
+        select: {
+          id: true, createdAt: true, distanceM: true, message: true,
+          location: { select: { id: true, slug: true, name: true, image: true } },
+          team: { select: { id: true, name: true, emoji: true, colorHex: true } },
         },
-        orderBy: {
-          createdAt: "desc",
-        },
+        orderBy: { createdAt: "desc" },
         take: 10,
       },
     },
@@ -102,7 +104,17 @@ export default async function MePage() {
         isApproved: true,
         passwordHash: { not: null },
       },
-      include: {
+      select: {
+        id: true,
+        handle: true,
+        firstName: true,
+        lastName: true,
+        power: true,
+        money: true,
+        avatarType: true,
+        avatarSprite: true,
+        avatarSeed: true,
+        avatarPhotoDataUrl: true,
         team: {
           select: {
             name: true,
@@ -123,7 +135,13 @@ export default async function MePage() {
         isApproved: true,
         passwordHash: { not: null },
       },
-      include: {
+      select: {
+        id: true,
+        handle: true,
+        avatarType: true,
+        avatarSprite: true,
+        avatarSeed: true,
+        avatarPhotoDataUrl: true,
         team: {
           select: {
             name: true,
@@ -145,17 +163,11 @@ export default async function MePage() {
           { toUserId: user.id },
         ],
       },
-      include: {
-        fromUser: {
-          select: {
-            handle: true,
-          },
-        },
-        toUser: {
-          select: {
-            handle: true,
-          },
-        },
+      select: {
+        id: true, fromUserId: true, toUserId: true, offerType: true, offerAmount: true,
+        requestType: true, requestAmount: true, status: true, createdAt: true,
+        fromUser: { select: { handle: true } },
+        toUser: { select: { handle: true } },
       },
       orderBy: {
         createdAt: "desc",

@@ -7,7 +7,12 @@ export const dynamic = "force-dynamic";
 export default async function AdminPage() {
   const [locations, teams] = await Promise.all([
     db.location.findMany({
-      include: { ownerTeam: true },
+      select: {
+        slug: true, name: true, type: true, armor: true, area: true,
+        image: true, summary: true, content: true,
+        latitude: true, longitude: true, claimRadiusM: true,
+        ownerTeam: { select: { id: true, name: true, colorHex: true, emoji: true } },
+      },
       orderBy: { name: "asc" },
     }),
     db.team.findMany({

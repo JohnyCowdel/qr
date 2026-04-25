@@ -34,7 +34,7 @@ async function generateIdentifiers(name: string) {
   let suffix = 2;
 
   for (;;) {
-    const existing = await db.location.findUnique({ where: { slug } });
+    const existing = await db.location.findUnique({ where: { slug }, select: { id: true } });
     if (!existing) {
       return {
         slug,
@@ -49,7 +49,12 @@ async function generateIdentifiers(name: string) {
 
 export async function GET() {
   const locations = await db.location.findMany({
-    include: { ownerTeam: true },
+    select: {
+      slug: true, name: true, type: true, armor: true, area: true,
+      image: true, summary: true, content: true,
+      latitude: true, longitude: true, claimRadiusM: true,
+      ownerTeam: { select: { id: true, name: true, colorHex: true, emoji: true } },
+    },
     orderBy: { name: "asc" },
   });
   return Response.json(locations);

@@ -25,7 +25,12 @@ export async function GET(
   const { slug } = await params;
   const location = await db.location.findUnique({
     where: { slug },
-    include: { ownerTeam: true },
+    select: {
+      slug: true, name: true, type: true, armor: true, area: true,
+      image: true, summary: true, content: true,
+      latitude: true, longitude: true, claimRadiusM: true,
+      ownerTeam: { select: { id: true, name: true, colorHex: true, emoji: true } },
+    },
   });
   if (!location) return Response.json({ error: "Not found" }, { status: 404 });
   return Response.json(location);
@@ -41,7 +46,7 @@ export async function PUT(
     return Response.json({ error: "Invalid payload", issues: parsed.error.flatten() }, { status: 400 });
   }
 
-  const existingLocation = await db.location.findUnique({ where: { slug } });
+  const existingLocation = await db.location.findUnique({ where: { slug }, select: { slug: true, area: true, currentPopulation: true, type: true, armor: true } });
   if (!existingLocation) {
     return Response.json({ error: "Not found" }, { status: 404 });
   }

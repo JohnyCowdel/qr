@@ -21,7 +21,10 @@ export async function POST(request: Request) {
 
   const { handle, password } = parsed.data;
 
-  const user = await db.user.findUnique({ where: { handle } });
+  const user = await db.user.findUnique({
+    where: { handle },
+    select: { id: true, passwordHash: true, isApproved: true },
+  });
   if (!user?.passwordHash || !verifyPassword(password, user.passwordHash)) {
     return Response.json({ error: "Invalid handle or password." }, { status: 401 });
   }

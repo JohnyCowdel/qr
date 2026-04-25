@@ -166,15 +166,10 @@ export default async function AdminPlayersPage(props: PageProps<"/admin/players"
         isApproved: false,
         passwordHash: { not: null },
       },
-      include: {
-        team: {
-          select: {
-            id: true,
-            name: true,
-            colorHex: true,
-            emoji: true,
-          },
-        },
+      select: {
+        id: true, handle: true, firstName: true, lastName: true, email: true,
+        age: true, power: true, money: true, teamId: true, isApproved: true, createdAt: true,
+        team: { select: { id: true, name: true, colorHex: true, emoji: true } },
       },
       orderBy: { createdAt: "asc" },
     }),
@@ -184,34 +179,18 @@ export default async function AdminPlayersPage(props: PageProps<"/admin/players"
         isApproved: true,
         passwordHash: { not: null },
       },
-      include: {
-        team: {
-          select: {
-            id: true,
-            name: true,
-            colorHex: true,
-            power: true,
-            emoji: true,
-          },
-        },
+      select: {
+        id: true, handle: true, firstName: true, lastName: true, email: true,
+        age: true, power: true, money: true, teamId: true, isApproved: true,
+        team: { select: { id: true, name: true, colorHex: true, power: true, emoji: true } },
         claims: {
-          select: {
-            id: true,
-            createdAt: true,
-          },
+          select: { id: true, createdAt: true },
           orderBy: { createdAt: "desc" },
           take: 1,
         },
-        _count: {
-          select: {
-            claims: true,
-          },
-        },
+        _count: { select: { claims: true } },
       },
-      orderBy: [
-        { updatedAt: "desc" },
-        { handle: "asc" },
-      ],
+      orderBy: [{ updatedAt: "desc" }, { handle: "asc" }],
     }),
   ]);
 

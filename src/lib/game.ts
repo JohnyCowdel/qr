@@ -39,17 +39,47 @@ export async function getHomePageData() {
 
   const [locations, recentClaims, teams, claimCounts] = await Promise.all([
     db.location.findMany({
-      include: {
-        ownerTeam: true,
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        type: true,
+        armor: true,
+        area: true,
+        image: true,
+        summary: true,
+        latitude: true,
+        longitude: true,
+        claimRadiusM: true,
+        currentPopulation: true,
+        popToMoney: true,
+        popToPower: true,
+        popToPopulation: true,
+        lastClaimedAt: true,
+        ownerTeamId: true,
+        ownerTeam: {
+          select: { id: true, name: true, emoji: true, colorHex: true },
+        },
       },
-      orderBy: {
-        name: "asc",
-      },
+      orderBy: { name: "asc" },
     }),
     db.claim.findMany({
-      include: {
-        location: true,
-        team: true,
+      select: {
+        id: true,
+        message: true,
+        createdAt: true,
+        distanceM: true,
+        location: {
+          select: {
+            id: true,
+            slug: true,
+            name: true,
+            image: true,
+          },
+        },
+        team: {
+          select: { id: true, name: true, emoji: true, colorHex: true },
+        },
         user: {
           select: {
             id: true,
@@ -61,21 +91,29 @@ export async function getHomePageData() {
           },
         },
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: { createdAt: "desc" },
       take: 8,
     }),
     db.team.findMany({
-      include: {
-        ownedLocations: true,
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        emoji: true,
+        colorHex: true,
+        power: true,
+        ownedLocations: { select: { id: true } },
         users: {
           where: { isApproved: true },
+          select: {
+            id: true,
+            handle: true,
+            power: true,
+            money: true,
+          },
         },
       },
-      orderBy: {
-        name: "asc",
-      },
+      orderBy: { name: "asc" },
     }),
     db.claim.groupBy({
       by: ["userId"],
@@ -131,11 +169,38 @@ export async function getLocationPageData(slug: string) {
   const [location, allLocations] = await Promise.all([
     db.location.findUnique({
       where: { slug },
-      include: {
-        ownerTeam: true,
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        type: true,
+        image: true,
+        summary: true,
+        content: true,
+        area: true,
+        armor: true,
+        latitude: true,
+        longitude: true,
+        claimRadiusM: true,
+        currentPopulation: true,
+        popToMoney: true,
+        popToPower: true,
+        popToPopulation: true,
+        lastClaimedAt: true,
+        ownerTeamId: true,
+        ownerTeam: {
+          select: { id: true, name: true, emoji: true, colorHex: true },
+        },
         claims: {
-          include: {
-            team: true,
+          select: {
+            id: true,
+            message: true,
+            createdAt: true,
+            distanceM: true,
+            teamId: true,
+            team: {
+              select: { id: true, name: true, emoji: true, colorHex: true },
+            },
             user: {
               select: {
                 id: true,
@@ -155,12 +220,25 @@ export async function getLocationPageData(slug: string) {
       },
     }),
     db.location.findMany({
-      include: {
-        ownerTeam: true,
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        type: true,
+        armor: true,
+        area: true,
+        image: true,
+        summary: true,
+        latitude: true,
+        longitude: true,
+        claimRadiusM: true,
+        currentPopulation: true,
+        ownerTeamId: true,
+        ownerTeam: {
+          select: { id: true, name: true, emoji: true, colorHex: true },
+        },
       },
-      orderBy: {
-        name: "asc",
-      },
+      orderBy: { name: "asc" },
     }),
   ]);
 

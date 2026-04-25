@@ -9,6 +9,7 @@ export async function GET(
   const { slug } = await context.params;
   const location = await db.location.findUnique({
     where: { slug },
+    select: { slug: true },
   });
 
   if (!location) {
