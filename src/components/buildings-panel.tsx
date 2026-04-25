@@ -196,7 +196,6 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
   const [svgText, setSvgText] = useState("");
   const [sceneAspectRatio, setSceneAspectRatio] = useState(16 / 10);
   const [selectedSvgKey, setSelectedSvgKey] = useState<string | null>(null);
-  const [hoveredSvgKey, setHoveredSvgKey] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const sceneRef = useRef<HTMLDivElement | null>(null);
@@ -365,7 +364,6 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
       interactiveBuildingsRef.current = [];
       hitTestWidthRef.current = 0;
       hitTestHeightRef.current = 0;
-      setHoveredSvgKey(null);
     };
   }, [baseSvgMarkup, bySvgKey, selectedSvgKey]);
 
@@ -408,15 +406,6 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
     setStatus(null);
   }
 
-  function handleSvgMouseMove(event: React.MouseEvent<HTMLDivElement>) {
-    const hitBuildingId = hitTestBuildingAtPointer(event);
-    setHoveredSvgKey(hitBuildingId);
-  }
-
-  function handleSvgMouseLeave() {
-    setHoveredSvgKey(null);
-  }
-
   function build(buildingDefId: number) {
     setError(null);
     setStatus(null);
@@ -451,11 +440,11 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
     }
 
     const rows = [
-      { value: selectedBuilding.effectMny, text: formatEffect("??", "Růst peněz", selectedBuilding.effectMny) },
-      { value: selectedBuilding.effectPow, text: formatEffect("??", "Růst síly", selectedBuilding.effectPow) },
-      { value: selectedBuilding.effectGpop, text: formatEffect("?????", "Růst populace", selectedBuilding.effectGpop) },
-      { value: selectedBuilding.effectMaxpop, text: formatEffect("???", "Max. populace", selectedBuilding.effectMaxpop) },
-      { value: selectedBuilding.effectArm, text: formatEffect("???", "Obrana", selectedBuilding.effectArm) },
+      { value: selectedBuilding.effectMny, text: formatEffect("💰", "Růst peněz", selectedBuilding.effectMny) },
+      { value: selectedBuilding.effectPow, text: formatEffect("💪", "Růst síly", selectedBuilding.effectPow) },
+      { value: selectedBuilding.effectGpop, text: formatEffect("👨‍🌾", "Růst populace", selectedBuilding.effectGpop) },
+      { value: selectedBuilding.effectMaxpop, text: formatEffect("🏘️", "Max. populace", selectedBuilding.effectMaxpop) },
+      { value: selectedBuilding.effectArm, text: formatEffect("🛡️", "Obrana", selectedBuilding.effectArm) },
     ];
 
     return rows
@@ -479,10 +468,8 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
         <div
           ref={sceneRef}
           onClick={handleSvgClick}
-          onMouseMove={handleSvgMouseMove}
-          onMouseLeave={handleSvgMouseLeave}
           className="overflow-hidden rounded-2xl border border-[var(--line)] bg-white/70 p-2"
-          style={{ aspectRatio: sceneAspectRatio, cursor: hoveredSvgKey ? "pointer" : "default" }}
+          style={{ aspectRatio: sceneAspectRatio, cursor: "pointer" }}
         >
           {baseSvgMarkup ? (
             <div
@@ -560,7 +547,7 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
         }
 
         .qb-scene .qb-building-unbuilt {
-          opacity: 0.08;
+          opacity: 0;
         }
 
         .qb-scene .qb-building-built {
