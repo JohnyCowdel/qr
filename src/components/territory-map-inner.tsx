@@ -68,11 +68,7 @@ function withOpacity(hexColor: string, opacity: string) {
   return `#${normalized}${opacity}`;
 }
 
-function escapeHtml(value: string) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
+          const locationWithArea = { ...location, area };
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
@@ -95,7 +91,7 @@ function getMarkerMetrics(zoom: number, isSelected: boolean) {
 
 function buildEmojiIconForZoom(image: string | undefined, zoom: number, isSelected: boolean) {
   const safeEmoji = typeof image === "string" ? image.trim() : "";
-  const metrics = getMarkerMetrics(zoom, isSelected);
+                <Popup><LocationPopupContent location={locationWithArea} /></Popup>
   return divIcon({
     className: "",
     iconSize: point(metrics.size, metrics.size),
@@ -110,7 +106,7 @@ function ZoomTracker({ onZoomChange }: { onZoomChange: (zoom: number) => void })
       onZoomChange(map.getZoom());
     },
   });
-
+                <Popup><LocationPopupContent location={locationWithArea} /></Popup>
   useEffect(() => {
     onZoomChange(map.getZoom());
   }, [map, onZoomChange]);
@@ -223,33 +219,52 @@ function AutoFitBounds({
   return null;
 }
 
-function buildLocationPopupContent({
-  location,
-  armor,
-  currentPopulation,
-}: {
-  location: UnifiedMapLocation;
-  armor: number;
-  currentPopulation: number;
-}) {
-  const image = typeof location.image === "string" && location.image.trim() ? location.image : "⛺";
-  const type = location.type || "camp";
+/**
+ * Popup content that fetches fresh location data when it mounts.
+ * Shows stale SSR values immediately, then swaps in live data.
+ */
+function LocationPopupContent({ location }: { location: UnifiedMapLocation }) {
+  const [live, setLive] = useState<UnifiedMapLocation | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/locations", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: unknown) => {
+        if (cancelled || !Array.isArray(data)) return;
+        const fresh = (data as UnifiedMapLocation[]).find((l) => l.id === location.id);
+        if (fresh) setLive(fresh);
+      })
+      .catch(() => { /* silently use stale data */ });
+    return () => { cancelled = true; };
+  }, [location.id]);
+
+  const effective = live ?? location;
+  const type = effective.type || "camp";
+  const armor = typeof effective.armor === "number" && Number.isFinite(effective.armor)
+    ? Math.max(1, effective.armor)
+    : baseArmorForType(normalizeLocationType(type));
+  const population = deriveLocationPopulation(
+    typeof effective.area === "number" && effective.area > 0 ? effective.area : 1_000_000,
+    effective.currentPopulation,
+  );
+  const image = typeof effective.image === "string" && effective.image.trim() ? effective.image : "⛺";
 
   return (
     <div className="space-y-2 text-sm text-[#223027]">
-      <div className="font-semibold">{image} {location.name}</div>
-      <div>{location.summary}</div>
+      <div className="font-semibold">{image} {effective.name}</div>
+      <div>{effective.summary}</div>
       <div className="font-mono text-xs text-[#5a6259]">
-        {type} · 🛡️{armor} · 👨‍🌾{formatPopulation(currentPopulation)}
+        {type} · 🛡️{armor} · 👨‍🌾{formatPopulation(population.currentPopulation)}
       </div>
       <div>
-        👑: {location.ownerTeam ? `${location.ownerTeam.emoji ?? ""} ${location.ownerTeam.name}`.trim() : "Neutral"}
+        👑: {effective.ownerTeam ? `${effective.ownerTeam.emoji ?? ""} ${effective.ownerTeam.name}`.trim() : "Neutral"}
       </div>
-      {/* {location.slug ? (
-        <Link href={`/l/${location.slug}`} className="font-medium text-[#9e4323]">
-          Open location page
+      {effective.slug ? (
+        <Link href={`/l/${effective.slug}`} className="block font-medium text-[#9e4323] hover:underline">
+          Otevřít lokaci →
         </Link>
-      ) : null} */}
+      ) : null}
     </div>
   );
 }
