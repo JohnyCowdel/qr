@@ -45,7 +45,7 @@ export default async function Home() {
 
   return (
     <main className="terrain-grid min-h-screen px-4 py-6 text-foreground sm:px-6 lg:px-8">
-      <AutoRefresh intervalMs={30_000} />
+      <AutoRefresh intervalMs={120_000} />
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
         {currentUser ? (
           <div className="flex flex-wrap items-center justify-between gap-3">

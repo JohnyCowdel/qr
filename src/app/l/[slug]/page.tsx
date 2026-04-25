@@ -32,34 +32,35 @@ function formatDate(date: string) {
 export default async function LocationPage(props: PageProps<"/l/[slug]">) {
   const { slug } = await props.params;
   const data = await getLocationPageData(slug);
-  const cookieStore = await cookies();
-  const token = cookieStore.get(USER_COOKIE_NAME)?.value;
-  const userId = token ? verifyUserSessionToken(token) : null;
-  const currentUser = userId
-    ? await db.user.findUnique({
-        where: { id: userId },
-        select: {
-          id: true, handle: true, power: true,
-          team: { select: { id: true, name: true, emoji: true, colorHex: true } },
-        },
-      })
-    : null;
 
   if (!data) {
     notFound();
   }
 
   const { location, mapLocations } = data;
-  const builtArmorRows = await db.builtBuilding.findMany({
-    where: { locationId: location.id },
-    select: {
-      buildingDef: {
-        select: {
-          effectArm: true,
-        },
+
+  const cookieStore = await cookies();
+  const token = cookieStore.get(USER_COOKIE_NAME)?.value;
+  const userId = token ? verifyUserSessionToken(token) : null;
+
+  const [currentUser, builtArmorRows] = await Promise.all([
+    userId
+      ? db.user.findUnique({
+          where: { id: userId },
+          select: {
+            id: true, handle: true, power: true,
+            team: { select: { id: true, name: true, emoji: true, colorHex: true } },
+          },
+        })
+      : Promise.resolve(null),
+    db.builtBuilding.findMany({
+      where: { locationId: location.id },
+      select: {
+        buildingDef: { select: { effectArm: true } },
       },
-    },
-  });
+    }),
+  ]);
+
   const armorBonus = builtArmorRows.reduce((sum, row) => sum + row.buildingDef.effectArm, 0);
   const effectiveArmor = location.armor + Math.floor(armorBonus);
   const locationEconomy = location as typeof location & {
@@ -71,7 +72,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
 
   return (
     <main className="terrain-grid min-h-screen px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
-      <AutoRefresh intervalMs={30_000} />
+      <AutoRefresh intervalMs={60_000} />
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 sm:gap-6">
         {currentUser ? (
           <div className="flex flex-wrap items-center justify-between gap-3">
