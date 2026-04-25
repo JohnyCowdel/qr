@@ -1,0 +1,1 @@
+ALTER TABLE "AdminSettings" ADD COLUMN "revengeDiscountHours" DOUBLE PRECISION NOT NULL DEFAULT 8;

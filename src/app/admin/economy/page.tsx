@@ -12,6 +12,7 @@ export default function AdminEconomyPage() {
   const [claimPopulationMin, setClaimPopulationMin] = useState("3");
   const [productionTimeoutHours, setProductionTimeoutHours] = useState("24");
   const [dailyLoginReward, setDailyLoginReward] = useState("8");
+  const [revengeDiscountHours, setRevengeDiscountHours] = useState("8");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -34,6 +35,7 @@ export default function AdminEconomyPage() {
           claimPopulationMin: number;
           productionTimeoutHours: number;
           dailyLoginReward: number;
+          revengeDiscountHours: number;
         };
 
         if (canceled) {
@@ -47,6 +49,7 @@ export default function AdminEconomyPage() {
         setClaimPopulationMin(String(data.claimPopulationMin));
         setProductionTimeoutHours(String(data.productionTimeoutHours));
         setDailyLoginReward(String(data.dailyLoginReward));
+        setRevengeDiscountHours(String(data.revengeDiscountHours));
       } catch {
         // keep defaults on fetch failure
       }
@@ -76,6 +79,7 @@ export default function AdminEconomyPage() {
             claimPopulationMin: Number(claimPopulationMin),
             productionTimeoutHours: Number(productionTimeoutHours),
             dailyLoginReward: Number(dailyLoginReward),
+            revengeDiscountHours: Number(revengeDiscountHours),
           }),
         });
 
@@ -210,6 +214,22 @@ export default function AdminEconomyPage() {
                   step="0.5"
                   value={dailyLoginReward}
                   onChange={(e) => setDailyLoginReward(e.target.value)}
+                  className="w-full rounded-lg border border-[var(--line)] bg-white/60 px-3 py-2 text-sm focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                />
+              </label>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-1">
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                  Sleva pomsty – platnost (hodiny)
+                </span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={revengeDiscountHours}
+                  onChange={(e) => setRevengeDiscountHours(e.target.value)}
                   className="w-full rounded-lg border border-[var(--line)] bg-white/60 px-3 py-2 text-sm focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
                 />
               </label>

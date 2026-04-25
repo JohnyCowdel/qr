@@ -116,6 +116,7 @@ model AdminSettings {
   claimPopulationMin Int @default(3)
   productionTimeoutHours Float @default(24)
   dailyLoginReward Float @default(8)
+  revengeDiscountHours Float @default(8)
 }
 
 model BuildingDef {

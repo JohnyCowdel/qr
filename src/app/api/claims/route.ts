@@ -97,9 +97,13 @@ export async function POST(request: Request) {
 
   // Check if user's team has an active revenge discount for this location
   const now = new Date();
-  const revengeDiscount = await db.revengeDiscount.findUnique({
-    where: { locationId_teamId: { locationId: location.id, teamId: user.teamId } },
-  });
+  const [revengeDiscount, revengeSettings] = await Promise.all([
+    db.revengeDiscount.findUnique({
+      where: { locationId_teamId: { locationId: location.id, teamId: user.teamId } },
+    }),
+    db.adminSettings.findUnique({ where: { id: 1 }, select: { revengeDiscountHours: true } }),
+  ]);
+  const revengeDiscountHours = revengeSettings?.revengeDiscountHours ?? 8;
   const hasRevengeDiscount = revengeDiscount !== null && revengeDiscount.expiresAt > now;
 
   const claimCost = hasRevengeDiscount ? 0 : effectiveArmor + 1;
@@ -171,9 +175,9 @@ export async function POST(request: Request) {
       },
     });
 
-    // If location was stolen from another team, grant them 8h revenge discount
+    // If location was stolen from another team, grant them revenge discount
     if (previousOwnerTeamId !== null && previousOwnerTeamId !== teamId) {
-      const expiresAt = new Date(createdClaim.createdAt.getTime() + 8 * 60 * 60 * 1000);
+      const expiresAt = new Date(createdClaim.createdAt.getTime() + revengeDiscountHours * 60 * 60 * 1000);
       await tx.revengeDiscount.upsert({
         where: { locationId_teamId: { locationId, teamId: previousOwnerTeamId } },
         create: { locationId, teamId: previousOwnerTeamId, expiresAt },

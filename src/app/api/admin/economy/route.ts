@@ -11,6 +11,7 @@ const schema = z.object({
   claimPopulationMin: z.coerce.number().int().min(0).max(100000),
   productionTimeoutHours: z.coerce.number().min(0).max(10000),
   dailyLoginReward: z.coerce.number().min(0).max(10000),
+  revengeDiscountHours: z.coerce.number().min(0).max(10000),
 });
 
 export async function GET() {
@@ -27,6 +28,7 @@ export async function GET() {
       claimPopulationMin: 3,
       productionTimeoutHours: 24,
       dailyLoginReward: 8,
+      revengeDiscountHours: 8,
     },
     select: {
       moneyRate: true,
@@ -36,6 +38,7 @@ export async function GET() {
       claimPopulationMin: true,
       productionTimeoutHours: true,
       dailyLoginReward: true,
+      revengeDiscountHours: true,
     },
   });
 
@@ -64,6 +67,7 @@ export async function PUT(request: Request) {
       claimPopulationMin: true,
       productionTimeoutHours: true,
       dailyLoginReward: true,
+      revengeDiscountHours: true,
     },
   });
 
