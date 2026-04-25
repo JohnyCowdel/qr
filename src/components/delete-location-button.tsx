@@ -5,16 +5,19 @@ import { useTransition } from "react";
 
 export function DeleteLocationButton({
   slug,
+  locationLabel,
   onDeleted,
 }: {
   slug: string;
+  locationLabel?: string;
   onDeleted?: () => void;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   function handleDelete() {
-    if (!confirm(`Smazat "${slug}"? Všechny přidružené zábory budou také smazány.`)) return;
+    const target = (locationLabel && locationLabel.trim()) || slug;
+    if (!confirm(`Opravdu chcete oblast "${target}" smazat? Tato akce je nevratná a smaže i přidružené zábory.`)) return;
     startTransition(async () => {
       const response = await fetch(`/api/admin/locations/${slug}`, { method: "DELETE" });
       if (!response.ok) {

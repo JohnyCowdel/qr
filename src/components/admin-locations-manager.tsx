@@ -426,11 +426,8 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
                       onClick={() => handleDelete(location.id)}
                       className="rounded-lg border border-[var(--line)] px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-[var(--background-strong)]"
                     >
-                      Discard
+                      Zahodit
                     </button>
-                  )}
-                  {!draft.isNew && draft.slug && (
-                    <DeleteLocationButton slug={draft.slug} onDeleted={() => handleDelete(location.id)} />
                   )}
                 </div>
               </div>
@@ -583,9 +580,23 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
                         }}
                         className="rounded-lg border border-[var(--line)] px-4 py-2 text-sm font-semibold transition-colors hover:bg-[var(--background-strong)]"
                       >
-                        {draft.isNew ? "Discard draft" : "Reset row"}
+                        {draft.isNew ? "Zahodit koncept" : "Resetovat řádek"}
                       </button>
                     </div>
+                    {!draft.isNew && draft.slug && (
+                      <details className="rounded-lg border border-red-200 bg-red-50/40 p-3">
+                        <summary className="cursor-pointer text-sm font-semibold text-red-700">
+                          Další akce
+                        </summary>
+                        <div className="mt-3">
+                          <DeleteLocationButton
+                            slug={draft.slug}
+                            locationLabel={draft.name}
+                            onDeleted={() => handleDelete(location.id)}
+                          />
+                        </div>
+                      </details>
+                    )}
                   </div>
                 </div>
               )}

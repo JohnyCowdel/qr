@@ -45,6 +45,7 @@ export function LocationEconomyControls({
     setMoneyWorkers(popToMoney);
     setPowerWorkers(popToPower);
     setPopulationWorkers(popToPopulation);
+    savedRef.current = { money: popToMoney, power: popToPower, population: popToPopulation };
   }, [popToMoney, popToPopulation, popToPower]);
 
   useEffect(() => {

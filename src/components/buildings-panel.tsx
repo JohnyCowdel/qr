@@ -25,12 +25,44 @@ type Props = {
 };
 
 function parseSvgDimensions(svg: Element) {
+  const viewBox = svg.getAttribute("viewBox")?.trim();
+  if (viewBox) {
+    const parts = viewBox.split(/[\s,]+/).map((part) => Number.parseFloat(part));
+    if (
+      parts.length === 4 &&
+      parts.every((part) => Number.isFinite(part)) &&
+      parts[2] > 0 &&
+      parts[3] > 0
+    ) {
+      return { x: parts[0], y: parts[1], width: parts[2], height: parts[3] };
+    }
+  }
+
   const rawWidth = Number.parseFloat(svg.getAttribute("width") ?? "");
   const rawHeight = Number.parseFloat(svg.getAttribute("height") ?? "");
   const width = Number.isFinite(rawWidth) && rawWidth > 0 ? rawWidth : 1;
   const height = Number.isFinite(rawHeight) && rawHeight > 0 ? rawHeight : 1;
 
-  return { width, height };
+  // Some exported SVGs (notably settlement scene) keep content in negative coordinates
+  // and rely on clip rect offsets instead of a viewBox.
+  const clipRect = svg.querySelector("defs clipPath[id='clip0'] rect");
+  if (clipRect) {
+    const x = Number.parseFloat(clipRect.getAttribute("x") ?? "0");
+    const y = Number.parseFloat(clipRect.getAttribute("y") ?? "0");
+    const clipWidth = Number.parseFloat(clipRect.getAttribute("width") ?? "");
+    const clipHeight = Number.parseFloat(clipRect.getAttribute("height") ?? "");
+
+    if (Number.isFinite(clipWidth) && clipWidth > 0 && Number.isFinite(clipHeight) && clipHeight > 0) {
+      return {
+        x: Number.isFinite(x) ? x : 0,
+        y: Number.isFinite(y) ? y : 0,
+        width: clipWidth,
+        height: clipHeight,
+      };
+    }
+  }
+
+  return { x: 0, y: 0, width, height };
 }
 
 function resolveSpriteFile(locationType: string): string | null {
@@ -57,11 +89,11 @@ function buildInteractiveSvgMarkup(svgText: string, items: BuildingItem[], selec
   const parser = new DOMParser();
   const doc = parser.parseFromString(svgText, "image/svg+xml");
   const svg = doc.documentElement;
-  const { width, height } = parseSvgDimensions(svg);
+  const { x, y, width, height } = parseSvgDimensions(svg);
 
   // Normalize the root sizing so the scene always scales into its container.
   if (!svg.getAttribute("viewBox")) {
-    svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    svg.setAttribute("viewBox", `${x} ${y} ${width} ${height}`);
   }
   svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
   svg.setAttribute("width", "100%");

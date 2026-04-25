@@ -1,4 +1,5 @@
 import { AdminNav } from "@/components/admin-nav";
+import { DeleteUserButton } from "@/components/delete-user-button";
 import { db } from "@/lib/db";
 
 function formatDate(date: Date | null) {
@@ -138,6 +139,15 @@ function EditPlayerDropdown({
             Uložit změny
           </button>
         </div>
+
+        <details className="rounded-xl border border-red-200 bg-red-50/40 px-3 py-2">
+          <summary className="cursor-pointer text-sm font-semibold text-red-700">
+            Nebezpečné akce
+          </summary>
+          <div className="mt-3">
+            <DeleteUserButton userId={user.id} handle={user.handle} />
+          </div>
+        </details>
       </form>
     </details>
   );
@@ -367,17 +377,6 @@ export default async function AdminPlayersPage(props: PageProps<"/admin/players"
                         Claims: {user._count.claims} · Last activity: {formatDate(lastClaimAt)}
                       </p>
                       <EditPlayerDropdown user={user} teams={teams} />
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2">
-                      <form action={`/api/admin/users/${user.id}/delete`} method="post">
-                        <button
-                          type="submit"
-                          className="rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100"
-                        >
-                          Delete
-                        </button>
-                      </form>
                     </div>
                   </div>
                 );

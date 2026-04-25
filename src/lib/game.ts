@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { deriveLocationPopulation } from "@/lib/location-population";
+import { calculateMaxPopulation, calculateMinPopulation, roundDownPopulation } from "@/lib/location-population";
 import {
   calculateLocationAreasSquareMeters,
   createRealmBorder,
@@ -31,6 +31,17 @@ function computeLocationAreas(locations: Array<{ id: string | number; latitude: 
   const smoothedPolygons = smoothRealmLocationPolygons(rawPolygons, 2, 0.42);
 
   return calculateLocationAreasSquareMeters(smoothedPolygons);
+}
+
+function resolvePopulationFromArea(areaM2: number, currentPopulation: number) {
+  const minPopulation = calculateMinPopulation(areaM2);
+  const maxPopulation = calculateMaxPopulation(areaM2);
+
+  return {
+    minPopulation,
+    maxPopulation,
+    currentPopulation: Math.max(0, Math.min(maxPopulation, roundDownPopulation(currentPopulation))),
+  };
 }
 
 export async function getHomePageData() {
@@ -117,7 +128,7 @@ export async function getHomePageData() {
   const locationsWithComputedAreas = locations.map((location) => ({
     ...location,
     area: Math.max(1, Math.round(computedAreas[String(location.id)] ?? location.area)),
-    ...deriveLocationPopulation(
+    ...resolvePopulationFromArea(
       Math.max(1, Math.round(computedAreas[String(location.id)] ?? location.area)),
       location.currentPopulation,
     ),
@@ -239,7 +250,7 @@ export async function getLocationPageData(slug: string) {
   const computedAreas = computeLocationAreas(allLocations);
   const computedArea = Math.max(1, Math.round(computedAreas[String(location.id)] ?? location.area));
   const mapLocations = allLocations.map((mapLocation) => ({
-    ...deriveLocationPopulation(
+    ...resolvePopulationFromArea(
       Math.max(1, Math.round(computedAreas[String(mapLocation.id)] ?? mapLocation.area)),
       mapLocation.currentPopulation,
     ),
@@ -267,7 +278,7 @@ export async function getLocationPageData(slug: string) {
       ...location,
       area: computedArea,
       ownerUser: locationOwnerClaim?.user ?? null,
-      ...deriveLocationPopulation(computedArea, location.currentPopulation),
+      ...resolvePopulationFromArea(computedArea, location.currentPopulation),
       lastClaimedAt: location.lastClaimedAt?.toISOString() ?? null,
       claims: location.claims.map((claim) => ({
         ...claim,
