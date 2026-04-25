@@ -61,7 +61,7 @@ export function resolveAvatarSrc(user: {
   avatarType: string;
   avatarSprite: string;
   avatarSeed?: string | null;
-  avatarPhotoDataUrl: string | null;
+  avatarPhotoDataUrl?: string | null;
   handle?: string;
   id?: number;
 }) {

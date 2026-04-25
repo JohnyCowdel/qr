@@ -94,7 +94,6 @@ export default async function MePage() {
         avatarType: true,
         avatarSprite: true,
         avatarSeed: true,
-        avatarPhotoDataUrl: true,
       },
     }),
     db.user.findMany({
@@ -114,7 +113,6 @@ export default async function MePage() {
         avatarType: true,
         avatarSprite: true,
         avatarSeed: true,
-        avatarPhotoDataUrl: true,
         team: {
           select: {
             name: true,
@@ -138,10 +136,6 @@ export default async function MePage() {
       select: {
         id: true,
         handle: true,
-        avatarType: true,
-        avatarSprite: true,
-        avatarSeed: true,
-        avatarPhotoDataUrl: true,
         team: {
           select: {
             name: true,
@@ -318,7 +312,7 @@ export default async function MePage() {
 
   return (
     <main className="terrain-grid min-h-screen px-4 py-8 sm:px-6 lg:px-8">
-      <AutoRefresh intervalMs={30_000} />
+      <AutoRefresh intervalMs={120_000} />
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
         <div className="flex flex-wrap items-center justify-end gap-2">
           <Link href="/" className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]">

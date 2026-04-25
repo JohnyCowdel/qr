@@ -36,6 +36,7 @@ export async function POST(
 
     await tx.user.delete({
       where: { id: userId },
+      select: { id: true },
     });
 
     for (const locationId of affectedLocationIds) {
@@ -54,6 +55,7 @@ export async function POST(
           ownerTeamId: latestClaim?.teamId ?? null,
           lastClaimedAt: latestClaim?.createdAt ?? null,
         },
+        select: { id: true },
       });
     }
   });
