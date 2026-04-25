@@ -26,6 +26,10 @@ export async function POST(
   const affectedLocationIds = [...new Set(user.claims.map((claim) => claim.locationId))];
 
   await db.$transaction(async (tx) => {
+    await tx.tradeOffer.deleteMany({
+      where: { OR: [{ fromUserId: userId }, { toUserId: userId }] },
+    });
+
     await tx.claim.deleteMany({
       where: { userId },
     });
