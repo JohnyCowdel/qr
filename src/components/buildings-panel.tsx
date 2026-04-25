@@ -75,17 +75,22 @@ function buildBaseSvgMarkup(svgText: string) {
 
   const parser = new DOMParser();
   const doc = parser.parseFromString(svgText, "image/svg+xml");
-  const svg = doc.documentElement;
-  const { x, y, width, height } = parseSvgDimensions(svg);
+  const sourceSvg = doc.documentElement;
+  const sourceViewBox = sourceSvg.getAttribute("viewBox")?.trim();
+  const sourceWidth = sourceSvg.getAttribute("width") || "1920";
+  const sourceHeight = sourceSvg.getAttribute("height") || "1080";
+  const computedViewBox = sourceViewBox || `0 0 ${sourceWidth} ${sourceHeight}`;
 
-  if (!svg.getAttribute("viewBox")) {
-    svg.setAttribute("viewBox", `${x} ${y} ${width} ${height}`);
-  }
-  svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
-  svg.setAttribute("width", "100%");
-  svg.setAttribute("height", "100%");
+  const normalizedSvg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
+  normalizedSvg.setAttribute("viewBox", computedViewBox);
+  normalizedSvg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+  normalizedSvg.setAttribute("width", "100%");
+  normalizedSvg.setAttribute("height", "100%");
+  Array.from(sourceSvg.children).forEach((child) => {
+    normalizedSvg.appendChild(child.cloneNode(true));
+  });
 
-  return new XMLSerializer().serializeToString(svg);
+  return new XMLSerializer().serializeToString(normalizedSvg);
 }
 
 function getAttr(node: Element, name: string) {
@@ -547,7 +552,7 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
         }
 
         .qb-scene .qb-building-unbuilt {
-          opacity: 0;
+          opacity: 0.08;
         }
 
         .qb-scene .qb-building-built {
