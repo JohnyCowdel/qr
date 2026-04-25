@@ -49,19 +49,6 @@ function parseSvgDimensions(svg: Element) {
   const width = Number.isFinite(rawWidth) && rawWidth > 0 ? rawWidth : 1;
   const height = Number.isFinite(rawHeight) && rawHeight > 0 ? rawHeight : 1;
 
-  // When there is no viewBox, check for a clipPath rect that defines the actual canvas extents
-  // (e.g. settlement8.svg: clip0 at x=-1059 y=-1169 with content translated back by transform)
-  const clipRect = svg.querySelector("defs clipPath rect, clipPath rect");
-  if (clipRect) {
-    const cx = Number.parseFloat(clipRect.getAttribute("x") ?? "0");
-    const cy = Number.parseFloat(clipRect.getAttribute("y") ?? "0");
-    const cw = Number.parseFloat(clipRect.getAttribute("width") ?? String(width));
-    const ch = Number.parseFloat(clipRect.getAttribute("height") ?? String(height));
-    if (Number.isFinite(cx) && Number.isFinite(cy) && cw > 0 && ch > 0) {
-      return { x: cx, y: cy, width: cw, height: ch };
-    }
-  }
-
   return { x: 0, y: 0, width, height };
 }
 
@@ -293,13 +280,9 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
     const parsed = parser.parseFromString(svgText, "image/svg+xml");
     const sourceSvg = parsed.documentElement;
     const sourceViewBox = sourceSvg.getAttribute("viewBox")?.trim();
-    let computedViewBox: string;
-    if (sourceViewBox) {
-      computedViewBox = sourceViewBox;
-    } else {
-      const { x, y, width, height } = parseSvgDimensions(sourceSvg);
-      computedViewBox = `${x} ${y} ${width} ${height}`;
-    }
+    const sourceWidth = sourceSvg.getAttribute("width") || "1920";
+    const sourceHeight = sourceSvg.getAttribute("height") || "1080";
+    const computedViewBox = sourceViewBox || `0 0 ${sourceWidth} ${sourceHeight}`;
 
     const svgContainer = svgRef.current;
     svgContainer.setAttribute("viewBox", computedViewBox);
@@ -494,16 +477,16 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
         <div
           ref={sceneRef}
           onClick={handleSvgClick}
-          className="overflow-hidden rounded-2xl border border-[var(--line)] bg-white/70"
-          style={{ aspectRatio: sceneAspectRatio, cursor: "pointer" }}
+          className="rounded-2xl border border-[var(--line)] bg-white/70"
+          style={{ cursor: "pointer" }}
         >
           {svgText ? (
             <svg
               ref={svgRef}
-              className="qb-scene h-full w-full"
+              className="qb-scene block w-full overflow-hidden rounded-2xl"
               width="100%"
-              height="100%"
               preserveAspectRatio="xMidYMid meet"
+              style={{ aspectRatio: sceneAspectRatio }}
             />
           ) : (
             <div className="flex min-h-[260px] items-center justify-center rounded-xl border border-dashed border-[var(--line)] text-sm text-[var(--muted)]">
