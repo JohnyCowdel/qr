@@ -172,6 +172,7 @@ export async function runEconomyTick(now = new Date()) {
             workersAutoStoppedAt: now,
             economyUpdatedAt: now,
           },
+          select: { id: true },
         });
         continue;
       }
@@ -224,6 +225,7 @@ export async function runEconomyTick(now = new Date()) {
           popToPopulation: workers.population,
           economyUpdatedAt: now,
         },
+        select: { id: true },
       });
 
       await tx.user.update({
@@ -233,6 +235,7 @@ export async function runEconomyTick(now = new Date()) {
           power: { increment: powerDelta },
           population: { increment: populationDelta },
         },
+        select: { id: true },
       });
     });
   }
