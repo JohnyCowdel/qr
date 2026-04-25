@@ -68,31 +68,6 @@ function resolveSpriteFile(locationType: string): string | null {
   return null;
 }
 
-function buildBaseSvgMarkup(svgText: string) {
-  if (!svgText.trim()) {
-    return "";
-  }
-
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(svgText, "image/svg+xml");
-  const sourceSvg = doc.documentElement;
-  const sourceViewBox = sourceSvg.getAttribute("viewBox")?.trim();
-  const sourceWidth = sourceSvg.getAttribute("width") || "1920";
-  const sourceHeight = sourceSvg.getAttribute("height") || "1080";
-  const computedViewBox = sourceViewBox || `0 0 ${sourceWidth} ${sourceHeight}`;
-
-  const normalizedSvg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
-  normalizedSvg.setAttribute("viewBox", computedViewBox);
-  normalizedSvg.setAttribute("preserveAspectRatio", "xMidYMid meet");
-  normalizedSvg.setAttribute("width", "100%");
-  normalizedSvg.setAttribute("height", "100%");
-  Array.from(sourceSvg.children).forEach((child) => {
-    normalizedSvg.appendChild(child.cloneNode(true));
-  });
-
-  return new XMLSerializer().serializeToString(normalizedSvg);
-}
-
 function getAttr(node: Element, name: string) {
   return node.getAttribute(name) || node.getAttribute(`xlink:${name}`);
 }
@@ -204,13 +179,13 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
   const [isPending, startTransition] = useTransition();
 
   const sceneRef = useRef<HTMLDivElement | null>(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
   const interactiveBuildingsRef = useRef<InteractiveBuilding[]>([]);
   const hitTestWidthRef = useRef(0);
   const hitTestHeightRef = useRef(0);
 
   const spriteFile = useMemo(() => resolveSpriteFile(locationType), [locationType]);
   const bySvgKey = useMemo(() => new Map(items.map((item) => [item.svgKey, item])), [items]);
-  const baseSvgMarkup = useMemo(() => buildBaseSvgMarkup(svgText), [svgText]);
 
   const selectedBuilding = useMemo(() => {
     if (!selectedSvgKey) {
@@ -297,16 +272,37 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
   }, [bySvgKey, selectedSvgKey]);
 
   useEffect(() => {
+    if (!svgText.trim() || !svgRef.current) {
+      return;
+    }
+
+    const parser = new DOMParser();
+    const parsed = parser.parseFromString(svgText, "image/svg+xml");
+    const sourceSvg = parsed.documentElement;
+    const sourceViewBox = sourceSvg.getAttribute("viewBox")?.trim();
+    const sourceWidth = sourceSvg.getAttribute("width") || "1920";
+    const sourceHeight = sourceSvg.getAttribute("height") || "1080";
+    const computedViewBox = sourceViewBox || `0 0 ${sourceWidth} ${sourceHeight}`;
+
+    const svgContainer = svgRef.current;
+    svgContainer.setAttribute("viewBox", computedViewBox);
+    svgContainer.setAttribute("preserveAspectRatio", "xMidYMid meet");
+
+    while (svgContainer.firstChild) {
+      svgContainer.removeChild(svgContainer.firstChild);
+    }
+
+    Array.from(sourceSvg.children).forEach((child) => {
+      svgContainer.appendChild(child.cloneNode(true));
+    });
+  }, [svgText]);
+
+  useEffect(() => {
     let cancelled = false;
 
     async function attachInteractiveBuildings() {
-      if (!sceneRef.current) {
-        return;
-      }
-
-      const svgContainer = sceneRef.current.querySelector("svg") as SVGSVGElement | null;
-      if (!svgContainer) {
-        interactiveBuildingsRef.current = [];
+      const svgContainer = svgRef.current;
+      if (!svgContainer || !svgText.trim()) {
         return;
       }
 
@@ -370,10 +366,10 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
       hitTestWidthRef.current = 0;
       hitTestHeightRef.current = 0;
     };
-  }, [baseSvgMarkup, bySvgKey, selectedSvgKey]);
+  }, [svgText, bySvgKey, selectedSvgKey]);
 
   function hitTestBuildingAtPointer(event: React.MouseEvent<HTMLDivElement>) {
-    const svgContainer = sceneRef.current?.querySelector("svg") as SVGSVGElement | null;
+    const svgContainer = svgRef.current;
     if (!svgContainer) {
       return null;
     }
@@ -476,10 +472,13 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
           className="overflow-hidden rounded-2xl border border-[var(--line)] bg-white/70 p-2"
           style={{ aspectRatio: sceneAspectRatio, cursor: "pointer" }}
         >
-          {baseSvgMarkup ? (
-            <div
+          {svgText ? (
+            <svg
+              ref={svgRef}
               className="qb-scene h-full w-full"
-              dangerouslySetInnerHTML={{ __html: baseSvgMarkup }}
+              width="100%"
+              height="100%"
+              preserveAspectRatio="xMidYMid meet"
             />
           ) : (
             <div className="flex min-h-[260px] items-center justify-center rounded-xl border border-dashed border-[var(--line)] text-sm text-[var(--muted)]">
@@ -541,7 +540,7 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
       ) : null}
 
       <style jsx global>{`
-        .qb-scene svg {
+        .qb-scene {
           width: 100%;
           height: 100%;
           display: block;
