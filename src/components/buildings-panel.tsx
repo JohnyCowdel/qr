@@ -282,7 +282,20 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
     const sourceViewBox = sourceSvg.getAttribute("viewBox")?.trim();
     const sourceWidth = sourceSvg.getAttribute("width") || "1920";
     const sourceHeight = sourceSvg.getAttribute("height") || "1080";
-    const computedViewBox = sourceViewBox || `0 0 ${sourceWidth} ${sourceHeight}`;
+
+    let computedViewBox = sourceViewBox || `0 0 ${sourceWidth} ${sourceHeight}`;
+    if (!sourceViewBox && spriteFile === "settlement8.svg") {
+      const clipRect = sourceSvg.querySelector('defs clipPath[id="clip0"] rect');
+      if (clipRect) {
+        const x = Number.parseFloat(clipRect.getAttribute("x") ?? "0");
+        const y = Number.parseFloat(clipRect.getAttribute("y") ?? "0");
+        const width = Number.parseFloat(clipRect.getAttribute("width") ?? sourceWidth);
+        const height = Number.parseFloat(clipRect.getAttribute("height") ?? sourceHeight);
+        if (Number.isFinite(x) && Number.isFinite(y) && width > 0 && height > 0) {
+          computedViewBox = `${x} ${y} ${width} ${height}`;
+        }
+      }
+    }
 
     const svgContainer = svgRef.current;
     svgContainer.setAttribute("viewBox", computedViewBox);
@@ -295,7 +308,14 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
     Array.from(sourceSvg.children).forEach((child) => {
       svgContainer.appendChild(child.cloneNode(true));
     });
-  }, [svgText]);
+
+    if (spriteFile === "settlement8.svg") {
+      const clippedRoots = svgContainer.querySelectorAll('[clip-path="url(#clip0)"]');
+      clippedRoots.forEach((node) => {
+        node.removeAttribute("clip-path");
+      });
+    }
+  }, [svgText, spriteFile]);
 
   useEffect(() => {
     let cancelled = false;
