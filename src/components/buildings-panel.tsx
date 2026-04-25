@@ -306,6 +306,14 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
         return;
       }
 
+      await new Promise<void>((resolve) => {
+        window.requestAnimationFrame(() => resolve());
+      });
+
+      if (cancelled) {
+        return;
+      }
+
       const allUseNodes = Array.from(svgContainer.querySelectorAll("use")) as SVGUseElement[];
       const rankedByArea = allUseNodes
         .map((node) => ({
@@ -366,7 +374,7 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
       hitTestWidthRef.current = 0;
       hitTestHeightRef.current = 0;
     };
-  }, [svgText, bySvgKey, selectedSvgKey]);
+  }, [svgText]);
 
   function hitTestBuildingAtPointer(event: React.MouseEvent<HTMLDivElement>) {
     const svgContainer = svgRef.current;
@@ -469,7 +477,7 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
         <div
           ref={sceneRef}
           onClick={handleSvgClick}
-          className="overflow-hidden rounded-2xl border border-[var(--line)] bg-white/70 p-2"
+          className="overflow-hidden rounded-2xl border border-[var(--line)] bg-white/70"
           style={{ aspectRatio: sceneAspectRatio, cursor: "pointer" }}
         >
           {svgText ? (
