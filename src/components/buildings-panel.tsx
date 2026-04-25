@@ -315,17 +315,7 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
       }
 
       const allUseNodes = Array.from(svgContainer.querySelectorAll("use")) as SVGUseElement[];
-      const rankedByArea = allUseNodes
-        .map((node) => ({
-          node,
-          area: estimateUseArea(node, svgContainer),
-        }))
-        .sort((a, b) => b.area - a.area);
-
-      const backgroundCandidate = rankedByArea[0] ?? null;
-      const interactiveNodes = backgroundCandidate
-        ? allUseNodes.filter((node) => node !== backgroundCandidate.node)
-        : allUseNodes;
+      const interactiveNodes = allUseNodes.length > 1 ? allUseNodes.slice(1) : allUseNodes;
 
       const rect = svgContainer.getBoundingClientRect();
       hitTestWidthRef.current = Math.max(1, Math.round(rect.width));
@@ -550,7 +540,7 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
       <style jsx global>{`
         .qb-scene {
           width: 100%;
-          height: 100%;
+          height: auto;
           display: block;
         }
 
