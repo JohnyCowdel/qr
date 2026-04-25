@@ -68,7 +68,11 @@ function withOpacity(hexColor: string, opacity: string) {
   return `#${normalized}${opacity}`;
 }
 
-          const locationWithArea = { ...location, area };
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
@@ -91,7 +95,7 @@ function getMarkerMetrics(zoom: number, isSelected: boolean) {
 
 function buildEmojiIconForZoom(image: string | undefined, zoom: number, isSelected: boolean) {
   const safeEmoji = typeof image === "string" ? image.trim() : "";
-                <Popup><LocationPopupContent location={locationWithArea} /></Popup>
+  const metrics = getMarkerMetrics(zoom, isSelected);
   return divIcon({
     className: "",
     iconSize: point(metrics.size, metrics.size),
@@ -106,7 +110,7 @@ function ZoomTracker({ onZoomChange }: { onZoomChange: (zoom: number) => void })
       onZoomChange(map.getZoom());
     },
   });
-                <Popup><LocationPopupContent location={locationWithArea} /></Popup>
+
   useEffect(() => {
     onZoomChange(map.getZoom());
   }, [map, onZoomChange]);
@@ -489,12 +493,7 @@ export default function TerritoryMapInner({
         const claimRadiusM = Number.isFinite(location.claimRadiusM)
           ? Math.max(1, location.claimRadiusM)
           : 50;
-        const population = deriveLocationPopulation(area, location.currentPopulation);
-        const popupContent = buildLocationPopupContent({
-          location,
-          armor,
-          currentPopulation: population.currentPopulation,
-        });
+        const locationWithArea = { ...location, area };
 
         return (
           <Fragment key={location.id}>
@@ -517,7 +516,9 @@ export default function TerritoryMapInner({
                 },
               }}
             >
-              <Popup>{popupContent}</Popup>
+              <Popup>
+                <LocationPopupContent location={locationWithArea} />
+              </Popup>
             </Circle>
             <Marker
               position={[latitude, longitude]}
@@ -532,7 +533,9 @@ export default function TerritoryMapInner({
                 },
               }}
             >
-              <Popup>{popupContent}</Popup>
+              <Popup>
+                <LocationPopupContent location={locationWithArea} />
+              </Popup>
             </Marker>
           </Fragment>
         );
