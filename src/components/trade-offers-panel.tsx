@@ -126,6 +126,29 @@ export function TradeOffersPanel({
     });
   }
 
+  async function rejectOffer(offerId: number) {
+    setStatus("Odmítám nabídku...");
+
+    startTransition(async () => {
+      try {
+        const response = await fetch(`/api/offers/${offerId}/reject`, {
+          method: "POST",
+        });
+
+        const result = (await response.json()) as { ok: boolean; message: string };
+        if (!response.ok || !result.ok) {
+          setStatus(result.message || "Nabídku se nepodařilo odmítnout.");
+          return;
+        }
+
+        setStatus("Nabídka byla odmítnuta.");
+        window.location.reload();
+      } catch {
+        setStatus("Nabídku se nepodařilo odmítnout.");
+      }
+    });
+  }
+
   async function acceptOffer(offerId: number) {
     setStatus("Přijímám nabídku...");
 
@@ -265,7 +288,7 @@ export function TradeOffersPanel({
                   )}
                 </p>
                 <p className="mt-1 text-xs text-[var(--muted)]">Vytvořeno: {formatDate(offer.createdAt)}</p>
-                <div className="mt-2">
+                <div className="mt-2 flex gap-2">
                   <button
                     type="button"
                     onClick={() => acceptOffer(offer.id)}
@@ -273,6 +296,14 @@ export function TradeOffersPanel({
                     className="rounded-full bg-[var(--accent)] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[var(--accent-strong)] disabled:opacity-60"
                   >
                     Přijmout nabídku
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => rejectOffer(offer.id)}
+                    disabled={isPending}
+                    className="rounded-full border border-red-200 bg-red-50 px-4 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-100 disabled:opacity-60"
+                  >
+                    Odmítnout
                   </button>
                 </div>
               </div>
@@ -298,6 +329,16 @@ export function TradeOffersPanel({
                   )}
                 </p>
                 <p className="mt-1 text-xs text-[var(--muted)]">Vytvořeno: {formatDate(offer.createdAt)}</p>
+                <div className="mt-2">
+                  <button
+                    type="button"
+                    onClick={() => rejectOffer(offer.id)}
+                    disabled={isPending}
+                    className="rounded-full border border-red-200 bg-red-50 px-4 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-100 disabled:opacity-60"
+                  >
+                    Zrušit nabídku
+                  </button>
+                </div>
               </div>
             )) : (
               <p className="rounded-[18px] border border-dashed border-[var(--line)] bg-white/55 p-3 text-sm text-[var(--muted)]">Nemáš žádné odeslané nabídky.</p>
