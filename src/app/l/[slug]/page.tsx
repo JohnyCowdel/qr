@@ -68,7 +68,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
 
   return (
     <main className="terrain-grid min-h-screen px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
-      <AutoRefresh intervalMs={5000} />
+      <AutoRefresh intervalMs={30_000} />
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 sm:gap-6">
         {currentUser ? (
           <div className="flex flex-wrap items-center justify-between gap-3">

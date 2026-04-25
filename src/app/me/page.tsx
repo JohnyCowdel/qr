@@ -9,7 +9,7 @@ import { PlayerAvatarEditor } from "@/components/player-avatar-editor";
 import { TradeOffersPanel } from "@/components/trade-offers-panel";
 import { resolveAvatarSrc } from "@/lib/avatar-sprites";
 import { db } from "@/lib/db";
-import { getEconomyRates, normalizeWorkerSplit, runEconomyTick } from "@/lib/economy";
+import { getEconomyRates, normalizeWorkerSplit } from "@/lib/economy";
 
 export const dynamic = "force-dynamic";
 
@@ -42,8 +42,6 @@ function formatPlayerName(player: {
 }
 
 export default async function MePage() {
-  await runEconomyTick();
-
   const cookieStore = await cookies();
   const token = cookieStore.get(USER_COOKIE_NAME)?.value;
   const userId = token ? verifyUserSessionToken(token) : null;
@@ -308,7 +306,7 @@ export default async function MePage() {
 
   return (
     <main className="terrain-grid min-h-screen px-4 py-8 sm:px-6 lg:px-8">
-      <AutoRefresh intervalMs={5000} />
+      <AutoRefresh intervalMs={30_000} />
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
         <div className="flex flex-wrap items-center justify-end gap-2">
           <Link href="/" className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]">

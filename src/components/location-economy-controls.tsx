@@ -105,15 +105,14 @@ export function LocationEconomyControls({
 
     // Re-fetch when the user returns to the tab so building changes propagate.
     function onFocus() { void loadBuildingEffects(); }
+    function onBuildingsUpdated() { void loadBuildingEffects(); }
     window.addEventListener("focus", onFocus);
-
-    // Also re-fetch periodically (every 5 seconds) to catch building purchases immediately
-    const interval = setInterval(() => { void loadBuildingEffects(); }, 5000);
+    window.addEventListener("buildings-updated", onBuildingsUpdated);
 
     return () => {
       canceled = true;
       window.removeEventListener("focus", onFocus);
-      clearInterval(interval);
+      window.removeEventListener("buildings-updated", onBuildingsUpdated);
     };
   }, [slug]);
 

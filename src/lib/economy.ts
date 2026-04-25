@@ -83,10 +83,17 @@ export async function getEconomyRates(): Promise<EconomyRates> {
 
 export async function runEconomyTick(now = new Date()) {
   const rates = await getEconomyRates();
+  const timeoutMs = Math.max(0, rates.productionTimeoutHours) * 60 * 60 * 1000;
+  const tickThreshold = new Date(now.getTime() - ECONOMY_TICK_SECONDS * 1000);
+  const workerTimeoutThreshold = timeoutMs > 0 ? new Date(now.getTime() - timeoutMs) : null;
 
   const locations = await db.location.findMany({
     where: {
       ownerTeamId: { not: null },
+      OR: [
+        { economyUpdatedAt: { lte: tickThreshold } },
+        ...(workerTimeoutThreshold ? [{ workersUpdatedAt: { lte: workerTimeoutThreshold } }] : []),
+      ],
     },
     select: {
       id: true,
@@ -153,7 +160,6 @@ export async function runEconomyTick(now = new Date()) {
     }
 
     const assignedWorkers = location.popToMoney + location.popToPower + location.popToPopulation;
-    const timeoutMs = Math.max(0, rates.productionTimeoutHours) * 60 * 60 * 1000;
     if (assignedWorkers > 0 && timeoutMs > 0) {
       const inactiveMs = now.getTime() - location.workersUpdatedAt.getTime();
       if (inactiveMs >= timeoutMs) {

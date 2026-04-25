@@ -225,6 +225,7 @@ export function BuildingsPanel({ slug, canManage, locationType }: Props) {
 
         setStatus(data.message ?? "Postaveno.");
         await load();
+        window.dispatchEvent(new CustomEvent("buildings-updated", { detail: { slug } }));
       } catch (e) {
         setError(e instanceof Error ? e.message : "Stavba se nezdařila.");
       }

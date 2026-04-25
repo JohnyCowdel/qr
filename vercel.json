@@ -1,3 +1,9 @@
 {
-  "buildCommand": "npx prisma db push && npm run build"
+  "buildCommand": "npx prisma db push && npm run build",
+  "crons": [
+    {
+      "path": "/api/cron/economy",
+      "schedule": "*/5 * * * *"
+    }
+  ]
 }

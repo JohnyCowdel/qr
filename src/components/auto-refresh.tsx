@@ -7,13 +7,20 @@ type AutoRefreshProps = {
   intervalMs?: number;
 };
 
-export function AutoRefresh({ intervalMs = 5000 }: AutoRefreshProps) {
+const MIN_REFRESH_INTERVAL_MS = 30_000;
+
+export function AutoRefresh({ intervalMs = 30_000 }: AutoRefreshProps) {
   const router = useRouter();
 
   useEffect(() => {
+    const effectiveIntervalMs = Math.max(intervalMs, MIN_REFRESH_INTERVAL_MS);
+
     const id = window.setInterval(() => {
+      if (document.visibilityState !== "visible" || !navigator.onLine) {
+        return;
+      }
       router.refresh();
-    }, intervalMs);
+    }, effectiveIntervalMs);
 
     return () => {
       window.clearInterval(id);
