@@ -48,7 +48,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
       ? db.user.findUnique({
           where: { id: userId },
           select: {
-            id: true, handle: true, power: true,
+            id: true, handle: true, power: true, money: true,
             team: { select: { id: true, name: true, emoji: true, colorHex: true } },
           },
         })
@@ -233,7 +233,12 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
           />
         ) : null}
 
-        <BuildingsPanel slug={location.slug} canManage={canManageEconomy} locationType={location.type} />
+        <BuildingsPanel 
+          slug={location.slug} 
+          canManage={canManageEconomy} 
+          locationType={location.type}
+          userMoney={currentUser?.money ?? null}
+        />
 
         <section className="grid gap-4 sm:gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="space-y-4 sm:space-y-6">
@@ -247,6 +252,11 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                 armor: effectiveArmor,
               }}
               isOwner={canManageEconomy}
+              currentUser={currentUser ? {
+                handle: currentUser.handle,
+                power: currentUser.power,
+                team: currentUser.team,
+              } : null}
             />
           </div>
 

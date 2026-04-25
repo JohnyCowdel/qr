@@ -21,6 +21,7 @@ type Props = {
   slug: string;
   canManage: boolean;
   locationType: string;
+  userMoney?: number | null;
 };
 
 function parseSvgDimensions(svg: Element) {
@@ -92,9 +93,9 @@ function formatEffect(icon: string, label: string, value: number) {
   return `${icon} ${label}: +${value.toFixed(2)}`;
 }
 
-export function BuildingsPanel({ slug, canManage, locationType }: Props) {
+export function BuildingsPanel({ slug, canManage, locationType, userMoney: initialUserMoney }: Props) {
   const [items, setItems] = useState<BuildingItem[]>([]);
-  const [userMoney, setUserMoney] = useState<number | null>(null);
+  const [userMoney, setUserMoney] = useState<number | null>(initialUserMoney ?? null);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [svgText, setSvgText] = useState("");
@@ -115,10 +116,7 @@ export function BuildingsPanel({ slug, canManage, locationType }: Props) {
 
   async function load() {
     try {
-      const [buildingsRes, meRes] = await Promise.all([
-        fetch(`/api/locations/${slug}/buildings`, { cache: "no-store" }),
-        fetch("/api/auth/me", { cache: "no-store" }),
-      ]);
+      const buildingsRes = await fetch(`/api/locations/${slug}/buildings`, { cache: "no-store" });
 
       if (!buildingsRes.ok) {
         throw new Error("Nepodařilo se načíst budovy.");
@@ -127,12 +125,16 @@ export function BuildingsPanel({ slug, canManage, locationType }: Props) {
       const data = (await buildingsRes.json()) as { ok: boolean; buildings: BuildingItem[] };
       setItems(data.buildings);
 
-      if (meRes.ok) {
-        const me = (await meRes.json()) as {
-          authenticated: boolean;
-          user?: { money: number };
-        };
-        setUserMoney(me.authenticated ? (me.user?.money ?? null) : null);
+      // Only fetch user money if not provided via prop
+      if (initialUserMoney === undefined) {
+        const meRes = await fetch("/api/auth/me", { cache: "no-store" });
+        if (meRes.ok) {
+          const me = (await meRes.json()) as {
+            authenticated: boolean;
+            user?: { money: number };
+          };
+          setUserMoney(me.authenticated ? (me.user?.money ?? null) : null);
+        }
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Nepodařilo se načíst budovy.");

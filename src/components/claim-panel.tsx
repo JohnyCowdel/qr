@@ -14,6 +14,11 @@ type ClaimPanelProps = {
     armor: number;
   };
   isOwner?: boolean;
+  currentUser?: {
+    handle: string;
+    power: number;
+    team: { name: string; emoji?: string | null };
+  } | null;
 };
 
 type ClaimResult = {
@@ -30,20 +35,36 @@ type AuthState = {
   power: number | null;
 };
 
-export function ClaimPanel({ location, isOwner = false }: ClaimPanelProps) {
+export function ClaimPanel({ location, isOwner = false, currentUser }: ClaimPanelProps) {
   const claimCost = location.armor + 1;
   const [message, setMessage] = useState("");
-  const [status, setStatus] = useState<string>("Připraven ověřit polohu.");
-  const [auth, setAuth] = useState<AuthState>({
-    loading: true,
-    authenticated: false,
-    handle: null,
-    teamLabel: null,
-    power: null,
+  const [status, setStatus] = useState<string>(() => currentUser ? "Přihlášen/a. Připraven/a ověřit polohu." : "Připraven ověřit polohu.");
+  const [auth, setAuth] = useState<AuthState>(() => {
+    if (currentUser) {
+      return {
+        loading: false,
+        authenticated: true,
+        handle: currentUser.handle,
+        teamLabel: `${currentUser.team.emoji ?? ""} ${currentUser.team.name}`.trim(),
+        power: currentUser.power,
+      };
+    }
+    return {
+      loading: !currentUser,
+      authenticated: false,
+      handle: null,
+      teamLabel: null,
+      power: null,
+    };
   });
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
+    // If currentUser is provided via prop, skip fetching
+    if (currentUser !== undefined) {
+      return;
+    }
+
     let cancelled = false;
 
     async function loadAuth() {
@@ -97,7 +118,7 @@ export function ClaimPanel({ location, isOwner = false }: ClaimPanelProps) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [currentUser]);
 
   async function submitClaim() {
     if (!auth.authenticated) {
