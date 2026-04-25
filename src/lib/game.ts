@@ -218,6 +218,26 @@ export async function getLocationPageData(slug: string) {
           },
           take: 12,
         },
+        greetings: {
+          select: {
+            id: true,
+            createdAt: true,
+            distanceM: true,
+            user: {
+              select: {
+                id: true,
+                handle: true,
+                avatarType: true,
+                avatarSprite: true,
+                avatarSeed: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 12,
+        },
       },
     }),
     db.location.findMany({
@@ -273,6 +293,25 @@ export async function getLocationPageData(slug: string) {
       ? location.claims[0]
       : null;
 
+  const activityFeed = [
+    ...location.claims.map((claim) => ({
+      id: `claim-${claim.id}`,
+      type: "claim" as const,
+      createdAt: claim.createdAt,
+      distanceM: claim.distanceM,
+      claim,
+    })),
+    ...location.greetings.map((greeting) => ({
+      id: `greeting-${greeting.id}`,
+      type: "greeting" as const,
+      createdAt: greeting.createdAt,
+      distanceM: greeting.distanceM,
+      greeting,
+    })),
+  ]
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, 12);
+
   return {
     location: {
       ...location,
@@ -284,6 +323,29 @@ export async function getLocationPageData(slug: string) {
         ...claim,
         createdAt: claim.createdAt.toISOString(),
       })),
+      activityFeed: activityFeed.map((item) =>
+        item.type === "claim"
+          ? {
+              id: item.id,
+              type: item.type,
+              createdAt: item.createdAt.toISOString(),
+              distanceM: item.distanceM,
+              claim: {
+                ...item.claim,
+                createdAt: item.claim.createdAt.toISOString(),
+              },
+            }
+          : {
+              id: item.id,
+              type: item.type,
+              createdAt: item.createdAt.toISOString(),
+              distanceM: item.distanceM,
+              greeting: {
+                ...item.greeting,
+                createdAt: item.greeting.createdAt.toISOString(),
+              },
+            },
+      ),
     },
     mapLocations,
   };

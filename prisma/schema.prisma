@@ -49,6 +49,7 @@ model User {
   teamId    Int
   team      Team     @relation(fields: [teamId], references: [id])
   claims    Claim[]
+  locationGreetings LocationGreeting[]
   sentTradeOffers     TradeOffer[] @relation("SentTradeOffers")
   receivedTradeOffers TradeOffer[] @relation("ReceivedTradeOffers")
 }
@@ -82,6 +83,7 @@ model Location {
   lastClaimedAt    DateTime?
   ownerTeam        Team?     @relation("OwnedLocations", fields: [ownerTeamId], references: [id])
   claims           Claim[]
+  greetings        LocationGreeting[]
   builtBuildings   BuiltBuilding[]
   revengeDiscounts RevengeDiscount[]
 }
@@ -103,6 +105,22 @@ model Claim {
 
   @@index([locationId, createdAt])
   @@index([teamId, createdAt])
+  @@index([userId, createdAt])
+}
+
+model LocationGreeting {
+  id         Int      @id @default(autoincrement())
+  latitude   Float
+  longitude  Float
+  accuracyM  Float?
+  distanceM  Float
+  createdAt  DateTime @default(now())
+  locationId Int
+  userId     Int
+  location   Location @relation(fields: [locationId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([locationId, createdAt])
   @@index([userId, createdAt])
 }
 

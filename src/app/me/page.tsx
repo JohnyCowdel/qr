@@ -66,6 +66,16 @@ export default async function MePage() {
         orderBy: { createdAt: "desc" },
         take: 10,
       },
+      locationGreetings: {
+        select: {
+          id: true,
+          createdAt: true,
+          distanceM: true,
+          location: { select: { id: true, slug: true, name: true, image: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      },
     },
   });
 
@@ -268,6 +278,12 @@ export default async function MePage() {
   });
 
   const activeLocationIds = activeLocationsForUser.map((location) => location.id);
+  const recentEvents = [
+    ...user.claims.map((claim) => ({ id: `claim-${claim.id}`, type: "claim" as const, createdAt: claim.createdAt, claim })),
+    ...user.locationGreetings.map((greeting) => ({ id: `greeting-${greeting.id}`, type: "greeting" as const, createdAt: greeting.createdAt, greeting })),
+  ]
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, 12);
   const builtEffects = activeLocationIds.length
     ? await db.builtBuilding.findMany({
         where: {
@@ -487,21 +503,35 @@ export default async function MePage() {
                 </div>
               </Link>
             ))}
-            {user.claims.length ? user.claims.map((claim) => (
-              <ClaimEventCard
-                key={claim.id}
-                user={user}
-                message={claim.message}
-                actionHref={`/l/${claim.location.slug}`}
-                summary={(
-                  <>
-                    obsadil/a <span className="font-medium">{claim.location.name}</span> pro <span className="font-medium">{claim.team.emoji} {claim.team.name}</span> dne {formatDate(claim.createdAt.toISOString())}.
-                  </>
-                )}
-              />
+            {recentEvents.length ? recentEvents.map((entry) => (
+              entry.type === "claim" ? (
+                <ClaimEventCard
+                  key={entry.id}
+                  user={user}
+                  message={entry.claim.message}
+                  actionHref={`/l/${entry.claim.location.slug}`}
+                  summary={(
+                    <>
+                      obsadil/a <span className="font-medium">{entry.claim.location.name}</span> pro <span className="font-medium">{entry.claim.team.emoji} {entry.claim.team.name}</span> dne {formatDate(entry.claim.createdAt.toISOString())}.
+                    </>
+                  )}
+                />
+              ) : (
+                <ClaimEventCard
+                  key={entry.id}
+                  user={user}
+                  actionHref={`/l/${entry.greeting.location.slug}`}
+                  summary={(
+                    <>
+                      pozdravil/a <span className="font-medium">{entry.greeting.location.image} {entry.greeting.location.name}</span> dne {formatDate(entry.greeting.createdAt.toISOString())}.
+                    </>
+                  )}
+                  messageClassName="bg-sky-50 text-sky-800"
+                />
+              )
             )) : (
               <p className="rounded-[20px] border border-dashed border-[var(--line)] bg-white/55 p-4 text-sm text-[var(--muted)]">
-                Zatím jsi neobsadil/a žádnou pozici. Naskenuj QR kód a obsad svou první lokaci.
+                Zatím tu nemáš žádné události. Navštiv lokaci, pozdrav ji nebo ji obsaď.
               </p>
             )}
           </div>

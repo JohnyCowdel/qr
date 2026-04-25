@@ -82,6 +82,13 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
     popToPopulation?: number;
   };
   const canManageEconomy = Boolean(currentUser && location.ownerUser && currentUser.id === location.ownerUser.id);
+  const canEncourage = Boolean(
+    currentUser &&
+    location.ownerTeam &&
+    location.ownerUser &&
+    currentUser.team.id === location.ownerTeam.id &&
+    currentUser.id !== location.ownerUser.id,
+  );
 
   return (
     <main className="terrain-grid min-h-screen px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
@@ -271,6 +278,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                 team: currentUser.team,
               } : null}
               revengeDiscountExpiresAt={revengeDiscountExpiresAt}
+              encourage={{ canUse: canEncourage, cost: 10, armorBonus: 5 }}
             />
           </div>
 
@@ -279,33 +287,46 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
               <div>
                 <h2 className="text-xl font-semibold tracking-[-0.03em] sm:text-2xl">Historie záborů</h2>
                 <p className="mt-1 text-sm text-[var(--muted)]">
-                  Každý úspěšný zábor a zpráva je uložena jako neměnná událost.
+                  Zábory i pozdravy s ověřenou GPS polohou se ukládají jako neměnné události.
                 </p>
               </div>
               <div className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
-                {location.claims.length} záznamů
+                {location.activityFeed.length} záznamů
               </div>
             </div>
 
             <div className="mt-3 max-h-[360px] space-y-2 overflow-y-auto pr-1 sm:mt-4 sm:max-h-[520px] sm:space-y-3">
-              {location.claims.length ? (
-                location.claims.map((claim) => (
-                  <ClaimEventCard
-                    key={claim.id}
-                    user={claim.user}
-                    message={claim.message}
-                    messageClassName="bg-[rgba(47,125,93,0.08)] text-[#255943]"
-                    summary={(
-                      <>
-                        zabrán pro <span className="font-medium">{claim.team.emoji} {claim.team.name}</span>{" "}
-                        dne {formatDate(claim.createdAt)} ve vzdálenosti {formatMeters(claim.distanceM)}.
-                      </>
-                    )}
-                  />
+              {location.activityFeed.length ? (
+                location.activityFeed.map((entry) => (
+                  entry.type === "claim" ? (
+                    <ClaimEventCard
+                      key={entry.id}
+                      user={entry.claim.user}
+                      message={entry.claim.message}
+                      messageClassName="bg-[rgba(47,125,93,0.08)] text-[#255943]"
+                      summary={(
+                        <>
+                          zabrán pro <span className="font-medium">{entry.claim.team.emoji} {entry.claim.team.name}</span>{" "}
+                          dne {formatDate(entry.claim.createdAt)} ve vzdálenosti {formatMeters(entry.distanceM)}.
+                        </>
+                      )}
+                    />
+                  ) : (
+                    <ClaimEventCard
+                      key={entry.id}
+                      user={entry.greeting.user}
+                      messageClassName="bg-sky-50 text-sky-800"
+                      summary={(
+                        <>
+                          pozdravil/a tuto lokaci dne {formatDate(entry.greeting.createdAt)} ve vzdálenosti {formatMeters(entry.distanceM)}.
+                        </>
+                      )}
+                    />
+                  )
                 ))
               ) : (
                 <div className="rounded-[24px] border border-dashed border-[var(--line)] bg-white/55 p-4 text-sm text-[var(--muted)]">
-                  Tento bod ještě nikdo nenabral.
+                  Tato lokace zatím nemá žádné GPS ověřené události.
                 </div>
               )}
             </div>
