@@ -13,7 +13,6 @@ import {
   findRealmLocationPolygonAtPoint,
   smoothRealmLocationPolygons,
 } from "@/lib/realm";
-import { deriveLocationPopulation } from "@/lib/location-population";
 import { baseArmorForType, normalizeLocationType } from "@/lib/location-types";
 
 type TeamRef = {
@@ -59,7 +58,7 @@ const PRIMARY_TILE_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/
 const FALLBACK_TILE_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
 function formatPopulation(population: number) {
-  return new Intl.NumberFormat("en").format(population);
+  return new Intl.NumberFormat("cs").format(Math.floor(population));
 }
 
 function withOpacity(hexColor: string, opacity: string) {
@@ -247,10 +246,6 @@ function LocationPopupContent({ location }: { location: UnifiedMapLocation }) {
   const armor = typeof effective.armor === "number" && Number.isFinite(effective.armor)
     ? Math.max(1, effective.armor)
     : baseArmorForType(normalizeLocationType(type));
-  const population = deriveLocationPopulation(
-    typeof effective.area === "number" && effective.area > 0 ? effective.area : 1_000_000,
-    effective.currentPopulation,
-  );
   const image = typeof effective.image === "string" && effective.image.trim() ? effective.image : "⛺";
 
   return (
@@ -258,7 +253,7 @@ function LocationPopupContent({ location }: { location: UnifiedMapLocation }) {
       <div className="font-semibold">{image} {effective.name}</div>
       <div>{effective.summary}</div>
       <div className="font-mono text-xs text-[#5a6259]">
-        {type} · 🛡️{armor} · 👨‍🌾{formatPopulation(population.currentPopulation)}
+        {type} · 🛡️{armor} · 👨‍🌾{formatPopulation(effective.currentPopulation ?? 0)}
       </div>
       <div>
         👑: {effective.ownerTeam ? `${effective.ownerTeam.emoji ?? ""} ${effective.ownerTeam.name}`.trim() : "Neutral"}
