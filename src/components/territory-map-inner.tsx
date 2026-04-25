@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { divIcon, point } from "leaflet";
 import { Circle, MapContainer, Marker, Polygon, Polyline, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
@@ -236,7 +235,7 @@ function LocationPopupContent({ location }: { location: UnifiedMapLocation }) {
       .then((r) => (r.ok ? r.json() : null))
       .then((data: unknown) => {
         if (cancelled || !Array.isArray(data)) return;
-        const fresh = (data as UnifiedMapLocation[]).find((l) => l.id === location.id);
+        const fresh = (data as UnifiedMapLocation[]).find((l) => String(l.id) === String(location.id));
         if (fresh) setLive(fresh);
       })
       .catch(() => { /* silently use stale data */ });
@@ -264,11 +263,6 @@ function LocationPopupContent({ location }: { location: UnifiedMapLocation }) {
       <div>
         👑: {effective.ownerTeam ? `${effective.ownerTeam.emoji ?? ""} ${effective.ownerTeam.name}`.trim() : "Neutral"}
       </div>
-      {effective.slug ? (
-        <Link href={`/l/${effective.slug}`} className="block font-medium text-[#9e4323] hover:underline">
-          Otevřít lokaci →
-        </Link>
-      ) : null}
     </div>
   );
 }
