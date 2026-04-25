@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { runEconomyTick } from "@/lib/economy";
 import { deriveLocationPopulation } from "@/lib/location-population";
 import {
   calculateLocationAreasSquareMeters,
@@ -34,6 +35,8 @@ function computeLocationAreas(locations: Array<{ id: string | number; latitude: 
 }
 
 export async function getHomePageData() {
+  await runEconomyTick();
+
   const [locations, recentClaims, teams, claimCounts] = await Promise.all([
     db.location.findMany({
       include: {
