@@ -34,8 +34,12 @@ export function LocationEconomyControls({
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const requestIdRef = useRef(0);
-  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingValuesRef = useRef<{ money: number; power: number; population: number } | null>(null);
+
+  const savedRef = useRef({ money: popToMoney, power: popToPower, population: popToPopulation });
+  const isDirty =
+    moneyWorkers !== savedRef.current.money ||
+    powerWorkers !== savedRef.current.power ||
+    populationWorkers !== savedRef.current.population;
 
   useEffect(() => {
     setMoneyWorkers(popToMoney);
@@ -161,9 +165,15 @@ export function LocationEconomyControls({
           return;
         }
 
-        setMoneyWorkers(Number(data.allocation?.popToMoney ?? next.money));
-        setPowerWorkers(Number(data.allocation?.popToPower ?? next.power));
-        setPopulationWorkers(Number(data.allocation?.popToPopulation ?? next.population));
+        const saved = {
+          money: Number(data.allocation?.popToMoney ?? next.money),
+          power: Number(data.allocation?.popToPower ?? next.power),
+          population: Number(data.allocation?.popToPopulation ?? next.population),
+        };
+        setMoneyWorkers(saved.money);
+        setPowerWorkers(saved.power);
+        setPopulationWorkers(saved.population);
+        savedRef.current = saved;
         if (typeof data.allocation?.currentPopulation === "number" && Number.isFinite(data.allocation.currentPopulation)) {
           setCurrentPopulationValue(data.allocation.currentPopulation);
         }
@@ -171,20 +181,6 @@ export function LocationEconomyControls({
         setError("Chyba sítě. Zkus to znovu.");
       }
     });
-  }
-
-  function schedulePersist(values: { money: number; power: number; population: number }) {
-    pendingValuesRef.current = values;
-    if (debounceTimerRef.current !== null) {
-      clearTimeout(debounceTimerRef.current);
-    }
-    debounceTimerRef.current = setTimeout(() => {
-      debounceTimerRef.current = null;
-      if (pendingValuesRef.current) {
-        void persist(pendingValuesRef.current);
-        pendingValuesRef.current = null;
-      }
-    }, 600);
   }
 
   function adjustWorkers(target: "money" | "power" | "population", delta: 1 | -1) {
@@ -203,7 +199,6 @@ export function LocationEconomyControls({
         return;
       }
 
-      schedulePersist({ money, power, population });
       setMoneyWorkers(money);
       setPowerWorkers(power);
       setPopulationWorkers(population);
@@ -252,7 +247,6 @@ export function LocationEconomyControls({
     setMoneyWorkers(money);
     setPowerWorkers(power);
     setPopulationWorkers(population);
-    schedulePersist({ money, power, population });
   }
 
   function ResourceRow({
@@ -348,6 +342,32 @@ export function LocationEconomyControls({
 
       {error ? (
         <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+      ) : null}
+
+      {isDirty ? (
+        <div className="mt-4 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => void persist({ money: moneyWorkers, power: powerWorkers, population: populationWorkers })}
+            disabled={isPending}
+            className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)] disabled:opacity-60"
+          >
+            {isPending ? "Ukládám…" : "Uložit rozdělení"}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMoneyWorkers(savedRef.current.money);
+              setPowerWorkers(savedRef.current.power);
+              setPopulationWorkers(savedRef.current.population);
+              setError(null);
+            }}
+            disabled={isPending}
+            className="rounded-full border border-[var(--line)] bg-white px-4 py-2 text-sm font-semibold hover:bg-[var(--background-strong)] disabled:opacity-60"
+          >
+            Zrušit
+          </button>
+        </div>
       ) : null}
     </section>
   );

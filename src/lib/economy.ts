@@ -81,7 +81,12 @@ export async function getEconomyRates(): Promise<EconomyRates> {
   });
 }
 
+let lastTickAt = 0;
+
 export async function runEconomyTick(now = new Date()) {
+  if (now.getTime() - lastTickAt < ECONOMY_TICK_SECONDS * 1000) return;
+  lastTickAt = now.getTime();
+
   const rates = await getEconomyRates();
   const timeoutMs = Math.max(0, rates.productionTimeoutHours) * 60 * 60 * 1000;
   const tickThreshold = new Date(now.getTime() - ECONOMY_TICK_SECONDS * 1000);
