@@ -49,9 +49,6 @@ export async function getHomePageData() {
         longitude: true,
         claimRadiusM: true,
         currentPopulation: true,
-        popToMoney: true,
-        popToPower: true,
-        popToPopulation: true,
         lastClaimedAt: true,
         ownerTeamId: true,
         ownerTeam: {
@@ -105,7 +102,6 @@ export async function getHomePageData() {
             id: true,
             handle: true,
             power: true,
-            money: true,
           },
         },
       },
@@ -150,7 +146,6 @@ export async function getHomePageData() {
             id: user.id,
             handle: user.handle,
             power: user.power,
-            money: user.money,
             claimCount: claimCountByUserId[user.id] ?? 0,
           }))
           .sort((a, b) => b.power - a.power),

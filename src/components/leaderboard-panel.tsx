@@ -13,7 +13,6 @@ type TeamData = {
     id: number;
     handle: string;
     power: number;
-    money: number;
     claimCount: number;
   }>;
 };
@@ -24,10 +23,6 @@ type LeaderboardPanelProps = {
 
 function formatPower(power: number) {
   return power.toFixed(2);
-}
-
-function formatMoney(money: number) {
-  return money.toFixed(0);
 }
 
 export function LeaderboardPanel({ teams }: LeaderboardPanelProps) {
@@ -85,8 +80,7 @@ export function LeaderboardPanel({ teams }: LeaderboardPanelProps) {
                       <span className="font-medium">{user.handle}</span>
                       <div className="flex items-center gap-4 font-mono text-xs text-[var(--muted)]">
                         <span>⚡ {formatPower(user.power)}</span>
-                        <span>💰 {formatMoney(user.money)}</span>
-                        <span>🚩 {user.claimCount}</span>
+                        <span> {user.claimCount}</span>
                       </div>
                     </div>
                   ))
