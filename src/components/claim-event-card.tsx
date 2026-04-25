@@ -9,7 +9,7 @@ type ClaimEventUser = {
   avatarType: string;
   avatarSprite: string;
   avatarSeed?: string | null;
-  avatarPhotoDataUrl: string | null;
+  avatarPhotoDataUrl?: string | null;
 };
 
 type ClaimEventCardProps = {

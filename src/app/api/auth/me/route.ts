@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     select: {
       id: true, handle: true, firstName: true, lastName: true, email: true,
       age: true, avatarType: true, avatarSprite: true, avatarSeed: true,
-      avatarPhotoDataUrl: true, power: true, money: true, population: true,
+      power: true, money: true, population: true,
       team: { select: { id: true, name: true, emoji: true, slug: true, colorHex: true, power: true } },
     },
   });
@@ -33,7 +33,6 @@ export async function GET(request: Request) {
       avatarType: user.avatarType,
       avatarSprite: user.avatarSprite,
       avatarSeed: user.avatarSeed,
-      avatarPhotoDataUrl: user.avatarPhotoDataUrl,
       power: user.power,
       money: user.money,
       population: user.population,

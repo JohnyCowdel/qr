@@ -65,8 +65,15 @@ export function resolveAvatarSrc(user: {
   handle?: string;
   id?: number;
 }) {
-  if (user.avatarType === "photo" && user.avatarPhotoDataUrl) {
-    return user.avatarPhotoDataUrl;
+  if (user.avatarType === "photo") {
+    // If we have the raw data (own profile), use it directly to avoid an extra request.
+    if (user.avatarPhotoDataUrl) {
+      return user.avatarPhotoDataUrl;
+    }
+    // Otherwise point to the cached avatar endpoint — browsers cache this by URL.
+    if (user.id) {
+      return `/api/users/${user.id}/avatar`;
+    }
   }
 
   const seed = user.avatarSeed?.trim() || `${user.handle ?? "player"}-${user.id ?? 0}`;

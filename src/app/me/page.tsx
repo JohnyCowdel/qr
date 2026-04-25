@@ -55,7 +55,7 @@ export default async function MePage() {
     select: {
       id: true, handle: true, firstName: true, lastName: true, email: true,
       age: true, power: true, money: true, population: true, teamId: true,
-      avatarType: true, avatarSprite: true, avatarSeed: true, avatarPhotoDataUrl: true,
+      avatarType: true, avatarSprite: true, avatarSeed: true,
       team: { select: { id: true, slug: true, name: true, emoji: true, colorHex: true, power: true } },
       claims: {
         select: {
