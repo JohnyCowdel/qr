@@ -283,19 +283,7 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
     const sourceWidth = sourceSvg.getAttribute("width") || "1920";
     const sourceHeight = sourceSvg.getAttribute("height") || "1080";
 
-    let computedViewBox = sourceViewBox || `0 0 ${sourceWidth} ${sourceHeight}`;
-    if (!sourceViewBox && spriteFile === "settlement8.svg") {
-      const clipRect = sourceSvg.querySelector('defs clipPath[id="clip0"] rect');
-      if (clipRect) {
-        const x = Number.parseFloat(clipRect.getAttribute("x") ?? "0");
-        const y = Number.parseFloat(clipRect.getAttribute("y") ?? "0");
-        const width = Number.parseFloat(clipRect.getAttribute("width") ?? sourceWidth);
-        const height = Number.parseFloat(clipRect.getAttribute("height") ?? sourceHeight);
-        if (Number.isFinite(x) && Number.isFinite(y) && width > 0 && height > 0) {
-          computedViewBox = `${x} ${y} ${width} ${height}`;
-        }
-      }
-    }
+    const computedViewBox = sourceViewBox || `0 0 ${sourceWidth} ${sourceHeight}`;
 
     const svgContainer = svgRef.current;
     svgContainer.setAttribute("viewBox", computedViewBox);
