@@ -94,8 +94,16 @@ export async function POST(request: Request) {
   });
   const builtArmBonus = builtRows.reduce((sum, row) => sum + row.buildingDef.effectArm, 0);
   const effectiveArmor = location.armor + Math.floor(builtArmBonus);
-  const claimCost = effectiveArmor + 1;
-  if (user.power < claimCost) {
+
+  // Check if user's team has an active revenge discount for this location
+  const now = new Date();
+  const revengeDiscount = await db.revengeDiscount.findUnique({
+    where: { locationId_teamId: { locationId: location.id, teamId: user.teamId } },
+  });
+  const hasRevengeDiscount = revengeDiscount !== null && revengeDiscount.expiresAt > now;
+
+  const claimCost = hasRevengeDiscount ? 0 : effectiveArmor + 1;
+  if (!hasRevengeDiscount && user.power < claimCost) {
     return Response.json(
       {
         ok: false,
@@ -112,6 +120,8 @@ export async function POST(request: Request) {
     rates.claimPopulationMin,
     location.currentPopulation * (1 - lossRatio),
   );
+
+  const previousOwnerTeamId = location.ownerTeamId;
 
   const claim = await db.$transaction(async (tx) => {
     const createdClaim = await tx.claim.create({
@@ -132,10 +142,19 @@ export async function POST(request: Request) {
       },
     });
 
-    await tx.user.update({
-      where: { id: user.id },
-      data: { power: { decrement: claimCost } },
-    });
+    if (claimCost > 0) {
+      await tx.user.update({
+        where: { id: user.id },
+        data: { power: { decrement: claimCost } },
+      });
+    }
+
+    // Consume the revenge discount if it was used
+    if (hasRevengeDiscount && revengeDiscount) {
+      await tx.revengeDiscount.delete({
+        where: { id: revengeDiscount.id },
+      });
+    }
 
     await tx.location.update({
       where: { id: locationId },
@@ -151,6 +170,16 @@ export async function POST(request: Request) {
         economyUpdatedAt: createdClaim.createdAt,
       },
     });
+
+    // If location was stolen from another team, grant them 8h revenge discount
+    if (previousOwnerTeamId !== null && previousOwnerTeamId !== teamId) {
+      const expiresAt = new Date(createdClaim.createdAt.getTime() + 8 * 60 * 60 * 1000);
+      await tx.revengeDiscount.upsert({
+        where: { locationId_teamId: { locationId, teamId: previousOwnerTeamId } },
+        create: { locationId, teamId: previousOwnerTeamId, expiresAt },
+        update: { expiresAt },
+      });
+    }
 
     return createdClaim;
   });

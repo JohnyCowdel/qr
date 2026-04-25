@@ -73,7 +73,7 @@ export default async function MePage() {
     redirect("/auth/login");
   }
 
-  const [teamPlayers, otherPlayers, offerTargets, pendingOffers, economyRates, activeOwnedLocations] = await Promise.all([
+  const [teamPlayers, otherPlayers, offerTargets, pendingOffers, economyRates, activeOwnedLocations, activeRevengeDiscounts] = await Promise.all([
     db.user.findMany({
       where: {
         teamId: user.teamId,
@@ -211,6 +211,19 @@ export default async function MePage() {
           },
           take: 1,
         },
+      },
+    }),
+    db.revengeDiscount.findMany({
+      where: {
+        teamId: user.teamId,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        expiresAt: true,
+        createdAt: true,
+        location: { select: { id: true, slug: true, name: true, image: true } },
       },
     }),
   ]);
@@ -452,9 +465,28 @@ export default async function MePage() {
 
         <section className="glass-panel rounded-[30px] border border-[var(--line)] p-6 sm:p-7">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-2xl font-semibold tracking-[-0.03em]">Nedávné zábory</h2>
+            <h2 className="text-2xl font-semibold tracking-[-0.03em]">Nedávné události</h2>
           </div>
           <div className="mt-4 max-h-[520px] space-y-3 overflow-y-auto pr-1">
+            {activeRevengeDiscounts.map((rd) => (
+              <Link
+                key={`revenge-${rd.id}`}
+                href={`/l/${rd.location.slug}`}
+                className="flex items-start gap-3 rounded-[20px] border border-amber-300 bg-amber-50 px-4 py-3 text-sm transition hover:bg-amber-100"
+              >
+                <span className="mt-0.5 text-base">⚔️</span>
+                <div>
+                  <p className="font-semibold text-amber-900">
+                    Někdo ti ukradl {rd.location.image} {rd.location.name}!
+                  </p>
+                  <p className="mt-0.5 text-amber-800">
+                    Máš slevu pomsty – zábor zdarma (⚡ 0) do{" "}
+                    {new Date(rd.expiresAt).toLocaleTimeString("cs", { hour: "2-digit", minute: "2-digit" })}{" "}
+                    ({new Date(rd.expiresAt).toLocaleDateString("cs")}).
+                  </p>
+                </div>
+              </Link>
+            ))}
             {user.claims.length ? user.claims.map((claim) => (
               <ClaimEventCard
                 key={claim.id}

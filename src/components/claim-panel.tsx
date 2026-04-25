@@ -19,6 +19,7 @@ type ClaimPanelProps = {
     power: number;
     team: { name: string; emoji?: string | null };
   } | null;
+  revengeDiscountExpiresAt?: string | null;
 };
 
 type ClaimResult = {
@@ -35,8 +36,9 @@ type AuthState = {
   power: number | null;
 };
 
-export function ClaimPanel({ location, isOwner = false, currentUser }: ClaimPanelProps) {
-  const claimCost = location.armor + 1;
+export function ClaimPanel({ location, isOwner = false, currentUser, revengeDiscountExpiresAt }: ClaimPanelProps) {
+  const hasRevengeDiscount = Boolean(revengeDiscountExpiresAt);
+  const claimCost = hasRevengeDiscount ? 0 : location.armor + 1;
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<string>(() => currentUser ? "Přihlášen/a. Připraven/a ověřit polohu." : "Připraven ověřit polohu.");
   const [auth, setAuth] = useState<AuthState>(() => {
@@ -195,14 +197,25 @@ export function ClaimPanel({ location, isOwner = false, currentUser }: ClaimPane
       </div>
 
       <div className="mt-4 space-y-4">
+        {hasRevengeDiscount && revengeDiscountExpiresAt ? (
+          <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+            ⚔️ Máš slevu pomsty! Tento bod ti byl ukraden – můžeš ho vzít zpět zdarma (⚡ 0) do{" "}
+            {new Date(revengeDiscountExpiresAt).toLocaleTimeString("cs", { hour: "2-digit", minute: "2-digit" })}{" "}
+            ({new Date(revengeDiscountExpiresAt).toLocaleDateString("cs")}).
+          </div>
+        ) : null}
+
         <div className="rounded-2xl border border-[var(--line)] bg-white/70 px-4 py-3 text-sm">
           {auth.loading ? (
             <p className="text-[var(--muted)]">Ověřuji relaci...</p>
           ) : auth.authenticated ? (
             <p>
               Přihlášen/a jako <span className="font-semibold">{auth.handle}</span> ({auth.teamLabel}).
-              {" "}Tvá síla: <span className={auth.power !== null && auth.power >= claimCost ? "font-semibold text-green-700" : "font-semibold text-red-600"}>⚡ {auth.power?.toFixed(2) ?? "?"}</span>
-              {" "}/ potřeba <span className="font-semibold">⚡ {claimCost}</span>.
+              {" "}Tvá síla: <span className={auth.power !== null && (hasRevengeDiscount || auth.power >= claimCost) ? "font-semibold text-green-700" : "font-semibold text-red-600"}>⚡ {auth.power?.toFixed(2) ?? "?"}</span>
+              {hasRevengeDiscount
+                ? <> / potřeba <span className="font-semibold line-through opacity-50">⚡ {location.armor + 1}</span> <span className="font-semibold text-amber-700">⚡ 0 (sleva pomsty)</span>.</>
+                : <> / potřeba <span className="font-semibold">⚡ {claimCost}</span>.</>
+              }
             </p>
           ) : (
             <p className="text-[var(--muted)]">
@@ -230,7 +243,7 @@ export function ClaimPanel({ location, isOwner = false, currentUser }: ClaimPane
             auth.loading ||
             !auth.authenticated ||
             isOwner ||
-            (auth.power !== null && auth.power < claimCost)
+            (!hasRevengeDiscount && auth.power !== null && auth.power < claimCost)
           }
           className="w-full rounded-full bg-[var(--accent)] px-5 py-3 font-medium text-white transition hover:bg-[var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
         >
@@ -238,9 +251,11 @@ export function ClaimPanel({ location, isOwner = false, currentUser }: ClaimPane
             ? "Ověřuji polohu..."
             : isOwner
               ? "Již obsazeno"
-              : auth.authenticated && auth.power !== null && auth.power < claimCost
+              : !hasRevengeDiscount && auth.authenticated && auth.power !== null && auth.power < claimCost
                 ? `Nedostatečná síla (potřeba ⚡ ${claimCost})`
-                : `Obsadit ⚡ ${claimCost}`}
+                : hasRevengeDiscount
+                  ? "⚔️ Vzít zpět (sleva pomsty · ⚡ 0)"
+                  : `Obsadit ⚡ ${claimCost}`}
         </button>
 
         <div className="rounded-2xl border border-dashed border-[var(--line)] bg-white/45 px-4 py-3 text-sm leading-6 text-[var(--muted)]">

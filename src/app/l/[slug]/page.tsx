@@ -43,7 +43,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
   const token = cookieStore.get(USER_COOKIE_NAME)?.value;
   const userId = token ? verifyUserSessionToken(token) : null;
 
-  const [currentUser, builtArmorRows] = await Promise.all([
+  const [currentUser, builtArmorRows, activeRevengeDiscount] = await Promise.all([
     userId
       ? db.user.findUnique({
           where: { id: userId },
@@ -59,7 +59,20 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
         buildingDef: { select: { effectArm: true } },
       },
     }),
+    userId
+      ? db.user.findUnique({ where: { id: userId }, select: { teamId: true } }).then((u) =>
+          u
+            ? db.revengeDiscount.findUnique({
+                where: { locationId_teamId: { locationId: location.id, teamId: u.teamId } },
+              })
+            : null,
+        )
+      : Promise.resolve(null),
   ]);
+
+  const now = new Date();
+  const hasRevengeDiscount = activeRevengeDiscount !== null && activeRevengeDiscount !== undefined && activeRevengeDiscount.expiresAt > now;
+  const revengeDiscountExpiresAt = hasRevengeDiscount ? activeRevengeDiscount!.expiresAt.toISOString() : null;
 
   const armorBonus = builtArmorRows.reduce((sum, row) => sum + row.buildingDef.effectArm, 0);
   const effectiveArmor = location.armor + Math.floor(armorBonus);
@@ -257,6 +270,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                 power: currentUser.power,
                 team: currentUser.team,
               } : null}
+              revengeDiscountExpiresAt={revengeDiscountExpiresAt}
             />
           </div>
 
