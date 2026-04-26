@@ -9,6 +9,7 @@ const updateSchema = z.object({
   type: z.enum(LOCATION_TYPES).optional(),
   ownerTeamId: z.coerce.number().int().positive().nullable().optional(),
   area: z.coerce.number().int().positive().optional(),
+  currentPopulation: z.coerce.number().min(0).optional(),
   armor: z.coerce.number().int().min(0).optional(),
   image: z.string().trim().min(1).max(32).optional(),
   summary: z.string().trim().min(1).optional(),
@@ -55,7 +56,10 @@ export async function PUT(
 
   const updateData: Record<string, unknown> = {
     ...parsed.data,
-    currentPopulation: clampCurrentPopulation(nextArea, existingLocation.currentPopulation),
+    currentPopulation: clampCurrentPopulation(
+      nextArea,
+      parsed.data.currentPopulation ?? existingLocation.currentPopulation,
+    ),
   };
   // If type changed but admin did not explicitly provide an armor value, reset to type default.
   if (parsed.data.type && parsed.data.armor === undefined) {

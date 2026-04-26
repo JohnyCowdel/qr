@@ -65,6 +65,18 @@ export async function getHomePageData() {
         ownerTeam: {
           select: { id: true, name: true, emoji: true, colorHex: true },
         },
+        claims: {
+          select: {
+            teamId: true,
+            user: {
+              select: {
+                handle: true,
+              },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+          take: 1,
+        },
       },
       orderBy: { name: "asc" },
     }),
@@ -125,14 +137,23 @@ export async function getHomePageData() {
   ]);
 
   const computedAreas = computeLocationAreas(locations);
-  const locationsWithComputedAreas = locations.map((location) => ({
-    ...location,
-    area: Math.max(1, Math.round(computedAreas[String(location.id)] ?? location.area)),
-    ...resolvePopulationFromArea(
-      Math.max(1, Math.round(computedAreas[String(location.id)] ?? location.area)),
-      location.currentPopulation,
-    ),
-  }));
+  const locationsWithComputedAreas = locations.map((location) => {
+    const latestClaim = location.claims[0] ?? null;
+    const ownerUser =
+      latestClaim && location.ownerTeamId !== null && latestClaim.teamId === location.ownerTeamId
+        ? latestClaim.user
+        : null;
+
+    return {
+      ...location,
+      ownerUser,
+      area: Math.max(1, Math.round(computedAreas[String(location.id)] ?? location.area)),
+      ...resolvePopulationFromArea(
+        Math.max(1, Math.round(computedAreas[String(location.id)] ?? location.area)),
+        location.currentPopulation,
+      ),
+    };
+  });
 
   const claimCountByUserId = Object.fromEntries(
     claimCounts.map((row) => [row.userId, row._count]),

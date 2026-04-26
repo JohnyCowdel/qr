@@ -10,7 +10,7 @@ export default async function AdminPage() {
       select: {
         slug: true, name: true, type: true, armor: true, area: true,
         image: true, summary: true, content: true,
-        latitude: true, longitude: true, claimRadiusM: true,
+        latitude: true, longitude: true, claimRadiusM: true, currentPopulation: true,
         ownerTeam: { select: { id: true, name: true, colorHex: true, emoji: true } },
       },
       orderBy: { name: "asc" },

@@ -55,6 +55,18 @@ export async function GET() {
           buildingDef: { select: { effectArm: true } },
         },
       },
+      claims: {
+        select: {
+          teamId: true,
+          user: {
+            select: {
+              handle: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+      },
       ownerTeam: { select: { id: true, name: true, emoji: true, colorHex: true } },
     },
     orderBy: { name: "asc" },
@@ -66,9 +78,15 @@ export async function GET() {
     locations.map((location) => {
       const area = Math.max(1, Math.round(computedAreas[String(location.id)] ?? location.area));
       const armorBonus = location.builtBuildings.reduce((sum, row) => sum + row.buildingDef.effectArm, 0);
-      const { builtBuildings, ...locationWithoutBuiltBuildings } = location;
+      const latestClaim = location.claims[0] ?? null;
+      const ownerUser =
+        latestClaim && location.ownerTeamId !== null && latestClaim.teamId === location.ownerTeamId
+          ? latestClaim.user
+          : null;
+      const { builtBuildings, claims, ...locationWithoutDerivedData } = location;
       return {
-        ...locationWithoutBuiltBuildings,
+        ...locationWithoutDerivedData,
+        ownerUser,
         area,
         armor: location.armor + Math.floor(armorBonus),
         ...resolvePopulationFromArea(area, location.currentPopulation),

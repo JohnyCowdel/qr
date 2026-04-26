@@ -22,6 +22,10 @@ type TeamRef = {
   emoji?: string;
 } | null;
 
+type OwnerUserRef = {
+  handle: string;
+} | null;
+
 export type UnifiedMapLocation = {
   id: string | number;
   slug?: string | null;
@@ -38,6 +42,7 @@ export type UnifiedMapLocation = {
   longitude: number;
   claimRadiusM: number;
   ownerTeam: TeamRef;
+  ownerUser?: OwnerUserRef;
 };
 
 type TerritoryMapInnerProps = {
@@ -257,6 +262,9 @@ function LocationPopupContent({ location }: { location: UnifiedMapLocation }) {
       </div>
       <div>
         👑: {effective.ownerTeam ? `${effective.ownerTeam.emoji ?? ""} ${effective.ownerTeam.name}`.trim() : "Neutral"}
+      </div>
+      <div>
+        👤: {effective.ownerUser ? `@${effective.ownerUser.handle}` : "Neznámý vlastník"}
       </div>
     </div>
   );

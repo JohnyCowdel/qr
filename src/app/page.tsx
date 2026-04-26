@@ -161,7 +161,7 @@ export default async function Home() {
             </p>
           </div>
           <div className="aspect-square w-full overflow-hidden rounded-[28px] border border-[var(--line)]">
-            <TerritoryMap locations={locations} />
+            <TerritoryMap locations={locations} enableFullscreen />
           </div>
         </section>
 

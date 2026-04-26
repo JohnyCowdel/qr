@@ -1,12 +1,16 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 
 type TeamRef = {
   name: string;
   colorHex: string;
   emoji?: string;
+} | null;
+
+type OwnerUserRef = {
+  handle: string;
 } | null;
 
 export type MapLocation = {
@@ -25,6 +29,7 @@ export type MapLocation = {
   longitude: number;
   claimRadiusM: number;
   ownerTeam: TeamRef;
+  ownerUser?: OwnerUserRef;
 };
 
 type TerritoryMapProps = {
@@ -32,13 +37,14 @@ type TerritoryMapProps = {
   center?: [number, number];
   initialZoom?: number;
   autoFitBounds?: boolean;
+  enableFullscreen?: boolean;
 };
 
 const LeafletMap = dynamic(() => import("./territory-map-inner"), {
   ssr: false,
 });
 
-export function TerritoryMap({ locations, center, initialZoom, autoFitBounds = true }: TerritoryMapProps) {
+export function TerritoryMap({ locations, center, initialZoom, autoFitBounds = true, enableFullscreen = false }: TerritoryMapProps) {
   const derivedCenter = useMemo(() => {
     if (center) {
       return center;
@@ -58,5 +64,47 @@ export function TerritoryMap({ locations, center, initialZoom, autoFitBounds = t
     return [latitude, longitude] as [number, number];
   }, [center, locations]);
 
-  return <LeafletMap locations={locations} center={derivedCenter} initialZoom={initialZoom} autoFitBounds={autoFitBounds} />;
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    function onFullscreenChange() {
+      setIsFullscreen(document.fullscreenElement === wrapperRef.current);
+    }
+
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
+    };
+  }, []);
+
+  async function toggleFullscreen() {
+    if (!enableFullscreen) {
+      return;
+    }
+
+    if (document.fullscreenElement === wrapperRef.current) {
+      await document.exitFullscreen();
+      return;
+    }
+
+    if (wrapperRef.current) {
+      await wrapperRef.current.requestFullscreen();
+    }
+  }
+
+  return (
+    <div ref={wrapperRef} className="relative h-full w-full bg-white">
+      {enableFullscreen ? (
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          className="absolute right-3 top-3 z-[1000] rounded-full border border-[var(--line)] bg-white/90 px-3 py-1.5 text-xs font-semibold shadow-sm hover:bg-white"
+        >
+          {isFullscreen ? "Zavřít celou obrazovku" : "Celá obrazovka"}
+        </button>
+      ) : null}
+      <LeafletMap locations={locations} center={derivedCenter} initialZoom={initialZoom} autoFitBounds={autoFitBounds} />
+    </div>
+  );
 }

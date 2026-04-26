@@ -44,6 +44,7 @@ export type AdminLocationDraft = {
   type: LocationType;
   armor: number;
   area: number;
+  currentPopulation: number;
   image: string;
   summary: string;
   content: string;
@@ -82,6 +83,7 @@ function buildLocationPayload(draft: AdminLocationDraft, computedArea: number) {
     type: draft.type,
     ownerTeamId: draft.ownerTeam?.id ?? null,
     area: Math.max(1, Math.round(safeNumber(computedArea, draft.area))),
+    currentPopulation: Math.max(0, safeNumber(draft.currentPopulation, 0)),
     armor: Math.max(0, Math.round(safeNumber(draft.armor, baseArmorForType(draft.type)))),
     image: draft.image.trim() || defaultImageForType(draft.type),
     summary: draft.summary.trim() || "<summary>",
@@ -112,6 +114,7 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
         longitude: safeNumber(location.longitude, 15.768),
         claimRadiusM: Math.max(1, safeNumber(location.claimRadiusM, 50)),
         area: Math.max(1, safeNumber(location.area, 1000)),
+        currentPopulation: Math.max(0, safeNumber((location as { currentPopulation?: number }).currentPopulation, 0)),
         type: normalizeLocationType(location.type),
         armor: Math.max(1, safeNumber((location as { armor?: number }).armor, baseArmorForType(normalizeLocationType(location.type)))),
         image: location.image?.trim() || defaultImageForType(normalizeLocationType(location.type)),
@@ -202,6 +205,7 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
       type: "camp",
       armor: baseArmorForType("camp"),
       area: 1000,
+      currentPopulation: 0,
       image: "⛺",
       summary: "<summary>",
       content: "<content>",
@@ -278,6 +282,7 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
         type: LocationType;
         armor: number;
         area: number;
+        currentPopulation: number;
         image: string;
         summary: string;
         content: string;
@@ -293,6 +298,7 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
         type: savedLocation.type,
         armor: savedLocation.armor,
         area: savedLocation.area,
+        currentPopulation: savedLocation.currentPopulation,
         image: savedLocation.image,
         summary: savedLocation.summary,
         content: savedLocation.content,
@@ -541,6 +547,12 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
                       type="number"
                       value={String(draft.claimRadiusM)}
                       onChange={(value) => updateDraft(location.id, { claimRadiusM: Math.max(1, Number(value) || 1) })}
+                    />
+                    <EditorField
+                      label="Current population"
+                      type="number"
+                      value={String(draft.currentPopulation)}
+                      onChange={(value) => updateDraft(location.id, { currentPopulation: Math.max(0, Number(value) || 0) })}
                     />
                     <div>
                       <EditorField
