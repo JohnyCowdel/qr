@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 
 import {
   baseArmorForType,
@@ -59,6 +59,13 @@ type AdminLocationRecord = Omit<AdminLocationDraft, "id" | "isNew" | "type" | "i
   slug: string;
   type: string;
   image: string;
+};
+
+type BuiltBuildingInfo = {
+  id: number;
+  buildingDefId: number;
+  name: string;
+  svgKey: string;
 };
 
 type Props = {
@@ -134,6 +141,27 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
       hydratedLocations.map((location) => [location.id, location]),
     ),
   );
+
+  // Built buildings per location slug, fetched on expand
+  const [builtBuildingsMap, setBuiltBuildingsMap] = useState<Record<string, BuiltBuildingInfo[]>>({});
+  const [buildingsFetchedFor, setBuildingsFetchedFor] = useState<Set<string>>(new Set());
+  const [, startBuildingTransition] = useTransition();
+
+  useEffect(() => {
+    if (!selectedId) return;
+    const draft = drafts[selectedId];
+    if (!draft?.slug || buildingsFetchedFor.has(draft.slug)) return;
+    const slug = draft.slug;
+    setBuildingsFetchedFor((prev) => new Set([...prev, slug]));
+    fetch(`/api/admin/locations/${slug}/buildings`, { cache: "no-store" })
+      .then((res) => res.json() as Promise<{ ok: boolean; buildings: BuiltBuildingInfo[] }>)
+      .then((data) => {
+        if (data.ok) {
+          setBuiltBuildingsMap((prev) => ({ ...prev, [slug]: data.buildings }));
+        }
+      })
+      .catch(() => undefined);
+  }, [selectedId, drafts, buildingsFetchedFor]);
 
   const effectiveLocations = useMemo(
     () => locations.map((location) => drafts[location.id] ?? location),
@@ -230,6 +258,22 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
     updateDraft(selectedId, {
       latitude: Number(latitude.toFixed(6)),
       longitude: Number(longitude.toFixed(6)),
+    });
+  }
+
+  function handleRemoveBuilding(slug: string, buildingDefId: number) {
+    startBuildingTransition(async () => {
+      const res = await fetch(`/api/admin/locations/${slug}/buildings`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ buildingDefId }),
+      });
+      if (res.ok) {
+        setBuiltBuildingsMap((prev) => ({
+          ...prev,
+          [slug]: (prev[slug] ?? []).filter((b) => b.buildingDefId !== buildingDefId),
+        }));
+      }
     });
   }
 
@@ -565,6 +609,35 @@ export function AdminLocationsManager({ initialLocations, initialTeams }: Props)
                         výchozí pro typ: {baseArmorForType(draft.type)}
                       </p>
                     </div>
+                    {!draft.isNew && draft.slug && (() => {
+                      const buildings = builtBuildingsMap[draft.slug] ?? [];
+                      return (
+                        <div>
+                          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                            Zakoupené budovy
+                          </span>
+                          {buildings.length === 0 ? (
+                            <p className="text-xs text-[var(--muted)]">Žádné budovy</p>
+                          ) : (
+                            <ul className="space-y-1">
+                              {buildings.map((b) => (
+                                <li key={b.buildingDefId} className="flex items-center justify-between gap-2 rounded-lg border border-[var(--line)] bg-white/50 px-3 py-1.5 text-sm">
+                                  <span>{b.name}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveBuilding(draft.slug!, b.buildingDefId)}
+                                    className="text-xs text-red-600 hover:text-red-800 font-semibold"
+                                    title="Odebrat budovu"
+                                  >
+                                    Odebrat
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      );
+                    })()}
                     <ReadonlyField
                       label="Area"
                       value={`${computedArea} m²`}
