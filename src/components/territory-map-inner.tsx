@@ -264,7 +264,7 @@ function LocationPopupContent({ location }: { location: UnifiedMapLocation }) {
         👑: {effective.ownerTeam ? `${effective.ownerTeam.emoji ?? ""} ${effective.ownerTeam.name}`.trim() : "Neutral"}
       </div>
       <div>
-        👤: {effective.ownerUser ? `@${effective.ownerUser.handle}` : "Neznámý vlastník"}
+        👤: {effective.ownerUser ? `@${effective.ownerUser.handle}` : "-/-"}
       </div>
     </div>
   );
