@@ -69,7 +69,7 @@ export default async function HowToPage() {
             <ul className="space-y-2 text-sm leading-7 text-[var(--muted)]">
               <li>🥷 Když ti někdo ukradne lokaci, získáš automaticky slevu oplaty na její znovuzískání.</li>
               <li>🆓 Po dobu {revengeDiscountHours} hodin můžeš tuto konkrétní lokaci obsadit zpět zdarma, tedy za ⚡ 0.</li>
-              <li>⏳ Sleva platí jen pro tým, kterému byla lokace ukradena, a jen do vypršení časového limitu.</li>
+              <li>⏳ Sleva platí jen pro konkrétního okradeného hráče, ne pro celý tým, a jen do vypršení časového limitu.</li>
               <li>🎯 Jakmile oplatu využiješ, sleva se spotřebuje.</li>
               <li>📣 Aktivní oplata se ukazuje přímo v detailu lokace i v profilu v sekci Nedávné události.</li>
             </ul>

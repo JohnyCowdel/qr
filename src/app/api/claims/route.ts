@@ -38,6 +38,11 @@ export async function POST(request: Request) {
     select: {
       id: true, name: true, claimRadiusM: true, latitude: true, longitude: true,
       armor: true, currentPopulation: true, ownerTeamId: true,
+      claims: {
+        select: { userId: true, teamId: true },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+      },
     },
   });
 
@@ -95,11 +100,11 @@ export async function POST(request: Request) {
   const builtArmBonus = builtRows.reduce((sum, row) => sum + row.buildingDef.effectArm, 0);
   const effectiveArmor = location.armor + Math.floor(builtArmBonus);
 
-  // Check if user's team has an active revenge discount for this location
+  // Check if this user has an active revenge discount for this location
   const now = new Date();
   const [revengeDiscount, revengeSettings] = await Promise.all([
     db.revengeDiscount.findUnique({
-      where: { locationId_teamId: { locationId: location.id, teamId: user.teamId } },
+      where: { locationId_userId: { locationId: location.id, userId: user.id } },
     }),
     db.adminSettings.findUnique({ where: { id: 1 }, select: { revengeDiscountHours: true } }),
   ]);
@@ -126,6 +131,11 @@ export async function POST(request: Request) {
   );
 
   const previousOwnerTeamId = location.ownerTeamId;
+  const latestClaim = location.claims[0] ?? null;
+  const previousOwnerUserId =
+    previousOwnerTeamId !== null && latestClaim && latestClaim.teamId === previousOwnerTeamId
+      ? latestClaim.userId
+      : null;
 
   const claim = await db.$transaction(async (tx) => {
     const createdClaim = await tx.claim.create({
@@ -175,12 +185,20 @@ export async function POST(request: Request) {
       },
     });
 
-    // If location was stolen from another team, grant them revenge discount
-    if (previousOwnerTeamId !== null && previousOwnerTeamId !== teamId) {
+    // If location was stolen from another player, grant them revenge discount.
+    // But only if this claim was NOT itself a revenge reclaim – otherwise the
+    // original thief would get a new discount and the ping-pong would never end.
+    if (
+      previousOwnerTeamId !== null &&
+      previousOwnerTeamId !== teamId &&
+      previousOwnerUserId !== null &&
+      previousOwnerUserId !== user.id &&
+      !hasRevengeDiscount
+    ) {
       const expiresAt = new Date(createdClaim.createdAt.getTime() + revengeDiscountHours * 60 * 60 * 1000);
       await tx.revengeDiscount.upsert({
-        where: { locationId_teamId: { locationId, teamId: previousOwnerTeamId } },
-        create: { locationId, teamId: previousOwnerTeamId, expiresAt },
+        where: { locationId_userId: { locationId, userId: previousOwnerUserId } },
+        create: { locationId, userId: previousOwnerUserId, expiresAt },
         update: { expiresAt },
       });
     }

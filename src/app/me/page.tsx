@@ -225,7 +225,7 @@ export default async function MePage() {
     }),
     db.revengeDiscount.findMany({
       where: {
-        teamId: user.teamId,
+        userId: user.id,
         expiresAt: { gt: new Date() },
       },
       orderBy: { createdAt: "desc" },

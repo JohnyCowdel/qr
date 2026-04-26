@@ -24,7 +24,6 @@ model Team {
   users          User[]
   claims           Claim[]
   ownedLocations   Location[]        @relation("OwnedLocations")
-  revengeDiscounts RevengeDiscount[]
 }
 
 model User {
@@ -50,6 +49,7 @@ model User {
   team      Team     @relation(fields: [teamId], references: [id])
   claims    Claim[]
   locationGreetings LocationGreeting[]
+  revengeDiscounts RevengeDiscount[]
   sentTradeOffers     TradeOffer[] @relation("SentTradeOffers")
   receivedTradeOffers TradeOffer[] @relation("ReceivedTradeOffers")
 }
@@ -165,14 +165,14 @@ model BuiltBuilding {
 model RevengeDiscount {
   id         Int      @id @default(autoincrement())
   locationId Int
-  teamId     Int
+  userId     Int
   expiresAt  DateTime
   createdAt  DateTime @default(now())
   location   Location @relation(fields: [locationId], references: [id])
-  team       Team     @relation(fields: [teamId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
 
-  @@unique([locationId, teamId])
-  @@index([teamId, expiresAt])
+  @@unique([locationId, userId])
+  @@index([userId, expiresAt])
 }
 
 enum TradeResourceType {

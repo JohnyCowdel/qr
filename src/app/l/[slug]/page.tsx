@@ -60,13 +60,9 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
       },
     }),
     userId
-      ? db.user.findUnique({ where: { id: userId }, select: { teamId: true } }).then((u) =>
-          u
-            ? db.revengeDiscount.findUnique({
-                where: { locationId_teamId: { locationId: location.id, teamId: u.teamId } },
-              })
-            : null,
-        )
+      ? db.revengeDiscount.findUnique({
+          where: { locationId_userId: { locationId: location.id, userId } },
+        })
       : Promise.resolve(null),
   ]);
 
