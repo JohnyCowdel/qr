@@ -179,10 +179,12 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
   const [isPending, startTransition] = useTransition();
 
   const sceneRef = useRef<HTMLDivElement | null>(null);
+  const fullscreenRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const interactiveBuildingsRef = useRef<InteractiveBuilding[]>([]);
   const hitTestWidthRef = useRef(0);
   const hitTestHeightRef = useRef(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const spriteFile = useMemo(() => resolveSpriteFile(locationType), [locationType]);
   const bySvgKey = useMemo(() => new Map(items.map((item) => [item.svgKey, item])), [items]);
@@ -266,6 +268,18 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
       setSelectedSvgKey(null);
     }
   }, [items, selectedSvgKey]);
+
+  useEffect(() => {
+    function handleFullscreenChange() {
+      const fullscreenElement = document.fullscreenElement;
+      setIsFullscreen(fullscreenElement === fullscreenRef.current);
+    }
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
 
   useEffect(() => {
     applyBuildingVisualState(interactiveBuildingsRef.current, bySvgKey, selectedSvgKey);
@@ -439,6 +453,17 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
     });
   }
 
+  async function toggleFullscreen() {
+    if (document.fullscreenElement === fullscreenRef.current) {
+      await document.exitFullscreen();
+      return;
+    }
+
+    if (fullscreenRef.current) {
+      await fullscreenRef.current.requestFullscreen();
+    }
+  }
+
   const builtCount = useMemo(() => items.filter((x) => x.isBuilt).length, [items]);
   const canAffordSelected = selectedBuilding ? (userMoney ?? 0) >= selectedBuilding.cost : false;
   const selectedEffects = useMemo(() => {
@@ -466,16 +491,27 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
           <h2 className="text-xl font-semibold tracking-[-0.03em]">Budovy</h2>
           <p className="text-sm text-[var(--muted)]">Obsazeno {builtCount}/{items.length} slotů</p>
         </div>
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1.5 text-xs font-semibold hover:bg-white"
+        >
+          {isFullscreen ? "Zavřít celou obrazovku" : "Celá obrazovka"}
+        </button>
       </div>
 
       {status ? <p className="mt-3 rounded-xl bg-emerald-100 px-3 py-2 text-sm text-emerald-800">{status}</p> : null}
       {error ? <p className="mt-3 rounded-xl bg-red-100 px-3 py-2 text-sm text-red-800">{error}</p> : null}
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-[1.4fr_0.9fr]">
+      <div
+        ref={fullscreenRef}
+        className={`qb-buildings-shell mt-4 ${isFullscreen ? "qb-buildings-shell-fullscreen" : ""}`}
+      >
+      <div className="grid gap-4 lg:grid-cols-[1.4fr_0.9fr] qb-buildings-grid">
         <div
           ref={sceneRef}
           onClick={handleSvgClick}
-          className="rounded-2xl border border-[var(--line)] bg-white/70"
+          className="qb-buildings-scene rounded-2xl border border-[var(--line)] bg-white/70"
           style={{ cursor: "pointer" }}
         >
           {svgText ? (
@@ -493,7 +529,7 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
           )}
         </div>
 
-        <div className="rounded-2xl border border-[var(--line)] bg-white/70 p-4">
+        <div className="qb-buildings-info rounded-2xl border border-[var(--line)] bg-white/70 p-4">
           {selectedBuilding ? (
             <>
               <div className="text-lg font-semibold">{selectedBuilding.name}</div>
@@ -538,6 +574,7 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
           )}
         </div>
       </div>
+      </div>
 
       {!items.length ? (
         <div className="mt-4 rounded-xl border border-dashed border-[var(--line)] bg-white/60 p-3 text-sm text-[var(--muted)]">
@@ -550,6 +587,59 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
           width: 100%;
           height: auto;
           display: block;
+        }
+
+        .qb-buildings-shell {
+          position: relative;
+        }
+
+        .qb-buildings-shell:fullscreen {
+          width: 100vw;
+          height: 100vh;
+          padding: 24px;
+          background: rgba(248, 244, 237, 0.98);
+          overflow: auto;
+        }
+
+        .qb-buildings-shell:fullscreen .qb-buildings-grid {
+          min-height: calc(100vh - 48px);
+          align-items: stretch;
+        }
+
+        .qb-buildings-shell:fullscreen .qb-buildings-scene,
+        .qb-buildings-shell:fullscreen .qb-buildings-info {
+          min-height: calc(100vh - 48px);
+        }
+
+        .qb-buildings-shell:fullscreen .qb-buildings-scene {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 16px;
+        }
+
+        .qb-buildings-shell:fullscreen .qb-scene {
+          width: 100%;
+          height: 100%;
+          max-height: calc(100vh - 80px);
+        }
+
+        .qb-buildings-shell:fullscreen .qb-buildings-info {
+          overflow: auto;
+        }
+
+        @media (max-width: 1023px) {
+          .qb-buildings-shell:fullscreen .qb-buildings-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .qb-buildings-shell:fullscreen .qb-buildings-scene {
+            min-height: 55vh;
+          }
+
+          .qb-buildings-shell:fullscreen .qb-buildings-info {
+            min-height: auto;
+          }
         }
 
         .qb-scene .qb-building {
