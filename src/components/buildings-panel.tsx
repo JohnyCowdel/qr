@@ -507,6 +507,15 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
         ref={fullscreenRef}
         className={`qb-buildings-shell mt-4 ${isFullscreen ? "qb-buildings-shell-fullscreen" : ""}`}
       >
+      {isFullscreen ? (
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          className="qb-buildings-exit rounded-full border border-[var(--line)] bg-white/90 px-3 py-1.5 text-xs font-semibold shadow-sm hover:bg-white"
+        >
+          Zavřít celou obrazovku
+        </button>
+      ) : null}
       <div className="grid gap-4 lg:grid-cols-[1.4fr_0.9fr] qb-buildings-grid">
         <div
           ref={sceneRef}
@@ -591,6 +600,13 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
 
         .qb-buildings-shell {
           position: relative;
+        }
+
+        .qb-buildings-exit {
+          position: absolute;
+          right: 12px;
+          top: 12px;
+          z-index: 10;
         }
 
         .qb-buildings-shell:fullscreen {
