@@ -108,6 +108,12 @@ function estimateUseArea(useNode: SVGUseElement, svgContainer: SVGSVGElement) {
   return Math.max(0, renderWidth) * Math.max(0, renderHeight);
 }
 
+// A 1×1 solid white PNG – used as a placeholder for external image hrefs so that
+// the SVG blob can render correctly for canvas hit-testing (blob URLs cannot load
+// external URLs due to browser security restrictions).
+const SOLID_PNG_1PX =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQAABjE+ibYAAAAASUVORK5CYII=";
+
 async function renderMaskForUse(
   svgContainer: SVGSVGElement,
   useNode: SVGUseElement,
@@ -121,6 +127,18 @@ async function renderMaskForUse(
   allUseInClone.forEach((u) => {
     const href = getAttr(u, "href");
     u.setAttribute("opacity", href === sourceHref ? "1" : "0");
+  });
+
+  // Replace external image hrefs with an inline solid PNG so the SVG blob can
+  // render them (browsers block external URLs from blob: context). The clip-path
+  // geometry is preserved, so the resulting mask correctly represents each
+  // building's visible footprint.
+  Array.from(cloneSvg.querySelectorAll("image")).forEach((imgEl) => {
+    const hrefAttr = imgEl.getAttribute("href") || imgEl.getAttribute("xlink:href");
+    if (hrefAttr && !hrefAttr.startsWith("data:")) {
+      imgEl.setAttribute("href", SOLID_PNG_1PX);
+      imgEl.removeAttribute("xlink:href");
+    }
   });
 
   const xml = new XMLSerializer().serializeToString(cloneSvg);
