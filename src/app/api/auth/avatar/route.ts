@@ -2,7 +2,7 @@ import { readUserIdFromCookieHeader } from "@/lib/auth";
 import { DICEBEAR_AVATAR_STYLE } from "@/lib/avatar-sprites";
 import { db } from "@/lib/db";
 
-const MAX_PHOTO_BYTES = 1024 * 1024;
+const MAX_PHOTO_BYTES = 200 * 1024;
 const ALLOWED_MIME_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 function normalizeSeed(value: FormDataEntryValue | null): string {
   const raw = String(value ?? "").trim();
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     }
 
     if (file.size <= 0 || file.size > MAX_PHOTO_BYTES) {
-      return Response.json({ error: "Photo must be smaller than 1 MB." }, { status: 400 });
+      return Response.json({ error: "Photo must be smaller than 200 KB." }, { status: 400 });
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());

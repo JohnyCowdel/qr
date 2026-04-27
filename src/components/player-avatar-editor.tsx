@@ -144,6 +144,31 @@ export function PlayerAvatarEditor({
     });
   }
 
+  function resizeImage(file: File, maxSize: number): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) { reject(new Error("Canvas unavailable")); return; }
+        ctx.drawImage(img, 0, 0, w, h);
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+          else reject(new Error("Canvas toBlob failed"));
+        }, "image/jpeg", 0.88);
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+  }
+
   function onPhotoSelected(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) {
@@ -156,9 +181,13 @@ export function PlayerAvatarEditor({
 
     startTransition(async () => {
       try {
+        // Resize to max 256×256 before upload to reduce Transfer In.
+        const resizedBlob = await resizeImage(file, 256);
+        const resizedFile = new File([resizedBlob], file.name, { type: "image/jpeg" });
+
         const formData = new FormData();
         formData.set("mode", "photo");
-        formData.set("photo", file);
+        formData.set("photo", resizedFile);
 
         const res = await fetch("/api/auth/avatar", {
           method: "POST",
