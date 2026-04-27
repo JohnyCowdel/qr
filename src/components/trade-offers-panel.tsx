@@ -43,6 +43,7 @@ function formatDate(dateIso: string) {
   return new Intl.DateTimeFormat("cs", {
     dateStyle: "medium",
     timeStyle: "short",
+    timeZone: "Europe/Prague",
   }).format(new Date(dateIso));
 }
 

@@ -23,9 +23,10 @@ function formatPower(power: number) {
 }
 
 function formatDate(date: string) {
-  return new Intl.DateTimeFormat("en", {
+  return new Intl.DateTimeFormat("cs", {
     dateStyle: "medium",
     timeStyle: "short",
+    timeZone: "Europe/Prague",
   }).format(new Date(date));
 }
 

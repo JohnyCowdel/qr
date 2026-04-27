@@ -26,9 +26,10 @@ function formatGrowth(value: number) {
 }
 
 function formatDate(date: string) {
-  return new Intl.DateTimeFormat("en", {
+  return new Intl.DateTimeFormat("cs", {
     dateStyle: "medium",
     timeStyle: "short",
+    timeZone: "Europe/Prague",
   }).format(new Date(date));
 }
 
@@ -497,8 +498,8 @@ export default async function MePage() {
                   </p>
                   <p className="mt-0.5 text-amber-800">
                     Máš slevu pomsty – zábor zdarma (⚡ 0) do{" "}
-                    {new Date(rd.expiresAt).toLocaleTimeString("cs", { hour: "2-digit", minute: "2-digit" })}{" "}
-                    ({new Date(rd.expiresAt).toLocaleDateString("cs")}).
+                    {new Date(rd.expiresAt).toLocaleTimeString("cs", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Prague" })}{" "}
+                    ({new Date(rd.expiresAt).toLocaleDateString("cs", { timeZone: "Europe/Prague" })}).
                   </p>
                 </div>
               </Link>

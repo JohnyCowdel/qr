@@ -7,9 +7,10 @@ function formatDate(date: Date | null) {
     return "Bez aktivit";
   }
 
-  return new Intl.DateTimeFormat("en", {
+  return new Intl.DateTimeFormat("cs", {
     dateStyle: "medium",
     timeStyle: "short",
+    timeZone: "Europe/Prague",
   }).format(date);
 }
 
