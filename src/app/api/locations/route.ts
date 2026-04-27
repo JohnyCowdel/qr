@@ -8,6 +8,13 @@ import {
   smoothRealmLocationPolygons,
 } from "@/lib/realm";
 
+type CachedAreasEntry = {
+  signature: string;
+  areas: Record<string, number>;
+};
+
+let cachedAreasEntry: CachedAreasEntry | null = null;
+
 function computeLocationAreas(locations: Array<{ id: string | number; latitude: number; longitude: number }>) {
   const realmBorder = createRealmBorder(
     locations.map((location) => ({
@@ -31,6 +38,13 @@ function computeLocationAreas(locations: Array<{ id: string | number; latitude: 
   const smoothedPolygons = smoothRealmLocationPolygons(rawPolygons, 2, 0.42);
 
   return calculateLocationAreasSquareMeters(smoothedPolygons);
+}
+
+function buildLocationsSignature(locations: Array<{ id: string | number; latitude: number; longitude: number }>) {
+  return locations
+    .map((location) => `${String(location.id)}:${location.latitude.toFixed(6)}:${location.longitude.toFixed(6)}`)
+    .sort()
+    .join("|");
 }
 
 function resolvePopulationFromArea(areaM2: number, currentPopulation: number) {
@@ -72,7 +86,15 @@ export async function GET() {
     orderBy: { name: "asc" },
   });
 
-  const computedAreas = computeLocationAreas(locations);
+  const signature = buildLocationsSignature(locations);
+  const computedAreas =
+    cachedAreasEntry?.signature === signature
+      ? cachedAreasEntry.areas
+      : computeLocationAreas(locations);
+
+  if (cachedAreasEntry?.signature !== signature) {
+    cachedAreasEntry = { signature, areas: computedAreas };
+  }
 
   return Response.json(
     locations.map((location) => {
@@ -92,5 +114,10 @@ export async function GET() {
         ...resolvePopulationFromArea(area, location.currentPopulation),
       };
     }),
+    {
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+      },
+    },
   );
 }

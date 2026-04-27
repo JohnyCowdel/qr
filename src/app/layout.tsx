@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 import { NavigationFeedback } from "@/components/navigation-feedback";
 import "./globals.css";
@@ -19,8 +20,6 @@ export const metadata: Metadata = {
   description: "Hra o obsazování územních bodů pomocí QR kódů s GPS ověřením.",
 };
 
-export const dynamic = "force-dynamic";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -32,7 +31,9 @@ export default function RootLayout({
       className={`${displayFont.variable} ${monoFont.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <NavigationFeedback />
+        <Suspense fallback={null}>
+          <NavigationFeedback />
+        </Suspense>
         {children}
       </body>
     </html>

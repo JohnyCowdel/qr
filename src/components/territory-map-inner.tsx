@@ -235,7 +235,7 @@ function LocationPopupContent({ location }: { location: UnifiedMapLocation }) {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/locations", { cache: "no-store" })
+    fetch("/api/locations", { cache: "force-cache" })
       .then((r) => (r.ok ? r.json() : null))
       .then((data: unknown) => {
         if (cancelled || !Array.isArray(data)) return;
