@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { db } from "@/lib/db";
-import { clampCurrentPopulation } from "@/lib/location-population";
+import { clampCurrentPopulation, roundDownPopulation } from "@/lib/location-population";
 import { baseArmorForType, LOCATION_TYPES } from "@/lib/location-types";
 
 const updateSchema = z.object({
@@ -56,10 +56,10 @@ export async function PUT(
 
   const updateData: Record<string, unknown> = {
     ...parsed.data,
-    currentPopulation: clampCurrentPopulation(
-      nextArea,
-      parsed.data.currentPopulation ?? existingLocation.currentPopulation,
-    ),
+    currentPopulation:
+      parsed.data.currentPopulation !== undefined
+        ? Math.max(0, roundDownPopulation(parsed.data.currentPopulation))
+        : clampCurrentPopulation(nextArea, existingLocation.currentPopulation),
   };
   // If type changed but admin did not explicitly provide an armor value, reset to type default.
   if (parsed.data.type && parsed.data.armor === undefined) {
