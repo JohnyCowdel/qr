@@ -110,28 +110,8 @@ export default async function Home() {
             <div className="space-y-4">
               <div className="space-y-3">
                 <h1 className="max-w-2xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
-                  Prozkoumej, naskenuj, obsazuj !
+                  QREMPIRE - Prozkoumej, naskenuj, obsazuj !
                 </h1>
-              </div>
-              <div className="grid gap-2 sm:grid-cols-3">
-                <div className="rounded-[22px] border border-[var(--line)] bg-[var(--panel-strong)] p-3">
-                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
-                    Aktivní lokace
-                  </div>
-                  <div className="mt-2 text-3xl font-semibold">{locations.length}</div>
-                </div>
-                <div className="rounded-[22px] border border-[var(--line)] bg-[var(--panel-strong)] p-3">
-                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
-                    Obsazené lokace
-                  </div>
-                  <div className="mt-2 text-3xl font-semibold">{locations.filter((l) => l.ownerTeam !== null).length}</div>
-                </div>
-                <div className="rounded-[22px] border border-[var(--line)] bg-[var(--panel-strong)] p-3">
-                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
-                    Síla hráčů
-                  </div>
-                  <div className="mt-2 text-3xl font-semibold">💪 {formatPower(totalPlayerPower)}</div>
-                </div>
               </div>
             </div>
             
