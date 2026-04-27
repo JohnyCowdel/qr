@@ -236,7 +236,7 @@ export function BuildingsPanel({ slug, canManage, locationType, userMoney: initi
 
     async function loadSprite() {
       try {
-        const res = await fetch(`/api/sprites/${spriteFile}`, { cache: "no-store" });
+        const res = await fetch(`/sprites/${spriteFile}`, { cache: "force-cache" });
         if (!res.ok) {
           throw new Error("Nepodařilo se načíst SVG scénu.");
         }
