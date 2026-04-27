@@ -14,7 +14,7 @@ export async function GET(_request: Request, { params }: PageProps) {
     status: 308,
     headers: {
       Location: `/sprites/${normalizedName}`,
-      "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800",
+      "Cache-Control": "public, s-maxage=31536000, stale-while-revalidate=604800, immutable",
     },
   });
 }
