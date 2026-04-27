@@ -135,6 +135,8 @@ model AdminSettings {
   productionTimeoutHours Float @default(24)
   dailyLoginReward Float @default(8)
   revengeDiscountHours Float @default(8)
+  encourageCost Float @default(10)
+  encourageArmorBonus Float @default(5)
 }
 
 model BuildingDef {

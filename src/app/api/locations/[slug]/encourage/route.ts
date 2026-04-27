@@ -3,9 +3,6 @@ import { z } from "zod";
 import { readUserIdFromCookieHeader } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { calculateDistanceMeters } from "@/lib/geo";
-
-const ENCOURAGE_COST = 10;
-const ENCOURAGE_ARMOR_BONUS = 5;
 const encourageSchema = z.object({
   latitude: z.number(),
   longitude: z.number(),
@@ -27,7 +24,7 @@ export async function POST(
   }
 
   const { slug } = await params;
-  const [user, location] = await Promise.all([
+  const [user, location, settings] = await Promise.all([
     db.user.findUnique({
       where: { id: userId },
       select: { id: true, handle: true, power: true, teamId: true },
@@ -48,7 +45,14 @@ export async function POST(
         },
       },
     }),
+    db.adminSettings.findUnique({
+      where: { id: 1 },
+      select: { encourageCost: true, encourageArmorBonus: true },
+    }),
   ]);
+
+  const encourageCost = settings?.encourageCost ?? 10;
+  const encourageArmorBonus = settings?.encourageArmorBonus ?? 5;
 
   if (!user) {
     return Response.json({ ok: false, message: "Uživatel nebyl nalezen." }, { status: 404 });
@@ -101,11 +105,11 @@ export async function POST(
     );
   }
 
-  if (user.power < ENCOURAGE_COST) {
+  if (user.power < encourageCost) {
     return Response.json(
       {
         ok: false,
-        message: `Nedostatečná síla. Potřebuješ ⚡ ${ENCOURAGE_COST}, máš ⚡ ${user.power.toFixed(2)}.`,
+        message: `Nedostatečná síla. Potřebuješ ⚡ ${encourageCost}, máš ⚡ ${user.power.toFixed(2)}.`,
       },
       { status: 403 },
     );
@@ -115,10 +119,10 @@ export async function POST(
     const updatedUser = await tx.user.updateMany({
       where: {
         id: user.id,
-        power: { gte: ENCOURAGE_COST },
+        power: { gte: encourageCost },
       },
       data: {
-        power: { decrement: ENCOURAGE_COST },
+        power: { decrement: encourageCost },
       },
     });
 
@@ -129,7 +133,7 @@ export async function POST(
     return tx.location.update({
       where: { id: location.id },
       data: {
-        armor: { increment: ENCOURAGE_ARMOR_BONUS },
+        armor: { increment: encourageArmorBonus },
       },
       select: { armor: true },
     });
@@ -149,7 +153,7 @@ export async function POST(
 
   return Response.json({
     ok: true,
-    message: `${user.handle} povzbudil/a lokaci ${location.name}. Obrana +${ENCOURAGE_ARMOR_BONUS} za ⚡ ${ENCOURAGE_COST}.`,
+    message: `${user.handle} povzbudil/a lokaci ${location.name}. Obrana +${encourageArmorBonus} za ⚡ ${encourageCost}.`,
     armor: result.armor,
     distanceM,
   });

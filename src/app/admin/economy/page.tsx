@@ -13,6 +13,8 @@ export default function AdminEconomyPage() {
   const [productionTimeoutHours, setProductionTimeoutHours] = useState("24");
   const [dailyLoginReward, setDailyLoginReward] = useState("8");
   const [revengeDiscountHours, setRevengeDiscountHours] = useState("8");
+  const [encourageCost, setEncourageCost] = useState("10");
+  const [encourageArmorBonus, setEncourageArmorBonus] = useState("5");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -36,6 +38,8 @@ export default function AdminEconomyPage() {
           productionTimeoutHours: number;
           dailyLoginReward: number;
           revengeDiscountHours: number;
+          encourageCost: number;
+          encourageArmorBonus: number;
         };
 
         if (canceled) {
@@ -50,6 +54,8 @@ export default function AdminEconomyPage() {
         setProductionTimeoutHours(String(data.productionTimeoutHours));
         setDailyLoginReward(String(data.dailyLoginReward));
         setRevengeDiscountHours(String(data.revengeDiscountHours));
+        setEncourageCost(String(data.encourageCost));
+        setEncourageArmorBonus(String(data.encourageArmorBonus));
       } catch {
         // keep defaults on fetch failure
       }
@@ -80,6 +86,8 @@ export default function AdminEconomyPage() {
             productionTimeoutHours: Number(productionTimeoutHours),
             dailyLoginReward: Number(dailyLoginReward),
             revengeDiscountHours: Number(revengeDiscountHours),
+            encourageCost: Number(encourageCost),
+            encourageArmorBonus: Number(encourageArmorBonus),
           }),
         });
 
@@ -230,6 +238,36 @@ export default function AdminEconomyPage() {
                   step="0.5"
                   value={revengeDiscountHours}
                   onChange={(e) => setRevengeDiscountHours(e.target.value)}
+                  className="w-full rounded-lg border border-[var(--line)] bg-white/60 px-3 py-2 text-sm focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                />
+              </label>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                  Povzbudit – cena (síla)
+                </span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={encourageCost}
+                  onChange={(e) => setEncourageCost(e.target.value)}
+                  className="w-full rounded-lg border border-[var(--line)] bg-white/60 px-3 py-2 text-sm focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                  Povzbudit – bonus obrany
+                </span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={encourageArmorBonus}
+                  onChange={(e) => setEncourageArmorBonus(e.target.value)}
                   className="w-full rounded-lg border border-[var(--line)] bg-white/60 px-3 py-2 text-sm focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
                 />
               </label>

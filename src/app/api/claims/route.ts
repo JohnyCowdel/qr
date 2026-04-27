@@ -190,7 +190,6 @@ export async function POST(request: Request) {
     // original thief would get a new discount and the ping-pong would never end.
     if (
       previousOwnerTeamId !== null &&
-      previousOwnerTeamId !== teamId &&
       previousOwnerUserId !== null &&
       previousOwnerUserId !== user.id &&
       !hasRevengeDiscount

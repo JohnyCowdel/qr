@@ -45,3 +45,6 @@ prisma/dev.db
 next-env.d.ts
 
 /src/generated/prisma
+
+# local sprite hitpoint metadata
+public/sprites/*.metadata.json

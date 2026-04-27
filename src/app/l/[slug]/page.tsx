@@ -44,7 +44,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
   const token = cookieStore.get(USER_COOKIE_NAME)?.value;
   const userId = token ? verifyUserSessionToken(token) : null;
 
-  const [currentUser, builtArmorRows, activeRevengeDiscount] = await Promise.all([
+  const [currentUser, builtArmorRows, activeRevengeDiscount, adminSettings] = await Promise.all([
     userId
       ? db.user.findUnique({
           where: { id: userId },
@@ -65,6 +65,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
           where: { locationId_userId: { locationId: location.id, userId } },
         })
       : Promise.resolve(null),
+    db.adminSettings.findUnique({ where: { id: 1 } }),
   ]);
 
   const now = new Date();
@@ -86,6 +87,12 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
     currentUser.team.id === location.ownerTeam.id &&
     currentUser.id !== location.ownerUser.id,
   );
+  const settingsWithEncourage = adminSettings as (typeof adminSettings & {
+    encourageCost?: number;
+    encourageArmorBonus?: number;
+  }) | null;
+  const encourageCost = settingsWithEncourage?.encourageCost ?? 10;
+  const encourageArmorBonus = settingsWithEncourage?.encourageArmorBonus ?? 5;
 
   return (
     <main className="terrain-grid min-h-screen px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
@@ -275,7 +282,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                 team: currentUser.team,
               } : null}
               revengeDiscountExpiresAt={revengeDiscountExpiresAt}
-              encourage={{ canUse: canEncourage, cost: 10, armorBonus: 5 }}
+              encourage={{ canUse: canEncourage, cost: encourageCost, armorBonus: encourageArmorBonus }}
             />
           </div>
 
