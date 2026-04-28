@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { hashPassword } from "@/lib/auth";
-import { calculateWorkerCap, deriveLocationPopulation, roundDownPopulation } from "@/lib/location-population";
+import { calculateWorkerCap, deriveLocationPopulation } from "@/lib/location-population";
 
 const ECONOMY_TICK_SECONDS = 5;
 const DAY_SECONDS = 86_400;
@@ -216,7 +216,7 @@ export async function runEconomyTick(now = new Date()) {
       effectivePopulationRate * growthFactor * currentPopulation * (1 - currentPopulation / effectiveMaxPopulation) * elapsedDays;
     const nextPopulation = Math.max(
       minPopulation,
-      Math.min(effectiveMaxPopulation, roundDownPopulation(currentPopulation + dPopulation)),
+      Math.min(effectiveMaxPopulation, currentPopulation + dPopulation),
     );
     const populationDelta = Math.max(0, nextPopulation - currentPopulation);
 
