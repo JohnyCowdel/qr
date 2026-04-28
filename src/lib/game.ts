@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { runEconomyTick } from "@/lib/economy";
-import { calculateMaxPopulation, calculateMinPopulation, roundDownPopulation } from "@/lib/location-population";
+import { calculateMaxPopulation, calculateMinPopulation } from "@/lib/location-population";
 import {
   calculateLocationAreasSquareMeters,
   createRealmBorder,
@@ -41,7 +41,7 @@ function resolvePopulationFromArea(areaM2: number, currentPopulation: number) {
   return {
     minPopulation,
     maxPopulation,
-    currentPopulation: Math.max(0, Math.min(maxPopulation, roundDownPopulation(currentPopulation))),
+    currentPopulation: Math.max(0, currentPopulation),
   };
 }
 

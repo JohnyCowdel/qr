@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { hashPassword } from "@/lib/auth";
-import { calculateWorkerCap, deriveLocationPopulation } from "@/lib/location-population";
+import { calculateMaxPopulation, calculateWorkerCap } from "@/lib/location-population";
 
 const ECONOMY_TICK_SECONDS = 5;
 const DAY_SECONDS = 86_400;
@@ -189,7 +189,6 @@ export async function runEconomyTick(now = new Date()) {
     }
 
     const elapsedDays = elapsedSeconds / DAY_SECONDS;
-    const { minPopulation, maxPopulation } = deriveLocationPopulation(location.area, location.currentPopulation);
     const workers = sanitizeWorkers(location.currentPopulation, {
       money: location.popToMoney,
       power: location.popToPower,
@@ -209,15 +208,14 @@ export async function runEconomyTick(now = new Date()) {
     const moneyDelta = workers.money * effectiveMoneyRate * elapsedDays;
     const powerDelta = workers.power * effectivePowerRate * elapsedDays;
 
-    const effectiveMaxPopulation = maxPopulation + buildingMaxpop;
-    const currentPopulation = Math.max(minPopulation, Math.min(effectiveMaxPopulation, location.currentPopulation));
+    const currentPopulation = Math.max(0, location.currentPopulation);
+    const baseMaxPopulation = calculateMaxPopulation(location.area) + buildingMaxpop;
+    const effectiveMaxPopulation = Math.max(baseMaxPopulation, currentPopulation + 1);
     const growthFactor = workers.population / POPULATION_BASE_ASSIGNMENT;
+    const carryingFactor = Math.max(0, 1 - currentPopulation / Math.max(1, effectiveMaxPopulation));
     const dPopulation =
-      effectivePopulationRate * growthFactor * currentPopulation * (1 - currentPopulation / effectiveMaxPopulation) * elapsedDays;
-    const nextPopulation = Math.max(
-      minPopulation,
-      Math.min(effectiveMaxPopulation, currentPopulation + dPopulation),
-    );
+      effectivePopulationRate * growthFactor * currentPopulation * carryingFactor * elapsedDays;
+    const nextPopulation = Math.max(0, currentPopulation + dPopulation);
     const populationDelta = Math.max(0, nextPopulation - currentPopulation);
 
     await db.$transaction(async (tx) => {
