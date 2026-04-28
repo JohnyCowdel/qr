@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { runEconomyTick } from "@/lib/economy";
 import { calculateMaxPopulation, calculateMinPopulation, roundDownPopulation } from "@/lib/location-population";
 import {
   calculateLocationAreasSquareMeters,
@@ -45,6 +46,8 @@ function resolvePopulationFromArea(areaM2: number, currentPopulation: number) {
 }
 
 export async function getHomePageData() {
+  await runEconomyTick();
+
   const [locations, recentClaims, teams, claimCounts] = await Promise.all([
     db.location.findMany({
       select: {
@@ -189,6 +192,8 @@ export async function getHomePageData() {
 }
 
 export async function getLocationPageData(slug: string) {
+  await runEconomyTick();
+
   const [location, allLocations] = await Promise.all([
     db.location.findUnique({
       where: { slug },
