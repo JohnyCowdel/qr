@@ -9,6 +9,8 @@ import { db } from "@/lib/db";
 import { getHomePageData } from "@/lib/game";
 import { DailyRewardButton } from "@/components/daily-reward-button";
 
+export const dynamic = "force-dynamic";
+
 function formatPower(power: number) {
   return power.toFixed(2);
 }

@@ -84,7 +84,7 @@ export default async function MePage() {
     redirect("/auth/login");
   }
 
-  const [teamPlayers, otherPlayers, offerTargets, pendingOffers, economyRates, activeOwnedLocations, activeRevengeDiscounts] = await Promise.all([
+  const [teamPlayers, otherPlayers, pendingOffers, economyRates, activeOwnedLocations, activeRevengeDiscounts] = await Promise.all([
     db.user.findMany({
       where: {
         teamId: user.teamId,
@@ -135,28 +135,6 @@ export default async function MePage() {
       orderBy: [
         { teamId: "asc" },
         { power: "desc" },
-        { handle: "asc" },
-      ],
-    }),
-    db.user.findMany({
-      where: {
-        id: { not: user.id },
-        isApproved: true,
-        passwordHash: { not: null },
-      },
-      select: {
-        id: true,
-        handle: true,
-        team: {
-          select: {
-            name: true,
-            colorHex: true,
-            emoji: true,
-          },
-        },
-      },
-      orderBy: [
-        { teamId: "asc" },
         { handle: "asc" },
       ],
     }),
@@ -270,6 +248,14 @@ export default async function MePage() {
     }));
 
   const currentAvatarSrc = resolveAvatarSrc(user);
+
+  const offerTargets = [
+    ...teamPlayers
+      .filter((p) => p.id !== user.id)
+      .map((p) => ({ id: p.id, handle: p.handle, team: user.team })),
+    ...otherPlayers.map((p) => ({ id: p.id, handle: p.handle, team: p.team })),
+  ].filter((p): p is typeof p & { team: NonNullable<typeof p.team> } => p.team !== null);
+
   const activeLocationsForUser = activeOwnedLocations.filter((location) => {
     const latestClaim = location.claims[0];
     if (!latestClaim || location.ownerTeamId === null) {

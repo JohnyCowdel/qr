@@ -9,7 +9,18 @@ import {
   smoothRealmLocationPolygons,
 } from "@/lib/realm";
 
+const AREA_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+let areaCacheResult: Record<string, number> | null = null;
+let areaCacheKey = "";
+let areaCacheAt = 0;
+
 function computeLocationAreas(locations: Array<{ id: string | number; latitude: number; longitude: number }>) {
+  const cacheKey = locations.map((l) => `${l.id}:${l.latitude},${l.longitude}`).join("|");
+  const now = Date.now();
+  if (areaCacheResult && cacheKey === areaCacheKey && now - areaCacheAt < AREA_CACHE_TTL_MS) {
+    return areaCacheResult;
+  }
+
   const realmBorder = createRealmBorder(
     locations.map((location) => ({
       latitude: location.latitude,
@@ -31,7 +42,10 @@ function computeLocationAreas(locations: Array<{ id: string | number; latitude: 
   const rawPolygons = createRealmLocationPolygons(tileAssignments, realmBorder);
   const smoothedPolygons = smoothRealmLocationPolygons(rawPolygons, 2, 0.42);
 
-  return calculateLocationAreasSquareMeters(smoothedPolygons);
+  areaCacheResult = calculateLocationAreasSquareMeters(smoothedPolygons);
+  areaCacheKey = cacheKey;
+  areaCacheAt = now;
+  return areaCacheResult;
 }
 
 function resolvePopulationFromArea(areaM2: number, currentPopulation: number) {
@@ -46,7 +60,7 @@ function resolvePopulationFromArea(areaM2: number, currentPopulation: number) {
 }
 
 export async function getHomePageData() {
-  await runEconomyTick();
+  void runEconomyTick();
 
   const [locations, recentClaims, teams, claimCounts] = await Promise.all([
     db.location.findMany({
@@ -192,7 +206,7 @@ export async function getHomePageData() {
 }
 
 export async function getLocationPageData(slug: string) {
-  await runEconomyTick();
+  void runEconomyTick();
 
   const [location, allLocations] = await Promise.all([
     db.location.findUnique({
