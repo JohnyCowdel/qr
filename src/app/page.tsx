@@ -8,7 +8,7 @@ import { USER_COOKIE_NAME, verifyUserSessionToken } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { after } from "next/server";
 import { getHomePageData } from "@/lib/game";
-import { runEconomyTick } from "@/lib/economy";
+import { triggerEconomyTick } from "@/lib/trigger-economy";
 import { DailyRewardButton } from "@/components/daily-reward-button";
 
 export const dynamic = "force-dynamic";
@@ -26,7 +26,7 @@ function formatDate(date: string) {
 }
 
 export default async function Home() {
-  after(() => runEconomyTick());
+  after(() => triggerEconomyTick());
   const { locations, recentClaims, teamSummary, totalTeamPower, totalPlayerPower } = await getHomePageData();
 
   const cookieStore = await cookies();

@@ -15,8 +15,8 @@ import {
   normalizeWorkerSplit,
   PLAYER_MONEY_CAP,
   PLAYER_POWER_CAP,
-  runEconomyTick,
 } from "@/lib/economy";
+import { triggerEconomyTick } from "@/lib/trigger-economy";
 
 export const dynamic = "force-dynamic";
 
@@ -54,7 +54,7 @@ function formatPlayerName(player: {
 }
 
 export default async function MePage() {
-  after(() => runEconomyTick());
+  after(() => triggerEconomyTick());
 
   const cookieStore = await cookies();
   const token = cookieStore.get(USER_COOKIE_NAME)?.value;

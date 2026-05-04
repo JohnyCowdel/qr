@@ -156,39 +156,40 @@ export async function runEconomyTick(now = new Date()) {
     effectsByLocation.set(row.locationId, current);
   }
 
+  // --- Phase 1: compute what needs updating (pure CPU, no DB) ---
+
+  type LocationTimeout = { id: number };
+  type UserDelta = { userId: number; moneyDelta: number; powerDelta: number; populationDelta: number };
+  type LocationUpdate = {
+    id: number;
+    nextPopulation: number;
+    workers: { money: number; power: number; population: number };
+  };
+
+  const timedOutLocations: LocationTimeout[] = [];
+  const locationUpdates: LocationUpdate[] = [];
+  // accumulate deltas per user (a player can own multiple locations)
+  const userDeltaMap = new Map<number, UserDelta>();
+
   for (const location of locations) {
     const latestClaim = location.claims[0];
     const ownerUserId =
       latestClaim && location.ownerTeamId !== null && latestClaim.teamId === location.ownerTeamId
         ? latestClaim.userId
         : null;
-    if (!ownerUserId) {
-      continue;
-    }
+    if (!ownerUserId) continue;
 
     const assignedWorkers = location.popToMoney + location.popToPower + location.popToPopulation;
     if (assignedWorkers > 0 && timeoutMs > 0) {
       const inactiveMs = now.getTime() - location.workersUpdatedAt.getTime();
       if (inactiveMs >= timeoutMs) {
-        await db.location.update({
-          where: { id: location.id },
-          data: {
-            popToMoney: 0,
-            popToPower: 0,
-            popToPopulation: 0,
-            workersAutoStoppedAt: now,
-            economyUpdatedAt: now,
-          },
-          select: { id: true },
-        });
+        timedOutLocations.push({ id: location.id });
         continue;
       }
     }
 
     const elapsedSeconds = (now.getTime() - location.economyUpdatedAt.getTime()) / 1000;
-    if (!Number.isFinite(elapsedSeconds) || elapsedSeconds < ECONOMY_TICK_SECONDS) {
-      continue;
-    }
+    if (!Number.isFinite(elapsedSeconds) || elapsedSeconds < ECONOMY_TICK_SECONDS) continue;
 
     const elapsedDays = elapsedSeconds / DAY_SECONDS;
     const workers = sanitizeWorkers(location.currentPopulation, {
@@ -198,20 +199,15 @@ export async function runEconomyTick(now = new Date()) {
     });
 
     const locationEffects = effectsByLocation.get(location.id) ?? { mny: 0, pow: 0, gpop: 0, maxpop: 0 };
-    const buildingMny = locationEffects.mny;
-    const buildingPow = locationEffects.pow;
-    const buildingGpop = locationEffects.gpop;
-    const buildingMaxpop = locationEffects.maxpop;
-
-    const effectiveMoneyRate = rates.moneyRate + buildingMny;
-    const effectivePowerRate = rates.powerRate + buildingPow;
-    const effectivePopulationRate = rates.populationRate + buildingGpop;
+    const effectiveMoneyRate = rates.moneyRate + locationEffects.mny;
+    const effectivePowerRate = rates.powerRate + locationEffects.pow;
+    const effectivePopulationRate = rates.populationRate + locationEffects.gpop;
 
     const moneyDelta = workers.money * effectiveMoneyRate * elapsedDays;
     const powerDelta = workers.power * effectivePowerRate * elapsedDays;
 
     const currentPopulation = Math.max(0, location.currentPopulation);
-    const baseMaxPopulation = calculateMaxPopulation(location.area) + buildingMaxpop;
+    const baseMaxPopulation = calculateMaxPopulation(location.area) + locationEffects.maxpop;
     const effectiveMaxPopulation = Math.max(baseMaxPopulation, currentPopulation + 1);
     const growthFactor = workers.population / POPULATION_BASE_ASSIGNMENT;
     const carryingFactor = Math.max(0, 1 - currentPopulation / Math.max(1, effectiveMaxPopulation));
@@ -220,48 +216,84 @@ export async function runEconomyTick(now = new Date()) {
     const nextPopulation = Math.max(0, currentPopulation + dPopulation);
     const populationDelta = Math.max(0, nextPopulation - currentPopulation);
 
-    await db.$transaction(async (tx) => {
+    locationUpdates.push({ id: location.id, nextPopulation, workers });
+
+    const existing = userDeltaMap.get(ownerUserId);
+    if (existing) {
+      existing.moneyDelta += moneyDelta;
+      existing.powerDelta += powerDelta;
+      existing.populationDelta += populationDelta;
+    } else {
+      userDeltaMap.set(ownerUserId, { userId: ownerUserId, moneyDelta, powerDelta, populationDelta });
+    }
+  }
+
+  if (timedOutLocations.length === 0 && locationUpdates.length === 0) return;
+
+  // --- Phase 2: fetch current user balances for cap check (single query) ---
+
+  const userIds = [...userDeltaMap.keys()];
+  const userBalances =
+    userIds.length > 0
+      ? await db.user.findMany({
+          where: { id: { in: userIds } },
+          select: { id: true, money: true, power: true },
+        })
+      : [];
+  const userBalanceMap = new Map(userBalances.map((u) => [u.id, u]));
+
+  // --- Phase 3: single transaction with all updates ---
+
+  await db.$transaction(async (tx) => {
+    // Timeout locations
+    for (const loc of timedOutLocations) {
       await tx.location.update({
-        where: { id: location.id },
+        where: { id: loc.id },
+        data: { popToMoney: 0, popToPower: 0, popToPopulation: 0, workersAutoStoppedAt: now, economyUpdatedAt: now },
+        select: { id: true },
+      });
+    }
+
+    // Economy updates
+    for (const loc of locationUpdates) {
+      await tx.location.update({
+        where: { id: loc.id },
         data: {
-          currentPopulation: nextPopulation,
-          popToMoney: workers.money,
-          popToPower: workers.power,
-          popToPopulation: workers.population,
+          currentPopulation: loc.nextPopulation,
+          popToMoney: loc.workers.money,
+          popToPower: loc.workers.power,
+          popToPopulation: loc.workers.population,
           economyUpdatedAt: now,
         },
         select: { id: true },
       });
+    }
 
-      const owner = await tx.user.findUnique({
-        where: { id: ownerUserId },
-        select: { id: true, money: true, power: true },
-      });
-
-      if (!owner) {
-        return;
-      }
+    // User increments (capped)
+    for (const delta of userDeltaMap.values()) {
+      const balance = userBalanceMap.get(delta.userId);
+      if (!balance) continue;
 
       const moneyIncrement =
-        moneyDelta > 0
-          ? Math.min(moneyDelta, Math.max(0, PLAYER_MONEY_CAP - owner.money))
-          : moneyDelta;
+        delta.moneyDelta > 0
+          ? Math.min(delta.moneyDelta, Math.max(0, PLAYER_MONEY_CAP - balance.money))
+          : delta.moneyDelta;
       const powerIncrement =
-        powerDelta > 0
-          ? Math.min(powerDelta, Math.max(0, PLAYER_POWER_CAP - owner.power))
-          : powerDelta;
+        delta.powerDelta > 0
+          ? Math.min(delta.powerDelta, Math.max(0, PLAYER_POWER_CAP - balance.power))
+          : delta.powerDelta;
 
       await tx.user.update({
-        where: { id: owner.id },
+        where: { id: delta.userId },
         data: {
           money: { increment: moneyIncrement },
           power: { increment: powerIncrement },
-          population: { increment: populationDelta },
+          population: { increment: delta.populationDelta },
         },
         select: { id: true },
       });
-    });
-  }
+    }
+  });
 }
 
 export function normalizeWorkerSplit(currentPopulation: number, input: { money: number; power: number; population: number }) {

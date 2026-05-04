@@ -1,11 +1,7 @@
 import { runEconomyTick } from "@/lib/economy";
 
 function isAuthorized(request: Request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) {
-    return process.env.NODE_ENV !== "production";
-  }
-
+  const secret = process.env.CRON_SECRET ?? "internal";
   const authHeader = request.headers.get("authorization");
   return authHeader === `Bearer ${secret}`;
 }
