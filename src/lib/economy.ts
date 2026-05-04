@@ -242,21 +242,24 @@ export async function runEconomyTick(now = new Date()) {
       : [];
   const userBalanceMap = new Map(userBalances.map((u) => [u.id, u]));
 
-  // --- Phase 3: single transaction with all updates ---
+  // --- Phase 3: batch array transaction (no interactive callback — safe inside after()) ---
 
-  await db.$transaction(async (tx) => {
-    // Timeout locations
-    for (const loc of timedOutLocations) {
-      await tx.location.update({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ops: any[] = [];
+
+  for (const loc of timedOutLocations) {
+    ops.push(
+      db.location.update({
         where: { id: loc.id },
         data: { popToMoney: 0, popToPower: 0, popToPopulation: 0, workersAutoStoppedAt: now, economyUpdatedAt: now },
         select: { id: true },
-      });
-    }
+      }),
+    );
+  }
 
-    // Economy updates
-    for (const loc of locationUpdates) {
-      await tx.location.update({
+  for (const loc of locationUpdates) {
+    ops.push(
+      db.location.update({
         where: { id: loc.id },
         data: {
           currentPopulation: loc.nextPopulation,
@@ -266,24 +269,25 @@ export async function runEconomyTick(now = new Date()) {
           economyUpdatedAt: now,
         },
         select: { id: true },
-      });
-    }
+      }),
+    );
+  }
 
-    // User increments (capped)
-    for (const delta of userDeltaMap.values()) {
-      const balance = userBalanceMap.get(delta.userId);
-      if (!balance) continue;
+  for (const delta of userDeltaMap.values()) {
+    const balance = userBalanceMap.get(delta.userId);
+    if (!balance) continue;
 
-      const moneyIncrement =
-        delta.moneyDelta > 0
-          ? Math.min(delta.moneyDelta, Math.max(0, PLAYER_MONEY_CAP - balance.money))
-          : delta.moneyDelta;
-      const powerIncrement =
-        delta.powerDelta > 0
-          ? Math.min(delta.powerDelta, Math.max(0, PLAYER_POWER_CAP - balance.power))
-          : delta.powerDelta;
+    const moneyIncrement =
+      delta.moneyDelta > 0
+        ? Math.min(delta.moneyDelta, Math.max(0, PLAYER_MONEY_CAP - balance.money))
+        : delta.moneyDelta;
+    const powerIncrement =
+      delta.powerDelta > 0
+        ? Math.min(delta.powerDelta, Math.max(0, PLAYER_POWER_CAP - balance.power))
+        : delta.powerDelta;
 
-      await tx.user.update({
+    ops.push(
+      db.user.update({
         where: { id: delta.userId },
         data: {
           money: { increment: moneyIncrement },
@@ -291,9 +295,13 @@ export async function runEconomyTick(now = new Date()) {
           population: { increment: delta.populationDelta },
         },
         select: { id: true },
-      });
-    }
-  });
+      }),
+    );
+  }
+
+  if (ops.length > 0) {
+    await db.$transaction(ops);
+  }
 }
 
 export function normalizeWorkerSplit(currentPopulation: number, input: { money: number; power: number; population: number }) {
