@@ -1,10 +1,8 @@
 import { z } from "zod";
 
-import { after } from "next/server";
-
 import { readUserIdFromCookieHeader } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { normalizeWorkerSplit, runEconomyTick } from "@/lib/economy";
+import { normalizeWorkerSplit } from "@/lib/economy";
 
 const schema = z.object({
   popToMoney: z.coerce.number().int().min(0),
@@ -27,7 +25,6 @@ export async function POST(
   }
 
   const { slug } = await params;
-  after(() => runEconomyTick());
 
   const location = await db.location.findUnique({
     where: { slug },

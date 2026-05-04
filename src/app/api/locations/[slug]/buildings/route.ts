@@ -1,11 +1,8 @@
 import { z } from "zod";
 
-import { after } from "next/server";
-
 import { readUserIdFromCookieHeader } from "@/lib/auth";
 import { ensureBuildingDefinitionsSeeded } from "@/lib/building-definitions";
 import { db } from "@/lib/db";
-import { runEconomyTick } from "@/lib/economy";
 
 type PageProps = { params: Promise<{ slug: string }> };
 
@@ -138,8 +135,6 @@ const buySchema = z.object({ buildingDefId: z.number().int().positive() });
  */
 export async function POST(request: Request, { params }: PageProps) {
   await ensureBuildingDefinitionsSeeded();
-
-  after(() => runEconomyTick());
 
   const userId = readUserIdFromCookieHeader(request.headers.get("cookie"));
   if (!userId) {
