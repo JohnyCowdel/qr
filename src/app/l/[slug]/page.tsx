@@ -46,7 +46,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
   const token = cookieStore.get(USER_COOKIE_NAME)?.value;
   const userId = token ? verifyUserSessionToken(token) : null;
 
-  after(() => runEconomyTick(new Date(), userId ?? undefined));
+  after(() => runEconomyTick());
 
   const [currentUser, builtArmorRows, activeRevengeDiscount, adminSettings] = await Promise.all([
     userId
