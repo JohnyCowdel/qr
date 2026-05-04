@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { after } from "next/server";
+
 import { readUserIdFromCookieHeader } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { normalizeWorkerSplit, runEconomyTick } from "@/lib/economy";
@@ -25,7 +27,7 @@ export async function POST(
   }
 
   const { slug } = await params;
-  void runEconomyTick();
+  after(() => runEconomyTick());
 
   const location = await db.location.findUnique({
     where: { slug },

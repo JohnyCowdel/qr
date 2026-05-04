@@ -1,3 +1,5 @@
+import { after } from "next/server";
+
 import { db } from "@/lib/db";
 import { runEconomyTick } from "@/lib/economy";
 import { calculateMaxPopulation, calculateMinPopulation } from "@/lib/location-population";
@@ -60,7 +62,7 @@ function resolvePopulationFromArea(areaM2: number, currentPopulation: number) {
 }
 
 export async function getHomePageData() {
-  void runEconomyTick();
+  after(() => runEconomyTick());
 
   const [locations, recentClaims, teams, claimCounts] = await Promise.all([
     db.location.findMany({
@@ -206,7 +208,7 @@ export async function getHomePageData() {
 }
 
 export async function getLocationPageData(slug: string) {
-  void runEconomyTick();
+  after(() => runEconomyTick());
 
   const [location, allLocations] = await Promise.all([
     db.location.findUnique({
