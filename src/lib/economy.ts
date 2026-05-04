@@ -85,75 +85,84 @@ export async function getEconomyRates(): Promise<EconomyRates> {
 
 let lastTickAt = 0;
 
+// Cache economy rates — changes only when admin edits settings
+let cachedRates: EconomyRates | null = null;
+let ratesCachedAt = 0;
+const RATES_CACHE_MS = 60_000;
+
+async function getCachedEconomyRates(): Promise<EconomyRates> {
+  const now = Date.now();
+  if (cachedRates && now - ratesCachedAt < RATES_CACHE_MS) return cachedRates;
+  cachedRates = await getEconomyRates();
+  ratesCachedAt = now;
+  return cachedRates;
+}
+
+export function invalidateEconomyRatesCache() {
+  cachedRates = null;
+}
+
 export async function runEconomyTick(now = new Date()) {
   if (now.getTime() - lastTickAt < ECONOMY_TICK_SECONDS * 1000) return;
   lastTickAt = now.getTime();
 
-  const rates = await getEconomyRates();
+  // Fetch rates and locations in parallel (2 round-trips → 1)
+  const [rates, locations] = await Promise.all([
+    getCachedEconomyRates(),
+    db.location.findMany({
+      where: { ownerTeamId: { not: null } },
+      select: {
+        id: true,
+        ownerTeamId: true,
+        area: true,
+        currentPopulation: true,
+        popToMoney: true,
+        popToPower: true,
+        popToPopulation: true,
+        workersUpdatedAt: true,
+        economyUpdatedAt: true,
+        claims: {
+          select: { userId: true, teamId: true, createdAt: true },
+          orderBy: { createdAt: "desc" },
+          take: 1,
+        },
+        builtBuildings: {
+          select: {
+            buildingDef: {
+              select: {
+                effectMny: true,
+                effectPow: true,
+                effectGpop: true,
+                effectMaxpop: true,
+              },
+            },
+          },
+        },
+      },
+    }),
+  ]);
+
   const timeoutMs = Math.max(0, rates.productionTimeoutHours) * 60 * 60 * 1000;
   const tickThreshold = new Date(now.getTime() - ECONOMY_TICK_SECONDS * 1000);
   const workerTimeoutThreshold = timeoutMs > 0 ? new Date(now.getTime() - timeoutMs) : null;
 
-  const locations = await db.location.findMany({
-    where: {
-      ownerTeamId: { not: null },
-      OR: [
-        { economyUpdatedAt: { lte: tickThreshold } },
-        ...(workerTimeoutThreshold ? [{ workersUpdatedAt: { lte: workerTimeoutThreshold } }] : []),
-      ],
-    },
-    select: {
-      id: true,
-      ownerTeamId: true,
-      area: true,
-      currentPopulation: true,
-      popToMoney: true,
-      popToPower: true,
-      popToPopulation: true,
-      workersUpdatedAt: true,
-      economyUpdatedAt: true,
-      claims: {
-        select: {
-          userId: true,
-          teamId: true,
-          createdAt: true,
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-        take: 1,
-      },
-    },
+  // Filter in JS — no extra DB round-trip for the WHERE clause
+  const activeLocations = locations.filter((loc) => {
+    if (loc.economyUpdatedAt <= tickThreshold) return true;
+    if (workerTimeoutThreshold && loc.workersUpdatedAt <= workerTimeoutThreshold) return true;
+    return false;
   });
 
-  const locationIds = locations.map((location) => location.id);
-  const builtEffects = locationIds.length
-    ? await db.builtBuilding.findMany({
-        where: {
-          locationId: { in: locationIds },
-        },
-        select: {
-          locationId: true,
-          buildingDef: {
-            select: {
-              effectMny: true,
-              effectPow: true,
-              effectGpop: true,
-              effectMaxpop: true,
-            },
-          },
-        },
-      })
-    : [];
-
   const effectsByLocation = new Map<number, { mny: number; pow: number; gpop: number; maxpop: number }>();
-  for (const row of builtEffects) {
-    const current = effectsByLocation.get(row.locationId) ?? { mny: 0, pow: 0, gpop: 0, maxpop: 0 };
-    current.mny += row.buildingDef.effectMny;
-    current.pow += row.buildingDef.effectPow;
-    current.gpop += row.buildingDef.effectGpop;
-    current.maxpop += row.buildingDef.effectMaxpop;
-    effectsByLocation.set(row.locationId, current);
+  for (const loc of activeLocations) {
+    let mny = 0, pow = 0, gpop = 0, maxpop = 0;
+    for (const b of loc.builtBuildings) {
+      mny += b.buildingDef.effectMny;
+      pow += b.buildingDef.effectPow;
+      gpop += b.buildingDef.effectGpop;
+      maxpop += b.buildingDef.effectMaxpop;
+    }
+    effectsByLocation.set(loc.id, { mny, pow, gpop, maxpop });
   }
 
   // --- Phase 1: compute what needs updating (pure CPU, no DB) ---
@@ -171,7 +180,7 @@ export async function runEconomyTick(now = new Date()) {
   // accumulate deltas per user (a player can own multiple locations)
   const userDeltaMap = new Map<number, UserDelta>();
 
-  for (const location of locations) {
+  for (const location of activeLocations) {
     const latestClaim = location.claims[0];
     const ownerUserId =
       latestClaim && location.ownerTeamId !== null && latestClaim.teamId === location.ownerTeamId

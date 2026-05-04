@@ -2,7 +2,6 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
-
 import { USER_COOKIE_NAME, verifyUserSessionToken } from "@/lib/auth";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { ClaimEventCard } from "@/components/claim-event-card";
@@ -55,7 +54,6 @@ function formatPlayerName(player: {
 
 export default async function MePage() {
   after(() => runEconomyTick());
-
   const cookieStore = await cookies();
   const token = cookieStore.get(USER_COOKIE_NAME)?.value;
   const userId = token ? verifyUserSessionToken(token) : null;
