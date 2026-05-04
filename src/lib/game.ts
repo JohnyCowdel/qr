@@ -1,5 +1,4 @@
 import { db } from "@/lib/db";
-import { runEconomyTick } from "@/lib/economy";
 import { calculateMaxPopulation, calculateMinPopulation } from "@/lib/location-population";
 import {
   calculateLocationAreasSquareMeters,

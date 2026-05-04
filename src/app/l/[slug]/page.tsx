@@ -12,7 +12,6 @@ import { db } from "@/lib/db";
 import { TerritoryMap } from "@/components/territory-map";
 import { formatMeters } from "@/lib/geo";
 import { getLocationPageData } from "@/lib/game";
-import { runEconomyTick } from "@/lib/economy";
 import { czechNameForType, normalizeLocationType } from "@/lib/location-types";
 
 function formatPopulation(population: number) {
@@ -33,7 +32,6 @@ function formatDate(date: string) {
 
 export default async function LocationPage(props: PageProps<"/l/[slug]">) {
   const { slug } = await props.params;
-  await runEconomyTick();
   const data = await getLocationPageData(slug);
 
   if (!data) {
