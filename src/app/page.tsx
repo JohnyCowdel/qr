@@ -26,12 +26,12 @@ function formatDate(date: string) {
 }
 
 export default async function Home() {
-  after(() => runEconomyTick());
-  const { locations, recentClaims, teamSummary, totalTeamPower, totalPlayerPower } = await getHomePageData();
-
   const cookieStore = await cookies();
   const token = cookieStore.get(USER_COOKIE_NAME)?.value;
   const userId = token ? verifyUserSessionToken(token) : null;
+  after(() => runEconomyTick(new Date(), userId ?? undefined));
+  const { locations, recentClaims, teamSummary, totalTeamPower, totalPlayerPower } = await getHomePageData();
+
   const [currentUser, adminSettings] = await Promise.all([
     userId
       ? db.user.findUnique({

@@ -83,7 +83,8 @@ export async function getEconomyRates(): Promise<EconomyRates> {
   });
 }
 
-let lastTickAt = 0;
+let lastGlobalTickAt = 0;
+const lastUserTickAt = new Map<number, number>();
 
 // Cache economy rates — changes only when admin edits settings
 let cachedRates: EconomyRates | null = null;
@@ -102,15 +103,23 @@ export function invalidateEconomyRatesCache() {
   cachedRates = null;
 }
 
-export async function runEconomyTick(now = new Date()) {
-  if (now.getTime() - lastTickAt < ECONOMY_TICK_SECONDS * 1000) return;
-  lastTickAt = now.getTime();
+export async function runEconomyTick(now = new Date(), forUserId?: number) {
+  const lastAt = forUserId ? (lastUserTickAt.get(forUserId) ?? 0) : lastGlobalTickAt;
+  if (now.getTime() - lastAt < ECONOMY_TICK_SECONDS * 1000) return;
+  if (forUserId) {
+    lastUserTickAt.set(forUserId, now.getTime());
+  } else {
+    lastGlobalTickAt = now.getTime();
+  }
 
   // Fetch rates and locations in parallel (2 round-trips → 1)
   const [rates, locations] = await Promise.all([
     getCachedEconomyRates(),
     db.location.findMany({
-      where: { ownerTeamId: { not: null } },
+      where: {
+        ownerTeamId: { not: null },
+        ...(forUserId ? { claims: { some: { userId: forUserId } } } : {}),
+      },
       select: {
         id: true,
         ownerTeamId: true,

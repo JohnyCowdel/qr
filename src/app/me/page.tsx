@@ -53,7 +53,6 @@ function formatPlayerName(player: {
 }
 
 export default async function MePage() {
-  after(() => runEconomyTick());
   const cookieStore = await cookies();
   const token = cookieStore.get(USER_COOKIE_NAME)?.value;
   const userId = token ? verifyUserSessionToken(token) : null;
@@ -61,6 +60,8 @@ export default async function MePage() {
   if (!userId) {
     redirect("/auth/login");
   }
+
+  after(() => runEconomyTick(new Date(), userId));
 
   const user = await db.user.findUnique({
     where: { id: userId },

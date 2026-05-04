@@ -34,7 +34,6 @@ function formatDate(date: string) {
 
 export default async function LocationPage(props: PageProps<"/l/[slug]">) {
   const { slug } = await props.params;
-  after(() => runEconomyTick());
   const data = await getLocationPageData(slug);
 
   if (!data) {
@@ -46,6 +45,8 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
   const cookieStore = await cookies();
   const token = cookieStore.get(USER_COOKIE_NAME)?.value;
   const userId = token ? verifyUserSessionToken(token) : null;
+
+  after(() => runEconomyTick(new Date(), userId ?? undefined));
 
   const [currentUser, builtArmorRows, activeRevengeDiscount, adminSettings] = await Promise.all([
     userId
