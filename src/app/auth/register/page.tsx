@@ -5,7 +5,8 @@ import { RegisterForm } from "@/components/register-form";
 export const dynamic = "force-dynamic";
 
 export default async function RegisterPage() {
-  const teams = await db.team.findMany({
+  const [teams, settings] = await Promise.all([
+    db.team.findMany({
     where: { isHidden: false },
     orderBy: { name: "asc" },
     select: {
@@ -29,7 +30,10 @@ export default async function RegisterPage() {
         },
       },
     },
-  });
+    }),
+    db.adminSettings.findUnique({ where: { id: 1 }, select: { registrationsOpen: true } }),
+  ]);
+  const registrationsOpen = settings?.registrationsOpen ?? true;
 
   return (
     <main className="terrain-grid min-h-screen px-4 py-10">
@@ -45,7 +49,12 @@ export default async function RegisterPage() {
           <p className="mt-2 text-sm text-[var(--muted)]">
             Zaregistruj se, zvol tým a počkej na schválení správcem.
           </p>
-          <RegisterForm teams={teams} />
+          {!registrationsOpen ? (
+            <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+              Registrace jsou momentálně uzavřené.
+            </p>
+          ) : null}
+          <RegisterForm teams={teams} registrationsOpen={registrationsOpen} />
         </section>
       </div>
     </main>

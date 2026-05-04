@@ -14,6 +14,14 @@ const registerSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const settings = await db.adminSettings.findUnique({
+    where: { id: 1 },
+    select: { registrationsOpen: true },
+  });
+  if (settings?.registrationsOpen === false) {
+    return Response.json({ error: "Registrations are currently closed." }, { status: 403 });
+  }
+
   const parsed = registerSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return Response.json({ error: "Invalid registration payload." }, { status: 400 });

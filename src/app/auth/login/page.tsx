@@ -5,6 +5,7 @@ import { useEffect, useState, useTransition } from "react";
 
 export default function UserLoginPage() {
   const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "admin@qrempire.space";
+  const [registrationsOpen, setRegistrationsOpen] = useState(true);
   const [pendingNotice, setPendingNotice] = useState(false);
   const [handle, setHandle] = useState("");
   const [password, setPassword] = useState("");
@@ -14,6 +15,26 @@ export default function UserLoginPage() {
   useEffect(() => {
     const pending = new URLSearchParams(window.location.search).get("pending") === "1";
     setPendingNotice(pending);
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/public/settings", { cache: "no-store" });
+        if (!res.ok) {
+          return;
+        }
+        const data = (await res.json()) as { registrationsOpen?: boolean };
+        if (!cancelled) {
+          setRegistrationsOpen(data.registrationsOpen ?? true);
+        }
+      } catch {
+        // ignore and keep default true
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   function submit(event: React.FormEvent) {
@@ -102,7 +123,7 @@ export default function UserLoginPage() {
           </form>
 
           <p className="mt-4 text-sm text-[var(--muted)]">
-            Nový hráč? <Link href="/auth/register" className="font-semibold text-[var(--accent-strong)]">Vytvořit účet</Link>
+            Nový hráč? {registrationsOpen ? <Link href="/auth/register" className="font-semibold text-[var(--accent-strong)]">Vytvořit účet</Link> : <span className="font-semibold">Registrace uzavřeny</span>}
           </p>
 
           <p className="mt-2 text-sm text-[var(--muted)]">

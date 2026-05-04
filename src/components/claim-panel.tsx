@@ -26,6 +26,7 @@ type ClaimPanelProps = {
     cost: number;
     armorBonus: number;
   };
+  registrationsOpen?: boolean;
 };
 
 type ClaimResult = {
@@ -55,7 +56,7 @@ type AuthState = {
   power: number | null;
 };
 
-export function ClaimPanel({ location, isOwner = false, currentUser, revengeDiscountExpiresAt, encourage }: ClaimPanelProps) {
+export function ClaimPanel({ location, isOwner = false, currentUser, revengeDiscountExpiresAt, encourage, registrationsOpen = true }: ClaimPanelProps) {
   const router = useRouter();
   const hasRevengeDiscount = Boolean(revengeDiscountExpiresAt);
   const claimCost = hasRevengeDiscount ? 0 : location.armor + 1;
@@ -373,7 +374,11 @@ export function ClaimPanel({ location, isOwner = false, currentUser, revengeDisc
           ) : (
             <p className="text-[var(--muted)]">
               Nejsi přihlášen/a. <Link href="/auth/login" className="font-semibold text-[var(--accent-strong)]">Přihlásit se</Link> nebo{" "}
-              <Link href="/auth/register" className="font-semibold text-[var(--accent-strong)]">vytvořit účet</Link>.
+              {registrationsOpen ? (
+                <Link href="/auth/register" className="font-semibold text-[var(--accent-strong)]">vytvořit účet</Link>
+              ) : (
+                <span className="font-semibold">registrace uzavřeny</span>
+              )}.
             </p>
           )}
         </div>

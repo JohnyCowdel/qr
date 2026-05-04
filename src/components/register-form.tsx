@@ -17,13 +17,14 @@ type TeamOption = {
 
 type RegisterFormProps = {
   teams: TeamOption[];
+  registrationsOpen: boolean;
 };
 
 function formatPower(power: number) {
   return power.toFixed(2);
 }
 
-export function RegisterForm({ teams }: RegisterFormProps) {
+export function RegisterForm({ teams, registrationsOpen }: RegisterFormProps) {
   const [handle, setHandle] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -37,6 +38,11 @@ export function RegisterForm({ teams }: RegisterFormProps) {
   function submit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
+
+    if (!registrationsOpen) {
+      setError("Registrace jsou momentálně uzavřené.");
+      return;
+    }
 
     startTransition(async () => {
       try {
@@ -194,10 +200,10 @@ export function RegisterForm({ teams }: RegisterFormProps) {
 
       <button
         type="submit"
-        disabled={isPending || !teamId}
+        disabled={isPending || !teamId || !registrationsOpen}
         className="w-full rounded-full bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--accent-strong)] disabled:opacity-60"
       >
-        {isPending ? "Vytvářím účet..." : "Vytvořit účet"}
+        {!registrationsOpen ? "Registrace uzavřeny" : isPending ? "Vytvářím účet..." : "Vytvořit účet"}
       </button>
 
       <p className="text-sm text-[var(--muted)]">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import { AdminNav } from "@/components/admin-nav";
 
@@ -8,9 +8,35 @@ export default function AdminSettingsPage() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [registrationsOpen, setRegistrationsOpen] = useState(true);
+  const [toggleError, setToggleError] = useState<string | null>(null);
+  const [toggleSuccess, setToggleSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [isTogglePending, startToggleTransition] = useTransition();
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/economy", { cache: "no-store" });
+        if (!res.ok) {
+          return;
+        }
+        const data = (await res.json()) as { registrationsOpen?: boolean };
+        if (!cancelled) {
+          setRegistrationsOpen(data.registrationsOpen ?? true);
+        }
+      } catch {
+        // ignore initial load failure and keep default
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -50,6 +76,42 @@ export default function AdminSettingsPage() {
     });
   }
 
+  function handleRegistrationToggle(nextOpen: boolean) {
+    setToggleError(null);
+    setToggleSuccess(null);
+
+    startToggleTransition(async () => {
+      try {
+        const currentRes = await fetch("/api/admin/economy", { cache: "no-store" });
+        if (!currentRes.ok) {
+          setToggleError("Nepodařilo se načíst aktuální nastavení.");
+          return;
+        }
+
+        const current = await currentRes.json();
+        const res = await fetch("/api/admin/economy", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...current,
+            registrationsOpen: nextOpen,
+          }),
+        });
+
+        if (!res.ok) {
+          const data = (await res.json().catch(() => null)) as { error?: string } | null;
+          setToggleError(data?.error ?? "Uložení přepínače selhalo.");
+          return;
+        }
+
+        setRegistrationsOpen(nextOpen);
+        setToggleSuccess(nextOpen ? "Registrace byly otevřeny." : "Registrace byly uzavřeny.");
+      } catch {
+        setToggleError("Chyba sítě. Zkus to znovu.");
+      }
+    });
+  }
+
   return (
     <main className="terrain-grid min-h-screen px-4 py-10">
       <div className="max-w-2xl mx-auto">
@@ -58,6 +120,45 @@ export default function AdminSettingsPage() {
         <h1 className="text-2xl font-bold mb-6">Nastavení</h1>
 
         <div className="glass-panel rounded-xl p-6">
+          <h2 className="text-lg font-semibold mb-4">Registrace</h2>
+          <div className="mb-6 rounded-lg border border-[var(--line)] bg-white/60 p-4">
+            <p className="text-sm text-[var(--muted)] mb-3">
+              Přepínač ovládá dostupnost registrací pro nové hráče.
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                disabled={isTogglePending || registrationsOpen}
+                onClick={() => handleRegistrationToggle(true)}
+                className="rounded-lg px-4 py-2 text-sm font-semibold border border-green-300 bg-green-50 text-green-800 disabled:opacity-50"
+              >
+                Otevřít registrace
+              </button>
+              <button
+                type="button"
+                disabled={isTogglePending || !registrationsOpen}
+                onClick={() => handleRegistrationToggle(false)}
+                className="rounded-lg px-4 py-2 text-sm font-semibold border border-red-300 bg-red-50 text-red-800 disabled:opacity-50"
+              >
+                Uzavřít registrace
+              </button>
+              <span className="text-sm font-medium">
+                Stav: {registrationsOpen ? "otevřené" : "uzavřené"}
+              </span>
+            </div>
+
+            {toggleError ? (
+              <p className="mt-3 text-sm text-red-700 bg-red-50 border border-red-200 px-4 py-2.5 rounded-lg">
+                {toggleError}
+              </p>
+            ) : null}
+            {toggleSuccess ? (
+              <p className="mt-3 text-sm text-green-700 bg-green-50 border border-green-200 px-4 py-2.5 rounded-lg">
+                {toggleSuccess}
+              </p>
+            ) : null}
+          </div>
+
           <h2 className="text-lg font-semibold mb-4">Změnit heslo</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <PasswordField

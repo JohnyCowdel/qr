@@ -25,7 +25,7 @@ export async function POST(
   }
 
   const { slug } = await params;
-  await runEconomyTick();
+  void runEconomyTick();
 
   const location = await db.location.findUnique({
     where: { slug },

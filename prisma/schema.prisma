@@ -134,6 +134,7 @@ model AdminSettings {
   claimPopulationMin Int @default(3)
   productionTimeoutHours Float @default(24)
   dailyLoginReward Float @default(8)
+  registrationsOpen Boolean @default(true)
   revengeDiscountHours Float @default(8)
   encourageCost Float @default(10)
   encourageArmorBonus Float @default(5)

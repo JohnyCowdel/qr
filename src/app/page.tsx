@@ -42,9 +42,10 @@ export default async function Home() {
           },
         })
       : Promise.resolve(null),
-    db.adminSettings.findUnique({ where: { id: 1 }, select: { dailyLoginReward: true } }),
+    db.adminSettings.findUnique({ where: { id: 1 }, select: { dailyLoginReward: true, registrationsOpen: true } }),
   ]);
   const dailyReward = adminSettings?.dailyLoginReward ?? 8;
+  const registrationsOpen = adminSettings?.registrationsOpen ?? true;
 
   return (
     <main className="terrain-grid min-h-screen px-4 py-6 text-foreground sm:px-6 lg:px-8">
@@ -98,12 +99,21 @@ export default async function Home() {
                 Jak na to? 📖
               </Link>
             </div>
-            <Link
-              href="/auth/register"
-              className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]"
-            >
-              Vytvořit účet
-            </Link>
+            {registrationsOpen ? (
+              <Link
+                href="/auth/register"
+                className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]"
+              >
+                Vytvořit účet
+              </Link>
+            ) : (
+              <span
+                className="cursor-not-allowed rounded-full border border-[var(--line)] bg-white/50 px-4 py-2 text-sm font-semibold text-[var(--muted)]"
+                title="Registrace jsou momentálně uzavřené"
+              >
+                Registrace uzavřeny
+              </span>
+            )}
           </div>
         )}
 

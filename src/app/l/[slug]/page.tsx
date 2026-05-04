@@ -90,7 +90,9 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
   const settingsWithEncourage = adminSettings as (typeof adminSettings & {
     encourageCost?: number;
     encourageArmorBonus?: number;
+    registrationsOpen?: boolean;
   }) | null;
+  const registrationsOpen = settingsWithEncourage?.registrationsOpen ?? true;
   const encourageCost = settingsWithEncourage?.encourageCost ?? 10;
   const encourageArmorBonus = settingsWithEncourage?.encourageArmorBonus ?? 5;
 
@@ -143,12 +145,21 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
                 Přihlásit se
               </Link>
             </div>
-            <Link
-              href="/auth/register"
-              className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]"
-            >
-              Vytvořit účet
-            </Link>
+            {registrationsOpen ? (
+              <Link
+                href="/auth/register"
+                className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-strong)]"
+              >
+                Vytvořit účet
+              </Link>
+            ) : (
+              <span
+                className="cursor-not-allowed rounded-full border border-[var(--line)] bg-white/50 px-4 py-2 text-sm font-semibold text-[var(--muted)]"
+                title="Registrace jsou momentálně uzavřené"
+              >
+                Registrace uzavřeny
+              </span>
+            )}
           </div>
         )}
 
@@ -283,6 +294,7 @@ export default async function LocationPage(props: PageProps<"/l/[slug]">) {
               } : null}
               revengeDiscountExpiresAt={revengeDiscountExpiresAt}
               encourage={{ canUse: canEncourage, cost: encourageCost, armorBonus: encourageArmorBonus }}
+              registrationsOpen={registrationsOpen}
             />
           </div>
 

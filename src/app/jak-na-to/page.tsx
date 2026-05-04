@@ -10,10 +10,11 @@ export const dynamic = "force-dynamic";
 export default async function HowToPage() {
   const settings = await db.adminSettings.findUnique({
     where: { id: 1 },
-    select: { dailyLoginReward: true, revengeDiscountHours: true },
+    select: { dailyLoginReward: true, revengeDiscountHours: true, registrationsOpen: true },
   });
   const dailyLoginReward = settings?.dailyLoginReward ?? 8;
   const revengeDiscountHours = settings?.revengeDiscountHours ?? 8;
+  const registrationsOpen = settings?.registrationsOpen ?? true;
 
   return (
     <main className="terrain-grid min-h-screen px-4 py-8 sm:px-6 lg:px-8">
@@ -158,12 +159,18 @@ export default async function HowToPage() {
         </section>
 
         <div className="text-center">
-          <Link
-            href="/auth/register"
-            className="inline-block rounded-full bg-[var(--accent)] px-6 py-3 font-semibold text-white hover:bg-[var(--accent-strong)]"
-          >
-            Vytvořit účet a začít hrát →
-          </Link>
+          {registrationsOpen ? (
+            <Link
+              href="/auth/register"
+              className="inline-block rounded-full bg-[var(--accent)] px-6 py-3 font-semibold text-white hover:bg-[var(--accent-strong)]"
+            >
+              Vytvořit účet a začít hrát →
+            </Link>
+          ) : (
+            <span className="inline-block cursor-not-allowed rounded-full border border-[var(--line)] bg-white/50 px-6 py-3 font-semibold text-[var(--muted)]">
+              Registrace uzavřeny
+            </span>
+          )}
         </div>
       </div>
     </main>

@@ -137,7 +137,7 @@ const buySchema = z.object({ buildingDefId: z.number().int().positive() });
 export async function POST(request: Request, { params }: PageProps) {
   await ensureBuildingDefinitionsSeeded();
 
-  await runEconomyTick();
+  void runEconomyTick();
 
   const userId = readUserIdFromCookieHeader(request.headers.get("cookie"));
   if (!userId) {
