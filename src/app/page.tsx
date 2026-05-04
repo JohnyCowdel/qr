@@ -29,7 +29,9 @@ export default async function Home() {
   const cookieStore = await cookies();
   const token = cookieStore.get(USER_COOKIE_NAME)?.value;
   const userId = token ? verifyUserSessionToken(token) : null;
-  after(() => runEconomyTick());
+  if (userId) {
+    after(() => runEconomyTick(new Date(), userId));
+  }
   const { locations, recentClaims, teamSummary, totalTeamPower, totalPlayerPower } = await getHomePageData();
 
   const [currentUser, adminSettings] = await Promise.all([
