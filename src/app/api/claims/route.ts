@@ -4,12 +4,13 @@ import { readUserIdFromCookieHeader } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getEconomyRates } from "@/lib/economy";
 import { calculateDistanceMeters } from "@/lib/geo";
+import { validateGpsMovement } from "@/lib/gps-guard";
 
 const claimSchema = z.object({
   locationId: z.number().int().positive(),
   message: z.string().trim().max(240).optional().or(z.literal("")),
-  latitude: z.number(),
-  longitude: z.number(),
+  latitude: z.number().finite().min(-90).max(90),
+  longitude: z.number().finite().min(-180).max(180),
   accuracyM: z.number().positive().max(200).optional(),
 });
 
@@ -76,6 +77,11 @@ export async function POST(request: Request) {
       },
       { status: 400 },
     );
+  }
+
+  const gpsMovement = await validateGpsMovement(userId, latitude, longitude);
+  if (!gpsMovement.ok) {
+    return Response.json({ ok: false, message: gpsMovement.message }, { status: 400 });
   }
 
   const user = await db.user.findUnique({

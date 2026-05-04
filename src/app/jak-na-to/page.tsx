@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
+import { PLAYER_MONEY_CAP, PLAYER_POWER_CAP } from "@/lib/economy";
 
 export const metadata = {
   title: "Jak na to? – Pravidla hry",
@@ -130,6 +131,17 @@ export default async function HowToPage() {
           <hr className="border-[var(--line)]" />
 
           <div className="space-y-2">
+            <h2 className="text-lg font-semibold">🧱 Limity síly a peněz</h2>
+            <ul className="space-y-2 text-sm leading-7 text-[var(--muted)]">
+              <li>⚡ Automatické generování síly se zastaví na hodnotě {PLAYER_POWER_CAP}.</li>
+              <li>💰 Automatické generování peněz se zastaví na hodnotě {PLAYER_MONEY_CAP}.</li>
+              <li>📊 Když na limit narazíš, v profilu se u dané suroviny zobrazí upozornění a růst +0.00/den.</li>
+            </ul>
+          </div>
+
+          <hr className="border-[var(--line)]" />
+
+          <div className="space-y-2">
             <h2 className="text-lg font-semibold">🤝 Obchod mezi hráči</h2>
             <p className="text-sm leading-7 text-[var(--muted)]">
               V profilu najdeš sekci Nabídky, kde můžeš obchodovat s ostatními hráči.
@@ -142,6 +154,7 @@ export default async function HowToPage() {
               <li>✅ Když hráč nabídku přijme, proběhne transakce automaticky mezi oběma účty.</li>
               <li>🎁 Dar funguje tak, že v poli Požaduji nastavíš hodnotu 0.</li>
               <li>🔒 Obchod lze přijmout jen pokud mají oba hráči dost prostředků na splnění nabídky.</li>
+              <li>🧱 Obchod respektuje limity {PLAYER_POWER_CAP} / {PLAYER_MONEY_CAP}; nabídku nelze přijmout, pokud by komukoliv přetekla síla nebo peníze nad limit.</li>
             </ul>
           </div>
 

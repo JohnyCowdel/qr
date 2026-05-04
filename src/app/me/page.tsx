@@ -9,7 +9,12 @@ import { PlayerAvatarEditor } from "@/components/player-avatar-editor";
 import { TradeOffersPanel } from "@/components/trade-offers-panel";
 import { resolveAvatarSrc } from "@/lib/avatar-sprites";
 import { db } from "@/lib/db";
-import { getEconomyRates, normalizeWorkerSplit } from "@/lib/economy";
+import {
+  getEconomyRates,
+  normalizeWorkerSplit,
+  PLAYER_MONEY_CAP,
+  PLAYER_POWER_CAP,
+} from "@/lib/economy";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +28,10 @@ function formatMoney(money: number) {
 
 function formatGrowth(value: number) {
   return `+${value.toFixed(2)}/den`;
+}
+
+function isAtOrAboveLimit(value: number, limit: number) {
+  return value >= limit - 1e-9;
 }
 
 function formatDate(date: string) {
@@ -314,6 +323,10 @@ export default async function MePage() {
     },
     { money: 0, power: 0 },
   );
+  const powerLimitReached = isAtOrAboveLimit(user.power, PLAYER_POWER_CAP);
+  const moneyLimitReached = isAtOrAboveLimit(user.money, PLAYER_MONEY_CAP);
+  const displayedPowerGrowth = powerLimitReached ? 0 : growthPerDay.power;
+  const displayedMoneyGrowth = moneyLimitReached ? 0 : growthPerDay.money;
   const myClaimedPositions = activeLocationsForUser.map((location) => ({
     id: location.id,
     slug: location.slug,
@@ -376,12 +389,22 @@ export default async function MePage() {
             <div className="rounded-[20px] border border-[var(--line)] bg-white/70 p-4">
               <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Síla hráče</div>
               <div className="mt-2 text-2xl font-semibold">💪 {formatPower(user.power)}</div>
-              <div className="mt-1 text-sm font-medium text-emerald-700">↗ {formatGrowth(growthPerDay.power)}</div>
+              <div className="mt-1 text-sm font-medium text-emerald-700">↗ {formatGrowth(displayedPowerGrowth)}</div>
+              {powerLimitReached ? (
+                <p className="mt-1 text-xs font-semibold text-amber-800">
+                  Limit síly dosažen ({PLAYER_POWER_CAP}). Další generování síly je pozastaveno.
+                </p>
+              ) : null}
             </div>
             <div className="rounded-[20px] border border-[var(--line)] bg-white/70 p-4">
               <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Peníze</div>
               <div className="mt-2 text-2xl font-semibold">💰 {formatMoney(user.money)}</div>
-              <div className="mt-1 text-sm font-medium text-emerald-700">↗ {formatGrowth(growthPerDay.money)}</div>
+              <div className="mt-1 text-sm font-medium text-emerald-700">↗ {formatGrowth(displayedMoneyGrowth)}</div>
+              {moneyLimitReached ? (
+                <p className="mt-1 text-xs font-semibold text-amber-800">
+                  Limit peněz dosažen ({PLAYER_MONEY_CAP}). Další generování peněz je pozastaveno.
+                </p>
+              ) : null}
             </div>
             <div className="rounded-[20px] border border-[var(--line)] bg-white/70 p-4">
               <div className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Celkem záborů</div>

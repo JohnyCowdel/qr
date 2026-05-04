@@ -5,6 +5,8 @@ import { calculateMaxPopulation, calculateWorkerCap } from "@/lib/location-popul
 const ECONOMY_TICK_SECONDS = 5;
 const DAY_SECONDS = 86_400;
 const POPULATION_BASE_ASSIGNMENT = 30;
+export const PLAYER_POWER_CAP = 130;
+export const PLAYER_MONEY_CAP = 250;
 
 type EconomyRates = {
   moneyRate: number;
@@ -231,11 +233,29 @@ export async function runEconomyTick(now = new Date()) {
         select: { id: true },
       });
 
-      await tx.user.update({
+      const owner = await tx.user.findUnique({
         where: { id: ownerUserId },
+        select: { id: true, money: true, power: true },
+      });
+
+      if (!owner) {
+        return;
+      }
+
+      const moneyIncrement =
+        moneyDelta > 0
+          ? Math.min(moneyDelta, Math.max(0, PLAYER_MONEY_CAP - owner.money))
+          : moneyDelta;
+      const powerIncrement =
+        powerDelta > 0
+          ? Math.min(powerDelta, Math.max(0, PLAYER_POWER_CAP - owner.power))
+          : powerDelta;
+
+      await tx.user.update({
+        where: { id: owner.id },
         data: {
-          money: { increment: moneyDelta },
-          power: { increment: powerDelta },
+          money: { increment: moneyIncrement },
+          power: { increment: powerIncrement },
           population: { increment: populationDelta },
         },
         select: { id: true },

@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { readUserIdFromCookieHeader } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { PLAYER_MONEY_CAP, PLAYER_POWER_CAP } from "@/lib/economy";
 
 const paramsSchema = z.object({
   id: z.coerce.number().int().positive(),
@@ -9,6 +10,10 @@ const paramsSchema = z.object({
 
 function getResourceValue(user: { money: number; power: number }, resourceType: "MONEY" | "POWER") {
   return resourceType === "MONEY" ? user.money : user.power;
+}
+
+function getResourceCap(resourceType: "MONEY" | "POWER") {
+  return resourceType === "MONEY" ? PLAYER_MONEY_CAP : PLAYER_POWER_CAP;
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -70,6 +75,28 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         status: 400 as const,
         message: "Nemáš dostatek zdrojů pro přijetí této nabídky.",
       };
+    }
+
+    const toReceiveCap = getResourceCap(offer.offerType);
+    const toReceiveCurrent = getResourceValue(toUser, offer.offerType);
+    if (toReceiveCurrent + offer.offerAmount > toReceiveCap) {
+      return {
+        ok: false,
+        status: 400 as const,
+        message: `Přijetí nabídky by překročilo tvůj limit (${toReceiveCap}) pro ${offer.offerType === "MONEY" ? "peníze" : "sílu"}.`,
+      };
+    }
+
+    if (offer.requestAmount > 0) {
+      const fromReceiveCap = getResourceCap(offer.requestType);
+      const fromReceiveCurrent = getResourceValue(fromUser, offer.requestType);
+      if (fromReceiveCurrent + offer.requestAmount > fromReceiveCap) {
+        return {
+          ok: false,
+          status: 400 as const,
+          message: `Nabídku nelze přijmout: druhé straně by se překročil limit (${fromReceiveCap}) pro ${offer.requestType === "MONEY" ? "peníze" : "sílu"}.`,
+        };
+      }
     }
 
     const fromOfferUpdate = await tx.user.updateMany({

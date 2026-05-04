@@ -3,10 +3,11 @@ import { z } from "zod";
 import { readUserIdFromCookieHeader } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { calculateDistanceMeters } from "@/lib/geo";
+import { validateGpsMovement } from "@/lib/gps-guard";
 
 const greetSchema = z.object({
-  latitude: z.number(),
-  longitude: z.number(),
+  latitude: z.number().finite().min(-90).max(90),
+  longitude: z.number().finite().min(-180).max(180),
   accuracyM: z.number().positive().max(200).optional(),
 });
 
@@ -48,6 +49,11 @@ export async function POST(
       { ok: false, message: `Příliš daleko od ${location.name}.`, distanceM },
       { status: 400 },
     );
+  }
+
+  const gpsMovement = await validateGpsMovement(userId, latitude, longitude);
+  if (!gpsMovement.ok) {
+    return Response.json({ ok: false, message: gpsMovement.message }, { status: 400 });
   }
 
   const user = await db.user.findUnique({
